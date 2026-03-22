@@ -181,11 +181,15 @@ textarea.fi{resize:vertical;min-height:68px}
 .audit-LOGIN{background:#E8EFFC;color:#1B4FBF}
 /* KANBAN */
 .kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:1rem}
-.kcol{min-width:185px;flex:0 0 185px;background:var(--bg2);border-radius:var(--rL);padding:.75rem}
-.khd{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:.75rem;display:flex;justify-content:space-between}
+.kcol{min-width:200px;flex:0 0 200px;background:var(--bg2);border-radius:var(--rL);padding:.75rem;transition:background .15s}
+.kcol.drag-over{background:var(--info-bg);border:2px dashed var(--blue)}
+.khd{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center}
 .kcnt{background:var(--bg);color:var(--text2);font-size:11px;padding:1px 7px;border-radius:999px;border:.5px solid var(--border)}
-.kcard{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:8px;cursor:pointer}
-.kcard:hover{border-color:var(--blue)}
+.kcard{background:var(--bg);border:.5px solid var(--border);border-radius:var(--r);padding:.75rem;margin-bottom:8px;cursor:grab;transition:all .15s;user-select:none}
+.kcard:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(27,79,191,.15)}
+.kcard.dragging{opacity:.4;cursor:grabbing;transform:rotate(2deg)}
+.kcard-won{border-left:3px solid var(--ok)}
+.kcard-lost{border-left:3px solid var(--danger);opacity:.6}
 /* IMPORT */
 .drop-zone{border:2px dashed var(--border2);border-radius:var(--rL);padding:2rem;text-align:center;cursor:pointer;transition:all .15s}
 .drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--info-bg)}
@@ -473,7 +477,21 @@ textarea.fi{resize:vertical;min-height:68px}
 
 <!-- PIPELINE -->
 <div class="page" id="page-pipeline">
-  <div class="toprow"><div class="ptitle" style="margin:0">Sales Pipeline</div><button class="btn btn-p btn-sm" onclick="openM('new-deal')">+ เพิ่มดีล</button></div>
+  <div class="toprow">
+    <div class="ptitle" style="margin:0">Sales Pipeline</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <select class="fi" id="pipe-filter-sales" style="width:140px;font-size:12px" onchange="renderPipeline()">
+        <option value="">ทีมทั้งหมด</option>
+      </select>
+      <button class="btn btn-p btn-sm" onclick="openM('new-deal')">+ เพิ่มดีล</button>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:1rem">
+    <div class="mc"><div class="mc-l">ดีลทั้งหมด</div><div class="mc-v" id="pipe-cnt">—</div></div>
+    <div class="mc"><div class="mc-l">มูลค่ารวม</div><div class="mc-v" id="pipe-val">—</div></div>
+    <div class="mc"><div class="mc-l">ชนะแล้ว</div><div class="mc-v" id="pipe-won" style="color:var(--ok)">—</div></div>
+    <div class="mc"><div class="mc-l">แพ้</div><div class="mc-v" id="pipe-lost" style="color:var(--danger)">—</div></div>
+  </div>
   <div class="kanban" id="kanban"></div>
 </div>
 
@@ -810,6 +828,52 @@ textarea.fi{resize:vertical;min-height:68px}
   <div class="frow"><div class="fg"><div class="fl">มูลค่าคาด (บาท)</div><input class="fi" id="dl-v" type="number"></div><div class="fg"><div class="fl">วันปิดคาด</div><input type="date" class="fi" id="dl-d"></div></div>
   <div class="frow"><div class="fg"><div class="fl">ขั้นตอน</div><select class="fi" id="dl-st"><option>Lead</option><option>นำเสนอ</option><option>ส่งใบเสนอราคา</option><option>เจรจา</option><option>ปิดการขาย</option></select></div><div class="fg"><div class="fl">พนักงานขาย</div><select class="fi" id="dl-s"><option>—</option></select></div></div>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:.5rem"><button class="btn" onclick="cm('new-deal')">ยกเลิก</button><button class="btn btn-p" onclick="saveDeal()">บันทึก</button></div>
+</div></div>
+
+<!-- Edit Deal Modal -->
+<div class="mo" id="mo-edit-deal" onclick="oc(event,'edit-deal')"><div class="modal">
+  <div class="mhd"><div class="mtitle">✏️ แก้ไขดีล</div><button class="xbtn" onclick="cm('edit-deal')">×</button></div>
+  <input type="hidden" id="ed-id">
+  <div class="frow">
+    <div class="fg"><div class="fl">ชื่อดีล *</div><input class="fi" id="ed-n" placeholder="ชื่อดีล"></div>
+    <div class="fg"><div class="fl">ลูกค้า</div><input class="fi" id="ed-c" list="cust-datalist4"><datalist id="cust-datalist4"></datalist></div>
+  </div>
+  <div class="frow">
+    <div class="fg"><div class="fl">มูลค่าคาด (บาท)</div><input class="fi" id="ed-v" type="number"></div>
+    <div class="fg"><div class="fl">วันปิดคาด</div><input type="date" class="fi" id="ed-d"></div>
+  </div>
+  <div class="frow">
+    <div class="fg">
+      <div class="fl">ขั้นตอน</div>
+      <select class="fi" id="ed-st">
+        <option>Lead</option><option>นำเสนอ</option><option>ส่งใบเสนอราคา</option><option>เจรจา</option><option>ปิดการขาย</option>
+      </select>
+    </div>
+    <div class="fg"><div class="fl">พนักงานขาย</div><select class="fi" id="ed-s"><option>—</option></select></div>
+  </div>
+  <div class="fg" style="margin-bottom:1rem">
+    <div class="fl">ผลลัพธ์</div>
+    <select class="fi" id="ed-status">
+      <option value="open">กำลังดำเนินการ</option>
+      <option value="won">✅ ชนะ (Won)</option>
+      <option value="lost">❌ แพ้ (Lost)</option>
+    </select>
+  </div>
+  <div class="fg" id="ed-lost-reason-wrap" style="margin-bottom:1rem;display:none">
+    <div class="fl">เหตุผลที่แพ้</div>
+    <select class="fi" id="ed-lost-reason">
+      <option>แพ้เรื่องราคา</option>
+      <option>สินค้าไม่ตรงสเปก</option>
+      <option>ลูกค้ายกเลิกโครงการ</option>
+      <option>คู่แข่งบริการดีกว่า</option>
+      <option>อื่นๆ</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn btn-danger btn-sm" onclick="deleteDeal(document.getElementById('ed-id').value)">🗑️ ลบดีล</button>
+    <button class="btn" onclick="cm('edit-deal')">ยกเลิก</button>
+    <button class="btn btn-p" onclick="saveEditDeal()">บันทึก</button>
+  </div>
 </div></div>
 
 <!-- HELP PAGE -->
@@ -1756,13 +1820,183 @@ function renderAnalytics(){
 
 function renderPipeline(){
   const stages=['Lead','นำเสนอ','ส่งใบเสนอราคา','เจรจา','ปิดการขาย'];
+  const salesFilter=document.getElementById('pipe-filter-sales')?.value||'';
+
+  // Update sales dropdown
+  const sdd=document.getElementById('pipe-filter-sales');
+  if(sdd&&sdd.options.length<=1){
+    const salesNames=[...new Set(DB.deals.map(d=>d.sales_owner).filter(Boolean))];
+    salesNames.forEach(n=>{if(!Array.from(sdd.options).find(o=>o.value===n)){const o=document.createElement('option');o.value=n;o.textContent=n;sdd.appendChild(o);}});
+  }
+
+  // Filter
+  let deals=DB.deals.filter(d=>!salesFilter||d.sales_owner===salesFilter);
+
+  // Stats
+  document.getElementById('pipe-cnt').textContent=deals.length||0;
+  const totalVal=deals.reduce((s,d)=>s+Number(d.value||0),0);
+  document.getElementById('pipe-val').textContent=totalVal?'฿'+totalVal.toLocaleString():'—';
+  document.getElementById('pipe-won').textContent=deals.filter(d=>d.status==='won').length||0;
+  document.getElementById('pipe-lost').textContent=deals.filter(d=>d.status==='lost').length||0;
+
   const grouped={};stages.forEach(s=>grouped[s]=[]);
-  DB.deals.forEach(d=>{if(grouped[d.stage])grouped[d.stage].push(d);else grouped['Lead'].push(d);});
+  deals.forEach(d=>{if(grouped[d.stage])grouped[d.stage].push(d);else grouped['Lead'].push(d);});
+
+  const stageColors={'Lead':'#8A9ABF','นำเสนอ':'#1B4FBF','ส่งใบเสนอราคา':'#854F0B','เจรจา':'#A32D2D','ปิดการขาย':'#3B6D11'};
+
   document.getElementById('kanban').innerHTML=stages.map(stage=>{
-    const deals=grouped[stage]||[];
-    const val=deals.reduce((s,d)=>s+Number(d.value||0),0);
-    return`<div class="kcol"><div class="khd"><span>${stage}</span><span class="kcnt">${deals.length}</span></div><div style="font-size:11px;color:var(--text3);margin-bottom:8px">฿${(val/1000).toFixed(0)}K</div>${deals.map(d=>`<div class="kcard"><div style="font-size:13px;font-weight:600;margin-bottom:3px">${d.deal_name||'—'}</div><div style="font-size:12px;color:var(--blue);font-weight:600">${d.value?'฿'+Number(d.value).toLocaleString():'—'}</div><div style="font-size:11px;color:var(--text3);margin-top:3px">${d.sales_owner||'—'}</div></div>`).join('')}</div>`;
+    const stagDeals=grouped[stage]||[];
+    const val=stagDeals.reduce((s,d)=>s+Number(d.value||0),0);
+    const cards=stagDeals.map(d=>{
+      const wonClass=d.status==='won'?'kcard-won':d.status==='lost'?'kcard-lost':'';
+      const statusTag=d.status==='won'?'<span style="font-size:10px;background:#EAF3DE;color:#3B6D11;padding:1px 6px;border-radius:999px">✅ Won</span>':d.status==='lost'?'<span style="font-size:10px;background:#FCEBEB;color:#A32D2D;padding:1px 6px;border-radius:999px">❌ Lost</span>':'';
+      return `<div class="kcard ${wonClass}"
+        draggable="true"
+        data-id="${d.id}"
+        data-stage="${stage}"
+        ondragstart="dragStart(event,'${d.id}')"
+        ondragend="dragEnd(event)"
+        onclick="openEditDeal(${JSON.stringify(d).replace(/"/g,'&quot;')})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px">
+          <div style="font-size:13px;font-weight:600;line-height:1.3">${d.deal_name||'—'}</div>
+          ${statusTag}
+        </div>
+        <div style="font-size:12px;color:var(--blue);font-weight:600">${d.value?'฿'+Number(d.value).toLocaleString():'—'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;display:flex;justify-content:space-between">
+          <span>${d.customer_name||'—'}</span>
+          <span>${d.sales_owner||'—'}</span>
+        </div>
+        ${d.expected_close?`<div style="font-size:10px;color:var(--text3);margin-top:3px">📅 ${d.expected_close}</div>`:''}
+      </div>`;
+    }).join('');
+
+    return `<div class="kcol"
+      data-stage="${stage}"
+      ondragover="dragOver(event)"
+      ondragleave="dragLeave(event)"
+      ondrop="dropDeal(event,'${stage}')">
+      <div class="khd">
+        <span style="color:${stageColors[stage]||'var(--text2)'}">${stage}</span>
+        <span class="kcnt">${stagDeals.length}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">฿${(val/1000).toFixed(0)}K</div>
+      ${cards}
+    </div>`;
   }).join('');
+}
+
+// ── Drag & Drop ──
+let dragId=null;
+function dragStart(e,id){
+  dragId=id;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',id);
+}
+function dragEnd(e){
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kcol').forEach(c=>c.classList.remove('drag-over'));
+}
+function dragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.classList.add('drag-over');
+}
+function dragLeave(e){
+  if(!e.currentTarget.contains(e.relatedTarget))
+    e.currentTarget.classList.remove('drag-over');
+}
+async function dropDeal(e,newStage){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const id=dragId||e.dataTransfer.getData('text/plain');
+  if(!id) return;
+  const deal=DB.deals.find(d=>d.id===id);
+  if(!deal||deal.stage===newStage) return;
+  const oldStage=deal.stage;
+  deal.stage=newStage;
+  renderPipeline();
+  const{url,key}=getSB();
+  if(url&&key){
+    try{
+      await sbUpd('deals',id,{stage:newStage,updated_by:CU.name});
+      writeAudit('UPDATE','deals',id,'ย้ายดีล: '+deal.deal_name+' จาก '+oldStage+' → '+newStage);
+      notify('ย้ายดีลสำเร็จ: '+oldStage+' → '+newStage+' ✓');
+    }catch(e2){
+      deal.stage=oldStage;renderPipeline();notify('❌ '+e2.message);
+    }
+  } else {
+    notify('ย้ายดีลสำเร็จ ✓');
+  }
+  dragId=null;
+}
+
+// ── Edit Deal ──
+function openEditDeal(d){
+  if(typeof d==='string') d=JSON.parse(d);
+  document.getElementById('ed-id').value=d.id;
+  document.getElementById('ed-n').value=d.deal_name||'';
+  document.getElementById('ed-c').value=d.customer_name||'';
+  document.getElementById('ed-v').value=d.value||0;
+  document.getElementById('ed-d').value=(d.expected_close||'').slice(0,10);
+  document.getElementById('ed-st').value=d.stage||'Lead';
+  document.getElementById('ed-s').value=d.sales_owner||'';
+  document.getElementById('ed-status').value=d.status||'open';
+  // Show/hide lost reason
+  const lrWrap=document.getElementById('ed-lost-reason-wrap');
+  lrWrap.style.display=d.status==='lost'?'block':'none';
+  if(d.lost_reason) document.getElementById('ed-lost-reason').value=d.lost_reason;
+  // Listen status change
+  document.getElementById('ed-status').onchange=function(){
+    lrWrap.style.display=this.value==='lost'?'block':'none';
+  };
+  // Populate sales dropdown
+  const sEl=document.getElementById('ed-s');
+  const salesUsers=getLocalUsers().filter(u=>u.active&&(u.role==='sales'||u.role==='manager'));
+  sEl.innerHTML='<option value="">—</option>'+salesUsers.map(u=>`<option ${u.name===d.sales_owner?'selected':''}>${u.name}</option>`).join('');
+  // Populate customer datalist
+  const cd=document.getElementById('cust-datalist4');
+  if(cd) cd.innerHTML=DB.customers.map(c=>`<option value="${c.name}">`).join('');
+  openM('edit-deal');
+}
+
+async function saveEditDeal(){
+  const id=document.getElementById('ed-id').value;
+  const name=document.getElementById('ed-n').value.trim();
+  if(!name){alert('กรุณาใส่ชื่อดีล');return;}
+  const status=document.getElementById('ed-status').value;
+  const data={
+    deal_name:name,
+    customer_name:document.getElementById('ed-c').value,
+    value:Number(document.getElementById('ed-v').value)||0,
+    expected_close:document.getElementById('ed-d').value,
+    stage:document.getElementById('ed-st').value,
+    sales_owner:document.getElementById('ed-s').value,
+    status,
+    ...(status==='lost'?{lost_reason:document.getElementById('ed-lost-reason').value}:{}),
+    ...(status==='won'?{won_date:new Date().toISOString().slice(0,10)}:{}),
+    updated_by:CU.name
+  };
+  const{url,key}=getSB();
+  if(url&&key){
+    try{
+      await sbUpd('deals',id,data);
+      writeAudit('UPDATE','deals',id,'แก้ไขดีล: '+name);
+    }catch(e){notify('❌ '+e.message);return;}
+  }
+  const idx=DB.deals.findIndex(d=>d.id===id);
+  if(idx>=0) DB.deals[idx]={...DB.deals[idx],...data};
+  renderPipeline();cm('edit-deal');notify('บันทึกดีลเรียบร้อย ✓');
+}
+
+async function deleteDeal(id){
+  if(!confirm('ต้องการลบดีลนี้?')) return;
+  const{url,key}=getSB();
+  if(url&&key){
+    try{await sbDel('deals',id);writeAudit('DELETE','deals',id,'ลบดีล');}catch(e){notify('❌ '+e.message);return;}
+  }
+  DB.deals=DB.deals.filter(d=>d.id!==id);
+  renderPipeline();cm('edit-deal');notify('ลบดีลเรียบร้อย ✓');
 }
 
 // ══════════════════════════════════════════
