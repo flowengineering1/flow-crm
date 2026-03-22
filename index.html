@@ -716,6 +716,93 @@ textarea.fi{resize:vertical;min-height:68px}
   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cm('add-user')">ยกเลิก</button><button class="btn btn-p" onclick="saveUser()">บันทึก User</button></div>
 </div></div>
 
+<!-- Edit User Modal -->
+<div class="mo" id="mo-edit-user" onclick="oc(event,'edit-user')"><div class="modal">
+  <div class="mhd"><div class="mtitle">✏️ แก้ไข User</div><button class="xbtn" onclick="cm('edit-user')">×</button></div>
+  <input type="hidden" id="eu-id">
+
+  <!-- User info header -->
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg2);border-radius:var(--r);margin-bottom:1.25rem">
+    <div style="width:44px;height:44px;border-radius:50%;background:#1B4FBF;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0" id="eu-av">?</div>
+    <div>
+      <div style="font-size:14px;font-weight:600" id="eu-display-name">—</div>
+      <div style="font-size:12px;color:var(--text2)" id="eu-display-username">—</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="c360-tabs" id="eu-tabs">
+    <div class="c360-tab active" onclick="switchEuTab('info',this)">ข้อมูลทั่วไป</div>
+    <div class="c360-tab" onclick="switchEuTab('password',this)">รีเซ็ตรหัสผ่าน</div>
+    <div class="c360-tab" onclick="switchEuTab('perms',this)">สิทธิ์การใช้งาน</div>
+  </div>
+
+  <!-- Tab: Info -->
+  <div class="c360-panel active" id="eu-tab-info">
+    <div class="frow">
+      <div class="fg"><div class="fl">ชื่อ-นามสกุล *</div><input class="fi" id="eu-name" placeholder="ชื่อ นามสกุล"></div>
+      <div class="fg"><div class="fl">Username</div><input class="fi" id="eu-username" placeholder="username" style="color:var(--text2)" readonly></div>
+    </div>
+    <div class="fg" style="margin-bottom:1rem">
+      <div class="fl">Role</div>
+      <select class="fi" id="eu-role" onchange="euRoleChange(this.value)">
+        <option value="sales">Sales</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+        <option value="viewer">Viewer</option>
+      </select>
+    </div>
+    <div style="background:var(--info-bg);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--info);margin-bottom:1rem">
+      ℹ️ เปลี่ยน Role จะอัปเดตสิทธิ์อัตโนมัติ หรือปรับเองได้ในแท็บ "สิทธิ์การใช้งาน"
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="cm('edit-user')">ยกเลิก</button>
+      <button class="btn btn-p" onclick="saveEditUser('info')">บันทึกข้อมูล</button>
+    </div>
+  </div>
+
+  <!-- Tab: Password -->
+  <div class="c360-panel" id="eu-tab-password">
+    <div style="background:var(--warn-bg);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--warn);margin-bottom:1rem;line-height:1.6">
+      ⚠️ Admin สามารถรีเซ็ตรหัสผ่านให้ User ได้โดยตรง User จะต้องเปลี่ยนรหัสผ่านอีกครั้งเมื่อ Login
+    </div>
+    <div class="fg" style="margin-bottom:10px">
+      <div class="fl">รหัสผ่านใหม่ *</div>
+      <input class="fi" id="eu-newpwd" type="password" placeholder="อย่างน้อย 6 ตัวอักษร">
+    </div>
+    <div class="fg" style="margin-bottom:1rem">
+      <div class="fl">ยืนยันรหัสผ่านใหม่ *</div>
+      <input class="fi" id="eu-confirmpwd" type="password" placeholder="พิมพ์รหัสผ่านอีกครั้ง">
+    </div>
+    <div id="eu-pwd-msg" style="display:none;margin-bottom:.875rem;font-size:12px;padding:8px 12px;border-radius:var(--r)"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="cm('edit-user')">ยกเลิก</button>
+      <button class="btn btn-p" onclick="saveEditUser('password')">รีเซ็ตรหัสผ่าน</button>
+    </div>
+  </div>
+
+  <!-- Tab: Permissions -->
+  <div class="c360-panel" id="eu-tab-perms">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:.875rem">กำหนดเมนูที่ User นี้สามารถเข้าถึงได้</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;font-size:13px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-dashboard"> Dashboard</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-customers"> ลูกค้า</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-contacts"> ผู้ติดต่อ</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-quotes"> ใบเสนอราคา</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-products"> สินค้า / สต็อก</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-activities"> Activity Log</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-analytics"> รายงาน & กราฟ</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-pipeline"> Sales Pipeline</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-team"> ทีมขาย</label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border:.5px solid var(--border);border-radius:var(--r)"><input type="checkbox" id="ep-audit"> Audit Log</label>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="cm('edit-user')">ยกเลิก</button>
+      <button class="btn btn-p" onclick="saveEditUser('perms')">บันทึกสิทธิ์</button>
+    </div>
+  </div>
+</div></div>
+
 <!-- New Deal -->
 <div class="mo" id="mo-new-deal" onclick="oc(event,'new-deal')"><div class="modal">
   <div class="mhd"><div class="mtitle">เพิ่มดีลใหม่</div><button class="xbtn" onclick="cm('new-deal')">×</button></div>
@@ -2036,7 +2123,8 @@ async function renderUsersTable(){
       <td style="text-align:center">${pc('quotes')}</td>
       <td style="text-align:center">${pc('analytics')}</td>
       <td><span class="b ${u.active?'b-ok':'b-gray'}">${u.active?'ใช้งาน':'ปิดใช้'}</span></td>
-      <td style="display:flex;gap:4px">
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${ce(u)?`<button class="btn btn-sm btn-p" onclick="openEditUser(${JSON.stringify(u).replace(/"/g,'&quot;')})">✏️ แก้ไข</button>`:''}
         ${ce(u)&&u.id!==CU.id?`<button class="btn btn-sm" onclick="toggleUser('${u.id}','${!u.active}')">${u.active?'ปิด':'เปิด'}</button>`:''}
         ${CU.role==='admin'&&u.id!==CU.id?`<button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">ลบ</button>`:''}
       </td>
@@ -2073,6 +2161,123 @@ async function deleteUser(id){
   if(url&&key){try{await sbDel('crm_users',id);writeAudit('DELETE','crm_users',id,'ลบ User');}catch(e){notify('❌ '+e.message);return;}}
   else saveLocalUsers(getLocalUsers().filter(u=>u.id!==id));
   notify('ลบ User เรียบร้อย ✓');renderUsersTable();
+}
+
+// ══════════════════════════════════════════
+//  EDIT USER
+// ══════════════════════════════════════════
+function openEditUser(u){
+  if(typeof u==='string') u=JSON.parse(u);
+  const P=typeof u.permissions==='string'?JSON.parse(u.permissions||'{}'):u.permissions||{};
+  // Set hidden id
+  document.getElementById('eu-id').value=u.id;
+  // Header
+  document.getElementById('eu-av').textContent=u.name.slice(0,2);
+  document.getElementById('eu-display-name').textContent=u.name;
+  document.getElementById('eu-display-username').textContent='@'+u.username;
+  // Info tab
+  document.getElementById('eu-name').value=u.name;
+  document.getElementById('eu-username').value=u.username;
+  document.getElementById('eu-role').value=u.role||'sales';
+  // Password tab
+  document.getElementById('eu-newpwd').value='';
+  document.getElementById('eu-confirmpwd').value='';
+  document.getElementById('eu-pwd-msg').style.display='none';
+  // Perms tab
+  ['dashboard','customers','contacts','quotes','products','activities','analytics','pipeline','team','audit'].forEach(k=>{
+    const el=document.getElementById('ep-'+k);
+    if(el) el.checked=!!(P[k]);
+  });
+  // Reset to first tab
+  switchEuTab('info',document.querySelector('#eu-tabs .c360-tab'));
+  openM('edit-user');
+}
+
+function switchEuTab(tab, btn){
+  document.querySelectorAll('#eu-tabs .c360-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('[id^="eu-tab-"]').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const panel=document.getElementById('eu-tab-'+tab);
+  if(panel) panel.classList.add('active');
+}
+
+function euRoleChange(role){
+  // Auto-set perms when role changes
+  const presets={
+    admin:{dashboard:1,customers:1,contacts:1,quotes:1,products:1,activities:1,analytics:1,pipeline:1,team:1,audit:1},
+    manager:{dashboard:1,customers:1,contacts:1,quotes:1,products:1,activities:1,analytics:1,pipeline:1,team:1,audit:1},
+    sales:{dashboard:1,customers:1,contacts:1,quotes:1,products:1,activities:1,analytics:0,pipeline:0,team:0,audit:0},
+    viewer:{dashboard:1,customers:0,contacts:0,quotes:0,products:1,activities:0,analytics:0,pipeline:0,team:0,audit:0}
+  };
+  const p=presets[role]||presets.sales;
+  Object.entries(p).forEach(([k,v])=>{const el=document.getElementById('ep-'+k);if(el)el.checked=!!v;});
+}
+
+async function saveEditUser(tab){
+  const id=document.getElementById('eu-id').value;
+  if(!id){notify('❌ ไม่พบ User ID');return;}
+  const{url,key}=getSB();
+
+  if(tab==='info'){
+    const name=document.getElementById('eu-name').value.trim();
+    const role=document.getElementById('eu-role').value;
+    if(!name){alert('กรุณาใส่ชื่อ');return;}
+    const data={name,role,updated_by:CU.name};
+    if(url&&key){
+      try{await sbUpd('crm_users',id,data);writeAudit('UPDATE','crm_users',id,'แก้ไขชื่อ/Role: '+name+' ('+role+')');}
+      catch(e){notify('❌ '+e.message);return;}
+    } else {
+      const users=getLocalUsers();const u=users.find(x=>x.id===id);
+      if(u){u.name=name;u.role=role;saveLocalUsers(users);}
+    }
+    // Update header display
+    document.getElementById('eu-av').textContent=name.slice(0,2);
+    document.getElementById('eu-display-name').textContent=name;
+    notify('บันทึกข้อมูลเรียบร้อย ✓');
+    renderUsersTable();populateSalesDD();
+  }
+
+  else if(tab==='password'){
+    const nw=document.getElementById('eu-newpwd').value;
+    const cf=document.getElementById('eu-confirmpwd').value;
+    const msgEl=document.getElementById('eu-pwd-msg');
+    const showMsg=(txt,ok)=>{msgEl.textContent=txt;msgEl.style.display='block';msgEl.style.background=ok?'var(--ok-bg)':'var(--danger-bg)';msgEl.style.color=ok?'var(--ok)':'var(--danger)';};
+    if(!nw||!cf){showMsg('กรุณากรอกรหัสผ่านให้ครบ',false);return;}
+    if(nw.length<6){showMsg('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',false);return;}
+    if(nw!==cf){showMsg('รหัสผ่านไม่ตรงกัน',false);return;}
+    if(url&&key){
+      try{await sbUpd('crm_users',id,{password:nw,updated_by:CU.name});writeAudit('UPDATE','crm_users',id,'รีเซ็ตรหัสผ่าน');}
+      catch(e){notify('❌ '+e.message);return;}
+    } else {
+      const users=getLocalUsers();const u=users.find(x=>x.id===id);
+      if(u){u.password=nw;saveLocalUsers(users);}
+    }
+    showMsg('รีเซ็ตรหัสผ่านเรียบร้อยแล้ว ✓',true);
+    document.getElementById('eu-newpwd').value='';
+    document.getElementById('eu-confirmpwd').value='';
+    notify('รีเซ็ตรหัสผ่านเรียบร้อย ✓');
+  }
+
+  else if(tab==='perms'){
+    const perms={};
+    ['dashboard','customers','contacts','quotes','products','activities','analytics','pipeline','team','audit'].forEach(k=>{
+      const el=document.getElementById('ep-'+k);perms[k]=el?(el.checked?1:0):0;
+    });
+    const role=document.getElementById('eu-role').value;
+    perms.team=role==='admin'||role==='manager'?1:perms.team;
+    perms.settings=role==='admin'?1:0;
+    perms.users=role==='admin'||role==='manager'?1:0;
+    perms.audit=role==='admin'||role==='manager'?1:perms.audit;
+    if(url&&key){
+      try{await sbUpd('crm_users',id,{permissions:JSON.stringify(perms),updated_by:CU.name});writeAudit('UPDATE','crm_users',id,'แก้ไขสิทธิ์');}
+      catch(e){notify('❌ '+e.message);return;}
+    } else {
+      const users=getLocalUsers();const u=users.find(x=>x.id===id);
+      if(u){u.permissions=perms;saveLocalUsers(users);}
+    }
+    notify('บันทึกสิทธิ์เรียบร้อย ✓');
+    renderUsersTable();
+  }
 }
 
 function populateSalesDD(){
