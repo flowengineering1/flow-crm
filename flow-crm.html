@@ -1,0 +1,1072 @@
+<title>Flow CRM ภาคสนาม</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+/* Layout: one-column phone app on a 4px grid; flat surfaces (no shadows), sticky translucent header, fixed bottom tab bar with a raised check-in button */
+:root{
+  --bg:#FFFFFF; --surface:#F5F5F7; --elev:#FAFAFC; --sunk:#FFFFFF; --ink:#1D1D1F; --muted:#6E6E73; --line:#E3E3E8;
+  --accent:#144CA5; --accent-press:#0F3C85; --accent-soft:#E8EEF8; --on-accent:#FFFFFF; --link:#0066CC; --focus:#0071E3;
+  --money:#1D1D1F; --ok:#008009; --ok-soft:#E5F4E6; --warn:#B64400; --warn-soft:#FCEEE5; --bad:#E30000; --bad-soft:#FDE8E8;
+  --f-body:-apple-system,BlinkMacSystemFont,"SF Pro Text","IBM Plex Sans Thai","Noto Sans Thai","Helvetica Neue",sans-serif;
+  --f-num:-apple-system,BlinkMacSystemFont,"SF Pro Text","IBM Plex Sans Thai",system-ui,sans-serif;
+  --r:16px; --rb:11px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#1C1C1E; --elev:#161617; --sunk:#2C2C2E; --ink:#F5F5F7; --muted:#98989D; --line:#2C2C2E;
+  --accent:#4D8AF0; --accent-press:#3A74D6; --accent-soft:#14284A; --on-accent:#FFFFFF; --link:#5AA0FF; --focus:#3D8BFF;
+  --money:#F5F5F7; --ok:#3CC75A; --ok-soft:#10301A; --warn:#FF9F45; --warn-soft:#3A2410; --bad:#FF5A50; --bad-soft:#3D1513; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1C1C1E; --elev:#161617; --sunk:#2C2C2E; --ink:#F5F5F7; --muted:#98989D; --line:#2C2C2E;
+  --accent:#4D8AF0; --accent-press:#3A74D6; --accent-soft:#14284A; --on-accent:#FFFFFF; --link:#5AA0FF; --focus:#3D8BFF;
+  --money:#F5F5F7; --ok:#3CC75A; --ok-soft:#10301A; --warn:#FF9F45; --warn-soft:#3A2410; --bad:#FF5A50; --bad-soft:#3D1513; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.47;letter-spacing:-.01em;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--elev)}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--elev) 88%,transparent);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:12px;padding-block:8px}
+.logo{width:40px;height:40px;border-radius:50%;background:#FFFFFF;flex:none;display:block}
+.brand{display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0}
+.brand b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.brand span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{border:0;background:var(--surface);color:var(--ink);border-radius:var(--rb);height:40px;min-width:40px;padding:0 10px;font:inherit;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+main{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+section.view{padding-block:20px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:34px;line-height:1.14;letter-spacing:-.374px;margin:0;font-weight:600;text-wrap:balance}
+h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.sub{color:var(--muted);font-size:14px;line-height:1.43;margin:0}
+.card{background:var(--surface);border-radius:var(--r);padding:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{background:var(--surface);border-radius:var(--r);padding:12px;min-width:0}
+.tile small{display:block;color:var(--muted);font-size:12px;line-height:1.33}
+.tile b{display:block;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:22px;line-height:1.14;font-weight:600;letter-spacing:-.02em;white-space:nowrap;margin-top:4px}
+.tile b.money{color:var(--accent)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:500}
+label.f > span.hint{font-weight:400;color:var(--muted);font-size:12px}
+input[type=text],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=search],textarea,select{
+  font:inherit;font-size:17px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:var(--rb);padding:12px;width:100%;min-width:0}
+textarea{min-height:96px;resize:vertical;line-height:1.47}
+input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.btn:focus-within{outline:2px solid var(--focus);outline-offset:1px}
+.btn{font:inherit;font-weight:500;border-radius:var(--rb);border:0;padding:12px 20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:17px;transition:transform .12s ease,background-color .12s ease}
+.btn:active,.chip:active,.item:active,nav.tabs button:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.primary:hover{background:var(--accent-press)}
+.btn.ghost{background:var(--surface);color:var(--ink)}
+.card .btn.ghost{background:var(--sunk);border:1px solid var(--line)}
+.btn.soft{background:var(--accent-soft);color:var(--accent)}
+.btn.ok{background:var(--ok);color:#FFFFFF}
+.btn.bad{background:var(--bad-soft);color:var(--bad)}
+.btn.block{width:100%}
+.btn.lg{padding:16px 20px;font-size:17px;font-weight:600}
+.btn.sm{padding:8px 16px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer;transition:transform .12s ease}
+.card .chip{background:var(--sunk)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap;line-height:1.5}
+.pill.pending{background:var(--warn-soft);color:var(--warn)}
+.pill.approved{background:var(--ok-soft);color:var(--ok)}
+.pill.rejected{background:var(--bad-soft);color:var(--bad)}
+.pill.stage{background:var(--accent-soft);color:var(--accent)}
+.pill.ex{background:var(--bg);color:var(--muted);border:1px dashed var(--line)}
+.step{display:flex;gap:8px;align-items:center}
+.step i{font-style:normal;font-size:13px;font-weight:600;color:var(--on-accent);background:var(--accent);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex:none}
+.step b{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.gps{border-radius:var(--rb);padding:12px;background:var(--sunk);border:1px dashed var(--line);font-size:14px}
+.gps.ok{border:1px solid var(--ok);background:var(--ok-soft)}
+.gps .coord{font-variant-numeric:tabular-nums;font-size:17px;font-weight:600}
+.flags{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none;font-size:14px}
+.flags li{color:var(--warn)}
+.flags li.good{color:var(--ok)}
+.calc{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:15px}
+.calc .num{text-align:right}
+.calc .total{font-size:20px;font-weight:600;border-top:1px solid var(--line);padding-top:8px;margin-top:4px;letter-spacing:-.02em}
+.calc .total.num{color:var(--accent)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--surface);border:0;border-radius:var(--r);padding:12px 16px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%;transition:transform .12s ease}
+.item .main{flex:1;min-width:0}
+.item .t{font-weight:600;letter-spacing:-.02em;overflow-wrap:anywhere}
+.item .m{color:var(--muted);font-size:13px;line-height:1.38;overflow-wrap:anywhere}
+.item .amt{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink);white-space:nowrap;text-align:right}
+.photos{display:flex;gap:8px;flex-wrap:wrap}
+.photos figure{margin:0;position:relative;width:84px;height:84px;border-radius:var(--rb);overflow:hidden;background:var(--sunk)}
+.photos img{width:100%;height:100%;object-fit:cover;display:block}
+.photos button{position:absolute;top:4px;right:4px;border:0;border-radius:999px;width:24px;height:24px;background:rgba(0,0,0,.6);color:#FFFFFF;font-size:14px;line-height:24px;cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;background:var(--elev);border:1px dashed var(--line);border-radius:var(--r);font-size:14px}
+.tablewrap{overflow-x:auto;border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;font-size:13px;min-width:640px;width:100%}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px}
+td:nth-child(2),td:nth-child(3){min-width:120px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:600;border-bottom:0}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--elev) 90%,transparent);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .wrap{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:end;padding-block:4px}
+nav.tabs button{font:inherit;font-size:11px;background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;cursor:pointer;position:relative;transition:transform .12s ease}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button[aria-current="page"]{color:var(--accent);font-weight:600}
+nav.tabs button.fab .disc{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;margin-top:-28px;border:4px solid var(--bg)}
+nav.tabs .badge{position:absolute;top:0;left:calc(50% + 6px);background:var(--bad);color:#FFFFFF;font-size:11px;font-weight:600;border-radius:999px;min-width:18px;height:18px;padding:0 4px;line-height:18px}
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center}
+.sheet .panel{background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:20px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px}
+.sheet .bar{display:flex;align-items:center;gap:8px}
+.sheet .bar h1{flex:1;font-size:24px;line-height:1.17}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.confirm{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px}
+.confirm .box{background:var(--bg);border-radius:20px;padding:24px 20px 20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px}
+.confirm h3{margin:0;font-size:19px;font-weight:600;line-height:1.25;letter-spacing:-.02em}
+.confirm p{margin:0;color:var(--muted);font-size:15px;line-height:1.45}
+.confirm .acts{display:flex;gap:8px;margin-top:12px}
+.confirm .acts .btn{flex:1}
+.confirm .btn.danger{background:var(--bad);color:#FFFFFF}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:var(--rb);font-size:14px;max-width:calc(100% - 32px)}
+.notice{font-size:14px;color:var(--muted);background:var(--accent-soft);border-radius:var(--rb);padding:12px}
+.card .notice{background:var(--sunk)}
+.notice b{color:var(--ink)}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
+@media (max-width:380px){.tiles{grid-template-columns:1fr 1fr}}
+.role-sales .only-mgr,.role-mgr .only-sales,.role-mgr .desk-only{display:none!important}
+.rolechip{font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px;letter-spacing:0}
+.tm-table{display:none}
+.bar-mini{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;margin-top:6px}
+.bar-mini i{display:block;height:100%;background:var(--accent);border-radius:3px}
+@media (max-width:959px){.role-mgr #homeTiles,#tmTiles,#rpTiles{grid-template-columns:1fr 1fr}}
+.tile .d{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.tile b.plain{font-variant-numeric:normal}
+.meter{height:8px;border-radius:4px;background:var(--accent-soft);overflow:hidden;margin-top:8px}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.meter i.done{background:var(--ok)}
+.chart{display:flex;align-items:flex-end;gap:2px;height:132px;border-bottom:1px solid var(--line);padding-top:20px;position:relative}
+.chart .col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative}
+.chart .col i{display:block;background:var(--accent);border-radius:3px 3px 0 0;margin:0 auto;width:min(100%,14px)}
+.chart .col.today i{outline:2px solid var(--ok);outline-offset:1px}
+.chart .col .v{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink);font-weight:600}
+.chart .grid{position:absolute;left:0;right:0;border-top:1px solid var(--line);font-size:10px;color:var(--muted);line-height:1;text-align:right;padding-top:2px}
+.xaxis{font-size:11px;color:var(--muted);margin-top:4px}
+.hbars{display:grid;grid-template-columns:minmax(96px,auto) 1fr auto;gap:8px 10px;align-items:center;font-size:14px}
+.hbars .trk{height:10px;background:var(--sunk);border-radius:5px;overflow:hidden}
+.hbars .trk i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.hbars .trk i.lost{background:var(--muted)}
+.hbars .trk i.won{background:var(--ok)}
+.hbars .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rep-grid{display:grid;gap:16px}
+.rep-grid > *{min-width:0}
+.xaxis{position:relative;height:16px}
+.xaxis span{position:absolute;transform:translateX(-50%)}
+.rep-grid .card h2{margin-bottom:12px}
+.mini{display:flex;flex-direction:column;gap:8px}
+.mini .it{display:flex;justify-content:space-between;gap:10px;font-size:14px;border:0;background:none;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%}
+.mini .it .m{color:var(--muted);font-size:12.5px}
+.mini .it .r{white-space:nowrap;text-align:right}
+.mini .it .r.bad{color:var(--bad)}
+.mini .it .r.warn{color:var(--warn)}
+.ok-text{color:var(--ok)}
+@media (min-width:960px){.rep-grid{grid-template-columns:1fr 1fr}.rep-grid .wide{grid-column:1/-1}#rpTiles{grid-template-columns:repeat(3,1fr)}}
+@media (min-width:1280px){#rpTiles{grid-template-columns:repeat(6,1fr)}}
+@media (min-width:960px){
+  body{font-size:16px}
+  header.top .wrap{max-width:none;padding-left:24px;padding-right:24px}
+  nav.tabs{top:calc(57px + env(safe-area-inset-top,0px));bottom:0;right:auto;width:232px;border-top:0;border-right:1px solid var(--line);padding-bottom:0}
+  nav.tabs .wrap{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:16px 12px;max-width:none}
+  nav.tabs button{flex-direction:row;justify-content:flex-start;gap:12px;font-size:15px;padding:10px 12px;border-radius:var(--rb);color:var(--ink)}
+  nav.tabs button svg{width:22px;height:22px;color:var(--muted)}
+  nav.tabs button[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+  nav.tabs button[aria-current="page"] svg{color:var(--accent)}
+  nav.tabs button.fab{order:-1;background:var(--accent);color:var(--on-accent);font-weight:600;margin-bottom:8px}
+  nav.tabs button.fab .disc{width:22px;height:22px;margin:0;border:0;background:none;border-radius:0}
+  nav.tabs button.fab svg{color:var(--on-accent)}
+  nav.tabs button.fab[aria-current="page"]{background:var(--accent-press);color:var(--on-accent)}
+  nav.tabs .badge{position:static;margin-left:auto}
+  .role-mgr .desk-only{display:flex!important}
+  main{margin-left:232px;padding-bottom:48px}
+  main .wrap{max-width:1120px;padding-left:32px;padding-right:32px}
+  section.view{padding-block:28px;gap:20px}
+  .tiles{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+  .list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .list .empty{grid-column:1/-1}
+  #fCheckin{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  #fCheckin > .flags,#fCheckin > .btn{grid-column:1/-1}
+  #fCheckin > .btn{justify-self:end;width:auto;min-width:280px}
+  .home-actions{max-width:420px}
+  .tm-table{display:block}
+  .tm-cards{display:none}
+  .sheet{align-items:center}
+  .sheet .panel{max-width:680px;max-height:86%;border-radius:20px;padding:24px}
+  .toast{bottom:32px;left:calc(50% + 116px)}
+  .notice{max-width:760px}
+}
+@media (prefers-reduced-motion:no-preference){.sheet .panel{animation:up .24s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(32px);opacity:.6}}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top"><div class="wrap">
+  <img class="logo" alt="FLOW" src="data:image/png;base64,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">
+  <div class="brand"><b>Flow CRM ภาคสนาม</b><span id="whoLine">FLOW ENG · รายงานเข้าพบลูกค้าและเบิกค่าเดินทาง</span></div>
+  <button class="iconbtn" id="btnSettings" aria-label="ตั้งค่า">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</div></header>
+
+<main>
+<!-- HOME -->
+<section class="view wrap" id="v-home">
+  <div class="stack" style="gap:4px">
+    <h1 id="hello">สวัสดี</h1>
+    <p class="sub" id="todayLine"></p>
+  </div>
+  <div class="tiles" id="homeTiles">
+    <div class="tile only-mgr"><small>รอตรวจทั้งทีม</small><b id="tPend">0</b></div>
+    <div class="tile"><small id="tTodayL">เข้าพบวันนี้</small><b id="tToday">0</b></div>
+    <div class="tile"><small id="tKmL">ระยะทางเดือนนี้</small><b id="tKm">0 กม.</b></div>
+    <div class="tile"><small id="tAmtL">ยอดเบิกเดือนนี้</small><b class="money" id="tAmt">฿0</b></div>
+  </div>
+  <div class="home-actions"><button class="btn primary block lg" data-go="checkin">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+    เช็คอินเข้าพบลูกค้า
+  </button><button class="btn ghost block" data-go="report" style="margin-top:8px">ดูรายงานเดือนนี้</button></div>
+  <div class="notice" id="setupNotice" hidden></div>
+  <h2 id="homeListH">รายการเข้าพบของฉันล่าสุด</h2>
+  <div class="list" id="homeList"></div>
+</section>
+
+<!-- CUSTOMERS -->
+<section class="view wrap" id="v-customers" hidden>
+  <div class="row"><h1 class="grow">ลูกค้า</h1><button class="btn soft sm" id="btnNewCustomer">+ เพิ่มลูกค้า</button></div>
+  <input type="search" id="custSearch" placeholder="ค้นหาชื่อบริษัท ผู้ติดต่อ หรือเบอร์โทร">
+  <div class="chips" id="stageFilter"></div>
+  <div class="list" id="custList"></div>
+</section>
+
+<!-- CHECK-IN -->
+<section class="view wrap" id="v-checkin" hidden>
+  <div class="stack" style="gap:4px">
+    <h1>เช็คอินเข้าพบลูกค้า</h1>
+    <p class="sub">กรอกที่หน้างาน ส่งครั้งเดียวได้ทั้งรายงานและค่าเดินทาง</p>
+  </div>
+  <form id="fCheckin" class="stack" novalidate>
+    <div class="card stack">
+      <div class="step"><i>1</i><b>ลูกค้าที่เข้าพบ</b></div>
+      <label class="f">ชื่อบริษัทลูกค้า
+        <input type="text" id="ciCustomer" list="dlCustomers" autocomplete="off" placeholder="เช่น บจก. เอบีซี อินดัสเตรียล" required>
+        <datalist id="dlCustomers"></datalist>
+      </label>
+      <label class="f">ผู้ติดต่อ / แผนก
+        <input type="text" id="ciContact" placeholder="เช่น คุณสมชาย (ซ่อมบำรุง)">
+      </label>
+      <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">วัตถุประสงค์</span><div class="chips" id="ciPurpose"></div></div>
+    </div>
+
+    <div class="card stack">
+      <div class="step"><i>2</i><b>ตำแหน่งที่เช็คอิน</b></div>
+      <button type="button" class="btn primary block" id="btnGps">บันทึกตำแหน่งปัจจุบัน</button>
+      <div class="gps" id="gpsBox">ยังไม่ได้บันทึกตำแหน่ง</div>
+      <details id="manualGps">
+        <summary>ใส่พิกัดเอง วาง Plus Code หรือลิงก์ Google Maps</summary>
+        <div class="stack" style="margin-top:10px">
+          <p class="sub">ใน Google Maps กดค้างที่จุดสีน้ำเงิน (ตำแหน่งของคุณ) แล้วคัดลอกตัวเลขพิกัดที่ขึ้นด้านบน เช่น 13.7563, 100.5018 หรือคัดลอก Plus Code จากหน้าสถานที่ เช่น RJP4+XC หรือวางลิงก์แบบเต็มที่มีตัวเลขพิกัด</p>
+          <input type="text" id="ciManual" placeholder="13.7563, 100.5018 หรือ RJP4+XC">
+          <button type="button" class="btn ghost sm" id="btnManual">ใช้พิกัดนี้</button>
+        </div>
+      </details>
+    </div>
+
+    <div class="card stack">
+      <div class="step"><i>3</i><b>รายงานผลการเข้าพบ</b></div>
+      <label class="f">สรุปสิ่งที่คุยหรือทำที่หน้างาน
+        <textarea id="ciReport" placeholder="เช่น เข้าวัดหน้างานและเก็บตัวอย่างวาล์วไปเทียบสเปค"></textarea>
+      </label>
+      <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">สถานะโอกาสขายหลังเข้าพบ</span><div class="chips" id="ciStage"></div></div>
+      <label class="f">มูลค่าโอกาสขาย (บาท)<span class="hint">ไม่บังคับ ใส่ยอดที่คาดว่าจะเสนอหรือปิดได้ เพื่อให้รายงานรวมมูลค่าได้</span><input type="number" id="ciValue" inputmode="decimal" min="0" step="1" placeholder="0"></label>
+      <div class="row" style="align-items:flex-end">
+        <label class="f grow">สิ่งที่ต้องทำต่อ<input type="text" id="ciNext" placeholder="เช่น ส่งใบเสนอราคา"></label>
+        <label class="f" style="width:150px">ภายในวันที่<input type="date" id="ciNextDate"></label>
+      </div>
+      <div class="stack" style="gap:8px">
+        <span style="font-size:14px;font-weight:500">รูปหน้างาน / ชิ้นงาน <span class="sub" style="display:inline">(สูงสุด 3 รูป)</span></span>
+        <div class="photos" id="ciPhotos"></div>
+        <label class="btn ghost sm" style="align-self:flex-start">
+          ถ่ายรูปหรือเลือกรูป
+          <input type="file" id="ciPhotoInput" accept="image/*" capture="environment" multiple hidden>
+        </label>
+      </div>
+    </div>
+
+    <div class="card stack">
+      <div class="step"><i>4</i><b>ค่าเดินทาง</b></div>
+      <div class="chips" id="ciVehicle"></div>
+      <label class="f" id="wrapPlate">ทะเบียนรถ<input type="text" id="ciPlate" placeholder="เช่น 1กข 1234"></label>
+      <div id="kmBlock" class="stack">
+        <div class="notice" id="estBox"></div>
+        <label class="f">ระยะทางขาไปตาม Google Maps (กม.)
+          <span class="hint">ระบบคูณ 2 เป็นระยะไป-กลับบริษัทให้เอง</span>
+          <input type="number" id="ciKm" inputmode="decimal" min="0" step="0.1" placeholder="0.0">
+        </label>
+      </div>
+      <div id="fuelBlock" class="stack" hidden>
+        <label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="ciFuel" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+        <label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="ciReceipt"></label>
+      </div>
+      <label class="f">ค่าทางด่วน / ที่จอดรถ (บาท)
+        <span class="hint">เบิกตามใบเสร็จจริง ถ่ายรูปใบเสร็จแนบในข้อ 3 ได้</span>
+        <input type="number" id="ciToll" inputmode="decimal" min="0" step="0.01" placeholder="0.00">
+      </label>
+      <div class="calc" id="calcBox"></div>
+    </div>
+
+    <ul class="flags" id="ciFlags"></ul>
+    <button type="submit" class="btn primary block lg" id="btnSubmit">ส่งรายงานและขอเบิก</button>
+    <button type="button" class="btn ghost block" id="btnReset">ล้างฟอร์ม</button>
+  </form>
+</section>
+
+<!-- CLAIMS -->
+<section class="view wrap" id="v-claims" hidden>
+  <h1>สรุปการเบิกค่าเดินทาง</h1>
+  <div class="row">
+    <input type="month" id="clMonth" style="width:auto;flex:1">
+    <select id="clWho" style="width:auto;flex:1"></select>
+  </div>
+  <div class="tiles">
+    <div class="tile"><small>ระยะทางรวม</small><b id="clKm">0</b></div>
+    <div class="tile"><small>ค่าน้ำมัน</small><b id="clFuel">0</b></div>
+    <div class="tile"><small>รวมเบิกสุทธิ</small><b class="money" id="clTotal">0</b></div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>วัน/เวลา</th><th>พนักงาน</th><th>ลูกค้า</th><th class="n">ไป-กลับ กม.</th><th class="n">อัตรา</th><th class="n">ค่าน้ำมัน</th><th class="n">ทางด่วน/จอด</th><th class="n">รวม</th><th>สถานะ</th></tr></thead>
+    <tbody id="clBody"></tbody>
+    <tfoot id="clFoot"></tfoot>
+  </table></div>
+  <p class="sub">ยอดรวมนับเฉพาะรายการที่ไม่ถูกตีกลับ คอลัมน์ตรงกับแบบฟอร์มที่ 2 ของระเบียบ</p>
+  <div class="row">
+    <button class="btn soft grow" id="btnCsv">บันทึกไฟล์ CSV</button>
+    <button class="btn ghost grow" id="btnCopy">คัดลอกตาราง</button>
+  </div>
+  <textarea id="csvFallback" hidden readonly></textarea>
+</section>
+
+<!-- TEAM (manager) -->
+<section class="view wrap" id="v-team" hidden>
+  <div class="row"><h1 class="grow">ทีมขาย</h1><input type="month" id="tmMonth" style="width:auto"></div>
+  <p class="sub">ภาพรวมพนักงานขายแต่ละคนในเดือนที่เลือก แตะชื่อเพื่อดูรายการเข้าพบและยอดเบิกของคนนั้น</p>
+  <div class="tiles" id="tmTiles">
+    <div class="tile"><small>พนักงานขาย</small><b id="tmN">0</b></div>
+    <div class="tile"><small>เข้าพบรวม</small><b id="tmV">0</b></div>
+    <div class="tile"><small>ระยะทางรวม</small><b id="tmKm">0</b></div>
+    <div class="tile"><small>ยอดเบิกรวม (บาท)</small><b class="money" id="tmAmt">0</b></div>
+  </div>
+  <div class="list tm-cards" id="tmCards"></div>
+  <div class="tablewrap tm-table"><table>
+    <thead><tr><th>พนักงาน</th><th>แผนก</th><th class="n">เข้าพบ</th><th class="n">ลูกค้า</th><th class="n">ระยะทาง กม.</th><th class="n">ยอดเบิก</th><th class="n">รอตรวจ</th><th>เช็คอินล่าสุด</th></tr></thead>
+    <tbody id="tmBody"></tbody>
+  </table></div>
+  <p class="sub" id="tmHint"></p>
+</section>
+
+<!-- REPORT -->
+<section class="view wrap" id="v-report" hidden>
+  <div class="stack" style="gap:4px"><h1 id="rpTitle">รายงาน</h1><p class="sub" id="rpSub"></p></div>
+  <div class="row"><input type="month" id="rpMonth" style="width:auto;flex:1;max-width:220px"><select id="rpWho" style="width:auto;flex:1;max-width:260px" hidden></select></div>
+  <div class="tiles" id="rpTiles"></div>
+  <div class="rep-grid" id="rpBody"></div>
+  <div class="row"><button class="btn ghost" id="btnRepCopy">คัดลอกสรุปเป็นข้อความ</button></div>
+  <textarea id="repFallback" hidden readonly></textarea>
+</section>
+
+<!-- APPROVE -->
+<section class="view wrap" id="v-approve" hidden>
+  <h1>ตรวจและอนุมัติ</h1>
+  <p class="sub" id="apNote"></p>
+  <div class="chips" id="apFilter"></div>
+  <div class="list" id="apList"></div>
+</section>
+</main>
+
+<nav class="tabs" aria-label="เมนูหลัก"><div class="wrap">
+  <button data-go="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>หน้าแรก</button>
+  <button data-go="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M8 8h3M8 12h3M8 16h3M2 21h20"/></svg>ลูกค้า</button>
+  <button data-go="checkin" class="fab"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>เช็คอิน</button>
+  <button data-go="team" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.2 3.2 0 0 1 0 6.3M18 14.2c1.8.8 3 2.6 3 4.8"/></svg>ทีมขาย</button>
+  <button data-go="claims" class="desk-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>เบิก</button>
+  <button data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
+  <button data-go="approve" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>อนุมัติ<span class="badge" id="apBadge" hidden>0</span></button>
+</div></nav>
+
+<div class="sheet" id="sheet" hidden><div class="panel" id="sheetPanel"></div></div>
+<div class="confirm" id="confirm" hidden role="dialog" aria-modal="true"><div class="box"><h3 id="cfTitle"></h3><p id="cfBody"></p><div class="acts"><button class="btn ghost" id="cfNo">ยกเลิก</button><button class="btn primary" id="cfYes">ยืนยัน</button></div></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+// ---------- constants ----------
+const PURPOSES = ['เข้าพบลูกค้า / สำรวจหน้างาน','ซ่อมบำรุง / ทดสอบระบบ','รับ-ส่งสินค้า / อะไหล่ / เอกสาร','ติดต่อหน่วยงานราชการ / ธนาคาร','อื่นๆ'];
+const STAGES = ['ติดต่อใหม่','สำรวจ / นำเสนอ','เสนอราคา','ต่อรอง','ปิดการขาย','ไม่ได้งาน'];
+const VEHICLES = { car:'รถยนต์ส่วนตัว', moto:'มอเตอร์ไซค์ส่วนตัว', company:'รถส่วนกลางบริษัท' };
+const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ' };
+const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:7, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
+const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n2 = v => (Math.round((+v || 0) * 100) / 100);
+const fmtB = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtKm = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const pad = x => String(x).padStart(2, '0');
+const dt = ms => { const d = new Date(ms); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${String(d.getFullYear()+543).slice(-2)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const ymOf = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
+const dayKey = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const ref = v => { const d = new Date(v.createdAt); return `V-${String(d.getFullYear()).slice(-2)}${pad(d.getMonth()+1)}${pad(d.getDate())}-${v.id.slice(-4).toUpperCase()}`; };
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
+function haversineKm(a, b, c, d) { const R = 6371, r = x => x * Math.PI / 180; const dLa = r(c - a), dLo = r(d - b); const h = Math.sin(dLa/2)**2 + Math.cos(r(a))*Math.cos(r(c))*Math.sin(dLo/2)**2; return 2 * R * Math.asin(Math.sqrt(h)); }
+function parseCoords(raw) {
+  let s = String(raw || ''); try { s = decodeURIComponent(s); } catch {}
+  const pats = [/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/, /@(-?\d+\.\d+),\s*(-?\d+\.\d+)/, /[?&](?:q|query|ll|destination|center)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/, /(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/];
+  for (const p of pats) { const m = s.match(p); if (m) { const la = +m[1], lo = +m[2]; if (Math.abs(la) <= 90 && Math.abs(lo) <= 180) return { lat: la, lng: lo }; } }
+  return decodePlusCode(s, (typeof S !== 'undefined' && officeSet()) ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null);
+}
+// Google Plus Code (Open Location Code) → lat/lng. Short codes such as "RJP4+XC" are recovered around the office, or Bangkok when no office is set.
+function decodePlusCode(raw, ref) {
+  const A = '23456789CFGHJMPQRVWX', RES = [20, 1, .05, .0025, .000125];
+  const m = String(raw || '').toUpperCase().match(/(?:^|[^A-Z0-9])([23456789CFGHJMPQRVWX]{2,8}\+[23456789CFGHJMPQRVWX]{2,3})(?![A-Z0-9])/); if (!m) return null;
+  const head = m[1].split('+')[0], tail = m[1].split('+')[1]; if (head.length % 2) return null;
+  let code = head + tail, size = 0;
+  const r = ref || { lat: 13.7563, lng: 100.5018 };
+  if (head.length < 8) {
+    const pad = 8 - head.length;
+    let la = r.lat + 90, lo = r.lng + 180, enc = '';
+    for (let i = 0; i < 4; i++) { const li = Math.floor(la / RES[i]), gi = Math.floor(lo / RES[i]); enc += A[li] + A[gi]; la -= li * RES[i]; lo -= gi * RES[i]; }
+    code = enc.slice(0, pad) + code; size = RES[pad / 2 - 1];
+  }
+  let lat = -90, lng = -180;
+  for (let i = 0; i < 5; i++) { lat += A.indexOf(code[2 * i]) * RES[i]; lng += A.indexOf(code[2 * i + 1]) * RES[i]; }
+  let rl = .000125, rg = .000125;
+  for (let i = 10; i < code.length; i++) { rl /= 5; rg /= 4; const idx = A.indexOf(code[i]); lat += Math.floor(idx / 4) * rl; lng += (idx % 4) * rg; }
+  lat += rl / 2; lng += rg / 2;
+  if (size) { if (lat - r.lat > size / 2) lat -= size; else if (r.lat - lat > size / 2) lat += size; if (lng - r.lng > size / 2) lng -= size; else if (r.lng - lng > size / 2) lng += size; }
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return { lat: +lat.toFixed(6), lng: +lng.toFixed(6) };
+}
+const mapsPin = (la, lo) => `https://www.google.com/maps/search/?api=1&query=${la},${lo}`;
+const mapsDir = (a, b, c, d) => `https://www.google.com/maps/dir/?api=1&origin=${a},${b}&destination=${c},${d}&travelmode=driving`;
+function confirmBox({ title, body = '', ok = 'ยืนยัน', danger = false }) {
+  return new Promise(res => {
+    const el = $('#confirm'), yes = $('#cfYes'), no = $('#cfNo');
+    $('#cfTitle').textContent = title; $('#cfBody').textContent = body; yes.textContent = ok; yes.className = 'btn ' + (danger ? 'danger' : 'primary');
+    el.hidden = false; setTimeout(() => no.focus(), 0);
+    const done = v => { el.hidden = true; yes.onclick = no.onclick = el.onclick = null; document.removeEventListener('keydown', key); res(v); };
+    const key = e => { if (e.key === 'Escape') done(false); };
+    yes.onclick = () => done(true); no.onclick = () => done(false); el.onclick = e => { if (e.target === el) done(false); }; document.addEventListener('keydown', key);
+  });
+}
+let toastT; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+// ---------- state ----------
+const S = { mode: 'local', db: null, user: null, myId: null, admin: true, canWrite: true,
+  staff: {}, visitsBy: {}, visits: [], customers: [], approvals: {}, settings: { ...DEFAULT_SETTINGS }, view: 'home',
+  me: lsGet(LS_ME, { name: '', code: '', dept: '', vehicle: 'car', plate: '' }) };
+let local = lsGet(LS_KEY, { visits: [], customers: [], approvals: {}, settings: null });
+function loadLocal() { S.visits = [...local.visits].sort((a,b) => b.createdAt - a.createdAt); S.customers = [...local.customers]; S.approvals = { ...local.approvals }; S.settings = { ...DEFAULT_SETTINGS, ...(local.settings || {}) }; }
+loadLocal();
+
+// ---------- store ----------
+const store = {
+  async saveVisit(v) { if (S.db) { if (!v.createdBy) throw { code: 'no_id' }; return S.db.collection('visits/' + v.createdBy + '/items').doc(v.id).set(v); } local.visits = local.visits.filter(x => x.id !== v.id).concat(v); persist(); },
+  async deleteVisit(v) { if (S.db) return S.db.collection('visits/' + (v.createdBy || 'example') + '/items').doc(v.id).delete(); local.visits = local.visits.filter(x => x.id !== v.id); persist(); },
+  async saveStaff(p) { lsSet(LS_ME, S.me); if (S.db && S.myId) return S.db.doc('staff/' + S.myId).set(p); },
+  async saveCustomer(c) { if (S.db) return S.db.collection('customers').doc(c.id).set(c); local.customers = local.customers.filter(x => x.id !== c.id).concat(c); persist(); },
+  async setApproval(id, a) { if (S.db) return S.db.collection('approvals').doc(id).set(a); local.approvals[id] = a; persist(); },
+  async saveSettings(s) { if (S.db) return S.db.doc('config/settings').set(s); local.settings = s; persist(); },
+};
+function persist() { if (!lsSet(LS_KEY, local)) toast('เครื่องนี้บันทึกข้อมูลไม่ได้ (พื้นที่เต็มหรือโหมดส่วนตัว)'); loadLocal(); renderAll(); }
+
+async function connect() {
+  if (!window.claude || !claude.use) { applyRole(); return; }
+  const [db, user] = await Promise.all([claude.use('db').catch(() => null), claude.use('user').catch(() => null)]);
+  if (user) {
+    S.user = user;
+    try { S.myId = await user.id(); } catch {}
+    try { S.admin = !!(await user.canEdit()); } catch { S.admin = false; }
+    try { const w = await user.can('data.write'); S.canWrite = w !== false; } catch {}
+    if (!S.me.name) { try { const me = await user.me(); if (me && me.name) { S.me.name = me.name; lsSet(LS_ME, S.me); } } catch {} }
+  }
+  applyRole();
+  if (!db || !S.myId) { renderAll(); return; }
+  S.db = db; S.mode = 'shared';
+  S.visits = []; S.customers = []; S.approvals = {};
+  const err = e => { if (e && e.code === 'revoked') toast('สิทธิ์เข้าถึงข้อมูลกลางถูกเปลี่ยน'); };
+  const subs = {};
+  const watchVisits = id => {
+    if (subs[id] || Object.keys(subs).length >= MAX_STAFF_SUBS) return;
+    subs[id] = db.collection('visits/' + id + '/items').orderBy('createdAt', 'desc').limit(1000).onSnapshot(sn => {
+      S.visitsBy[id] = sn.docs.map(d => ({ ...d.data(), id: d.id }));
+      S.visits = Object.values(S.visitsBy).flat().sort((a, b) => b.createdAt - a.createdAt); renderAll();
+    }, err);
+  };
+  watchVisits(S.myId);
+  db.doc('staff/' + S.myId).onSnapshot(sn => {
+    if (sn.exists) { const d = sn.data(); const merged = { ...d, ...Object.fromEntries(Object.entries(S.me).filter(([, v]) => v)) }; S.me = merged; lsSet(LS_ME, S.me); renderAll(); }
+    else if (S.me.name) store.saveStaff(staffDoc()).catch(() => {});
+  }, err);
+  if (S.admin) db.collection('staff').limit(200).onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { m[d.id] = d.data(); watchVisits(d.id); }); S.staff = m; renderAll(); }, err);
+  db.collection('customers').limit(1000).onSnapshot(sn => { S.customers = sn.docs.map(d => ({ ...d.data(), id: d.id })); renderAll(); }, err);
+  db.collection('approvals').limit(1000).onSnapshot(sn => { const m = {}; sn.docs.forEach(d => m[d.id] = d.data()); S.approvals = m; renderAll(); }, err);
+  db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
+  renderAll();
+}
+function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', updatedAt: Date.now() }; }
+function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); document.body.classList.toggle('role-sales', !S.admin); }
+const staffKey = v => v.createdBy || ('n:' + v.staffName);
+
+// ---------- derived ----------
+const statusOf = v => (S.approvals[v.id] && S.approvals[v.id].status) || 'pending';
+const isMine = v => S.myId ? v.createdBy === S.myId : (S.me.name && v.staffName === S.me.name);
+function custByName(name) { const k = String(name || '').trim().toLowerCase(); return S.customers.find(c => c.name.trim().toLowerCase() === k); }
+function officeSet() { return S.settings.officeLat != null && S.settings.officeLng != null; }
+function estimateRoundTrip(lat, lng) { if (!officeSet() || lat == null) return null; return Math.round(haversineKm(S.settings.officeLat, S.settings.officeLng, lat, lng) * 2 * S.settings.roadFactor * 10) / 10; }
+function auditFlags(v) {
+  const f = [];
+  if (!v.gps) f.push('ไม่มีพิกัดเช็คอิน');
+  else if (v.gps.source === 'manual') f.push('พิกัดใส่เอง ไม่ได้จับจากเครื่อง');
+  else if (v.gps.acc > 200) f.push(`พิกัดคลาดเคลื่อนสูง ±${Math.round(v.gps.acc)} ม.`);
+  if (v.siteDistM != null && v.siteDistM > S.settings.siteRadiusM) f.push(`เช็คอินห่างจากที่ตั้งลูกค้า ${fmtKm(v.siteDistM/1000)} กม.`);
+  if (!v.photos || !v.photos.length) f.push('ไม่มีรูปหน้างาน');
+  if (!v.report || v.report.trim().length < 10) f.push('รายงานสั้นเกินไป');
+  if (v.vehicle !== 'company' && v.kmEstimate && v.kmRoundTrip > v.kmEstimate * (1 + S.settings.flagPct / 100)) f.push(`ระยะเบิกสูงกว่าที่ระบบประมาณ ${Math.round((v.kmRoundTrip / v.kmEstimate - 1) * 100)}% (ประมาณ ${fmtKm(v.kmEstimate)} กม.)`);
+  if (v.vehicle === 'company' && !v.receiptNo && v.fuelAmount > 0) f.push('ไม่มีเลขที่ใบเสร็จน้ำมัน');
+  return f;
+}
+
+// ---------- navigation ----------
+function go(view) {
+  S.view = view;
+  document.querySelectorAll('section.view').forEach(s => s.hidden = s.id !== 'v-' + view);
+  document.querySelectorAll('nav.tabs button').forEach(b => b.dataset.go === view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  window.scrollTo(0, 0);
+  if (view === 'checkin') updateCalc();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); } });
+
+// ---------- render ----------
+function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); }
+function renderHeader() {
+  const nm = S.me.name || 'ยังไม่ได้ตั้งชื่อ';
+  $('#whoLine').textContent = `${nm} · ${S.admin ? 'ผู้จัดการฝ่ายขาย' : 'พนักงานขาย'} · ${S.mode === 'shared' ? 'ข้อมูลกลางของทีม' : 'บันทึกในเครื่องนี้'}`;
+  $('#hello').textContent = S.me.name ? `สวัสดี ${S.me.name}` : 'สวัสดี';
+  const d = new Date(); $('#todayLine').textContent = d.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const notes = [];
+  if (!S.me.name) notes.push('<b>ตั้งชื่อพนักงานก่อน</b> กดปุ่มตั้งค่ามุมขวาบน ชื่อจะติดไปกับทุกรายงาน');
+  if (!officeSet()) notes.push(`<b>ยังไม่ได้ปักพิกัดบริษัท</b> ระบบจึงยังประมาณระยะทางเพื่อตรวจสอบไม่ได้${S.admin ? ' ตั้งได้ที่ปุ่มตั้งค่า' : ' แจ้งผู้ดูแลให้ตั้งค่า'}`);
+  $('#setupNotice').hidden = !notes.length; $('#setupNotice').innerHTML = notes.join('<br>');
+}
+function visitItem(v, opts = {}) {
+  const st = statusOf(v);
+  return `<button class="item" data-visit="${esc(v.id)}"><div class="main">
+    <div class="t">${esc(v.customer)} ${v.isExample ? '<span class="pill ex">ตัวอย่าง</span>' : ''}</div>
+    <div class="m">${dt(v.createdAt)}${opts.staff ? ' · ' + esc(v.staffName) : ''} · ${esc(v.contact || '-')}</div>
+    <div class="m">${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. × ' + v.rate} ${opts.flags && auditFlags(v).length ? '· <span style="color:var(--warn)">ต้องดู ' + auditFlags(v).length + ' จุด</span>' : ''}</div>
+  </div><div class="stack" style="gap:6px;align-items:flex-end"><span class="amt">฿${fmtB(v.total)}</span><span class="pill ${st}">${STATUS[st]}</span></div></button>`;
+}
+function renderHome() {
+  const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = S.admin;
+  const scope = mgr ? S.visits.filter(v => !v.isExample) : S.visits.filter(isMine);
+  const month = scope.filter(v => ymOf(v.createdAt) === ym && statusOf(v) !== 'rejected');
+  $('#tPend').textContent = S.visits.filter(v => statusOf(v) === 'pending').length;
+  $('#tTodayL').textContent = mgr ? 'ทีมเข้าพบวันนี้' : 'เข้าพบวันนี้';
+  $('#tKmL').textContent = mgr ? 'ระยะทางทีมเดือนนี้' : 'ระยะทางเดือนนี้';
+  $('#tAmtL').textContent = mgr ? 'ยอดเบิกทีมเดือนนี้' : 'ยอดเบิกเดือนนี้';
+  $('#tToday').textContent = scope.filter(v => dayKey(v.createdAt) === dk).length;
+  $('#tKm').textContent = fmtKm(month.reduce((s, v) => s + (v.kmRoundTrip || 0), 0)) + ' กม.';
+  $('#tAmt').textContent = '฿' + Math.round(month.reduce((s, v) => s + (v.total || 0), 0)).toLocaleString('th-TH');
+  $('#homeListH').textContent = mgr ? 'รายการเข้าพบล่าสุดของทีม' : 'รายการเข้าพบของฉันล่าสุด';
+  const list = (scope.length ? scope : S.visits.filter(v => v.isExample)).slice(0, 8);
+  $('#homeList').innerHTML = list.length ? list.map(v => visitItem(v, { staff: mgr })).join('') + (scope.length ? '' : '<p class="sub">ยังไม่มีรายการจริง ด้านบนเป็นรายการตัวอย่างจากแบบฟอร์ม</p>') : '<div class="empty">ยังไม่มีรายการเข้าพบ<br>กดปุ่มเช็คอินเมื่อถึงหน้างานลูกค้า</div>';
+}
+function teamRows(ym) {
+  const by = {};
+  Object.entries(S.staff).forEach(([id, p]) => by[id] = { id, name: p.name || 'ไม่ระบุชื่อ', dept: p.dept || '', code: p.code || '', vs: [], last: null });
+  S.visits.forEach(v => { const k = staffKey(v); if (!by[k]) by[k] = { id: k, name: v.staffName, dept: v.dept || '', code: v.staffCode || '', vs: [], last: null };
+    const r = by[k]; if (!r.last || r.last < v.createdAt) r.last = v.createdAt; if (ymOf(v.createdAt) === ym) r.vs.push(v); });
+  return Object.values(by).map(r => { const live = r.vs.filter(v => statusOf(v) !== 'rejected');
+    return { ...r, n: r.vs.length, cust: new Set(r.vs.map(v => v.customer.trim().toLowerCase())).size, km: live.reduce((s, v) => s + (v.kmRoundTrip || 0), 0), amt: live.reduce((s, v) => s + (v.total || 0), 0), pend: r.vs.filter(v => statusOf(v) === 'pending').length, ex: r.vs.length > 0 && r.vs.every(v => v.isExample) || r.id === 'example' }; })
+    .sort((a, b) => (a.ex - b.ex) || (b.amt - a.amt) || a.name.localeCompare(b.name, 'th'));
+}
+function renderTeam() {
+  if (!$('#tmMonth').value) $('#tmMonth').value = ymOf(Date.now());
+  const rows = teamRows($('#tmMonth').value), real = rows.filter(r => !r.ex), max = Math.max(1, ...rows.map(r => r.amt));
+  $('#tmN').textContent = real.length; $('#tmV').textContent = real.reduce((s, r) => s + r.n, 0);
+  $('#tmKm').textContent = fmtKm(real.reduce((s, r) => s + r.km, 0)); $('#tmAmt').textContent = fmtB(real.reduce((s, r) => s + r.amt, 0));
+  const exP = r => r.ex ? ' <span class="pill ex">ตัวอย่าง</span>' : '';
+  $('#tmCards').innerHTML = rows.length ? rows.map(r => `<button class="item" data-staff="${esc(r.id)}"><div class="main">
+      <div class="t">${esc(r.name)}${exP(r)}</div><div class="m">${esc([r.code, r.dept].filter(Boolean).join(' · ') || 'พนักงานขาย')} · เข้าพบ ${r.n} ครั้ง · ${fmtKm(r.km)} กม.</div>
+      <div class="m">${r.last ? 'เช็คอินล่าสุด ' + dt(r.last) : 'ยังไม่เคยเช็คอิน'}</div><div class="bar-mini"><i style="width:${Math.round(r.amt / max * 100)}%"></i></div></div>
+      <div class="stack" style="gap:6px;align-items:flex-end"><span class="amt">฿${fmtB(r.amt)}</span>${r.pend ? `<span class="pill pending">รอตรวจ ${r.pend}</span>` : ''}</div></button>`).join('')
+    : '<div class="empty">ยังไม่มีพนักงานขายในระบบ<br>เมื่อเซลส์เปิดลิงก์และตั้งชื่อในโปรไฟล์ จะขึ้นที่นี่</div>';
+  $('#tmBody').innerHTML = rows.length ? rows.map(r => `<tr data-staff="${esc(r.id)}" style="cursor:pointer"><td><b>${esc(r.name)}</b>${exP(r)}${r.code ? '<br><span class="sub">' + esc(r.code) + '</span>' : ''}</td><td>${esc(r.dept || '-')}</td>
+      <td class="n">${r.n}</td><td class="n">${r.cust}</td><td class="n">${fmtKm(r.km)}</td><td class="n">${fmtB(r.amt)}</td><td class="n">${r.pend ? `<span class="pill pending">${r.pend}</span>` : '-'}</td><td>${r.last ? dt(r.last) : '-'}</td></tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">ยังไม่มีพนักงานขายในระบบ</td></tr>';
+  $('#tmHint').textContent = S.mode === 'shared' ? 'รายชื่อมาจากทุกคนที่เปิดลิงก์นี้และตั้งชื่อในโปรไฟล์แล้ว' : 'ตอนนี้เป็นข้อมูลในเครื่องนี้เท่านั้น';
+}
+function openStaff(id) {
+  const ym = $('#tmMonth').value, r = teamRows(ym).find(x => x.id === id); if (!r) return;
+  const vs = [...r.vs].sort((a, b) => b.createdAt - a.createdAt);
+  openSheet(`${bar(esc(r.name))}
+    <p class="sub">${esc([r.code, r.dept].filter(Boolean).join(' · ') || 'พนักงานขาย')} · เดือน ${esc(ym)}</p>
+    <div class="tiles"><div class="tile"><small>เข้าพบ</small><b>${r.n}</b></div><div class="tile"><small>ระยะทาง กม.</small><b>${fmtKm(r.km)}</b></div><div class="tile"><small>ยอดเบิก</small><b class="money">${fmtB(r.amt)}</b></div></div>
+    <div class="row"><button class="btn soft grow" data-reportfor="${esc(r.id)}">ดูรายงานของคนนี้</button><button class="btn ghost grow" data-claimsfor="${esc(r.id)}">สรุปเบิกและ CSV</button></div>
+    <h2>รายการเข้าพบเดือนนี้</h2><div class="list" style="display:flex">${vs.length ? vs.map(v => visitItem(v, { flags: true })).join('') : '<div class="empty">ไม่มีรายการในเดือนนี้</div>'}</div>`);
+}
+// ---------- reports ----------
+const ckey = n => String(n || '').trim().toLowerCase();
+const sumBy = (arr, k) => arr.reduce((s, v) => s + (+v[k] || 0), 0);
+const OPEN_STAGES = STAGES.slice(0, 4);
+function peopleOptions() {
+  const people = {}; Object.entries(S.staff).forEach(([id, p]) => { if (id !== 'example') people[id] = p.name || 'ไม่ระบุชื่อ'; });
+  S.visits.forEach(v => { if (v.isExample) return; const k = staffKey(v); if (!people[k]) people[k] = v.staffName; });
+  return Object.entries(people).sort((a, b) => a[1].localeCompare(b[1], 'th'));
+}
+function reportScope(ym) {
+  const who = S.admin ? ($('#rpWho').value || '__team') : '__me';
+  const real = S.visits.filter(v => !v.isExample), base = real.length ? real : S.visits;
+  const all = who === '__team' ? base : who === '__me' ? base.filter(isMine) : base.filter(v => staffKey(v) === who);
+  const keys = new Set(all.map(v => ckey(v.customer)));
+  const custs = who === '__team' ? S.customers.filter(c => real.length ? !c.isExample : true) : S.customers.filter(c => keys.has(ckey(c.name)) || (who === '__me' && S.myId && c.createdBy === S.myId));
+  const lastBy = {}, firstBy = {}; base.forEach(v => { const k = ckey(v.customer); if (!lastBy[k] || lastBy[k].createdAt < v.createdAt) lastBy[k] = v; if (!firstBy[k] || firstBy[k].createdAt > v.createdAt) firstBy[k] = v; });
+  return { who, all, custs, month: all.filter(v => ymOf(v.createdAt) === ym), lastBy, firstBy, example: !real.length && S.visits.length > 0 };
+}
+function tile(label, value, detail, cls = '') { return `<div class="tile"><small>${label}</small><b class="${cls}">${value}</b>${detail ? `<span class="d">${detail}</span>` : ''}</div>`; }
+function renderReport() {
+  if (!$('#rpMonth').value) $('#rpMonth').value = ymOf(Date.now());
+  const ym = $('#rpMonth').value, sel = $('#rpWho');
+  sel.hidden = !S.admin;
+  if (S.admin) { const cur = sel.value || '__team'; sel.innerHTML = '<option value="__team">ทั้งทีม</option><option value="__me">ของฉัน</option>' + peopleOptions().map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join(''); sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__team'; }
+  const R = reportScope(ym), team = R.who === '__team', { month, custs, lastBy, firstBy } = R;
+  const [yy, mm] = ym.split('-').map(Number), days = new Date(yy, mm, 0).getDate(), today = new Date(), isCur = ymOf(today.getTime()) === ym;
+  const live = month.filter(v => statusOf(v) !== 'rejected'), n = month.length;
+  const people = team ? new Set(month.map(staffKey)) : null;
+  const nPeople = team ? Math.max(1, people.size, peopleOptions().length) : 1;
+  const target = (+S.settings.visitTarget || 0) * nPeople, pct = target ? Math.min(100, Math.round(n / target * 100)) : 0;
+  const amt = sumBy(live, 'total'), km = sumBy(live, 'kmRoundTrip'), pendAmt = sumBy(month.filter(v => statusOf(v) === 'pending'), 'total');
+  const custMonth = new Set(month.map(v => ckey(v.customer))).size;
+  const newCust = Object.values(firstBy).filter(v => ymOf(v.createdAt) === ym && month.includes(v)).length;
+  const openC = custs.filter(c => OPEN_STAGES.includes(c.stage)), openVal = sumBy(openC, 'dealValue');
+  const won = month.filter(v => v.stage === 'ปิดการขาย'), wonVal = won.reduce((s, v) => s + (+v.dealValue || +(custByName(v.customer) || {}).dealValue || 0), 0);
+  const nameOf = R.who === '__me' ? (S.me.name || 'ของฉัน') : team ? 'ทั้งทีม' : (sel.options[sel.selectedIndex] || {}).text || '';
+  $('#rpTitle').textContent = team ? 'รายงานทีมขาย' : 'รายงานการขาย';
+  $('#rpSub').textContent = `${nameOf} · ${new Date(yy, mm - 1, 1).toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })}${R.example ? ' · กำลังแสดงข้อมูลตัวอย่าง' : ''}`;
+  $('#rpTiles').innerHTML = [
+    tile(team ? `เข้าพบรวม / เป้า ${nPeople} คน` : 'เข้าพบ / เป้าเดือนนี้', `${n}<span class="sub" style="display:inline;font-size:14px;font-weight:400"> / ${target}</span>`, `<span class="meter"><i class="${pct >= 100 ? 'done' : ''}" style="width:${pct}%"></i></span>`),
+    tile('ลูกค้าที่เข้าพบ', custMonth, `ลูกค้าใหม่ ${newCust} ราย`),
+    tile('มูลค่าโอกาสขายที่เปิดอยู่', '฿' + fmtB(openVal).replace(/\.00$/, ''), `${openC.length} ราย`),
+    tile('ปิดการขายเดือนนี้', won.length, wonVal ? '฿' + fmtB(wonVal).replace(/\.00$/, '') : 'ไม่มีมูลค่าระบุ', 'ok-text'),
+    tile('ยอดเบิกค่าเดินทาง', '฿' + fmtB(amt).replace(/\.00$/, ''), pendAmt ? `รออนุมัติ ฿${fmtB(pendAmt).replace(/\.00$/, '')}` : 'อนุมัติครบแล้ว', 'money'),
+    tile('ค่าเดินทางต่อการเข้าพบ', n ? '฿' + fmtB(amt / n).replace(/\.00$/, '') : '-', `${fmtKm(km)} กม. รวม`),
+  ].join('');
+  // daily chart
+  const perDay = Array(days + 1).fill(0); month.forEach(v => perDay[new Date(v.createdAt).getDate()]++);
+  const mx = Math.max(1, ...perDay), half = Math.ceil(mx / 2), mxDay = perDay.indexOf(mx);
+  const cols = []; for (let d = 1; d <= days; d++) { const c = perDay[d]; const dow = new Date(yy, mm - 1, d).getDay();
+    cols.push(`<div class="col${isCur && d === today.getDate() ? ' today' : ''}" title="วันที่ ${d}: เข้าพบ ${c} ครั้ง">${c && d === mxDay ? `<span class="v">${c}</span>` : ''}<i style="height:${c / mx * 100}%${dow === 0 || dow === 6 ? ';opacity:.55' : ''}"></i></div>`); }
+  const chart = `<div class="chart"><div class="grid" style="bottom:${half / mx * 100}%">${half}</div>${cols.join('')}</div><div class="xaxis">${[1, 5, 10, 15, 20, 25, days].map(d => `<span style="left:${(d - .5) / days * 100}%">${d}</span>`).join('')}</div><p class="sub" style="margin-top:8px">แท่งจางคือวันเสาร์-อาทิตย์ แท่งที่มีกรอบเขียวคือวันนี้</p>`;
+  // pipeline
+  const stMax = Math.max(1, ...STAGES.map(st => custs.filter(c => c.stage === st).length));
+  const pipe = `<div class="hbars">${STAGES.map(st => { const cs = custs.filter(c => c.stage === st), val = sumBy(cs, 'dealValue');
+    return `<span>${esc(st)}</span><span class="trk"><i class="${st === 'ไม่ได้งาน' ? 'lost' : st === 'ปิดการขาย' ? 'won' : ''}" style="width:${cs.length / stMax * 100}%"></i></span><span class="r">${cs.length} ราย${val ? ' · ฿' + fmtB(val).replace(/\.00$/, '') : ''}</span>`; }).join('')}</div>`;
+  // follow-ups
+  const t0 = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime(), d7 = t0 + 7 * 864e5;
+  const fu = custs.filter(c => c.followUp || c.followDate).map(c => ({ c, t: c.followDate ? new Date(c.followDate + 'T00:00:00').getTime() : null })).sort((a, b) => (a.t ?? 9e15) - (b.t ?? 9e15));
+  const fuItem = x => `<button class="it" data-cust="${esc(x.c.id)}"><span><b>${esc(x.c.name)}</b><br><span class="m">${esc(x.c.followUp || 'ติดตามงาน')}${team && lastBy[ckey(x.c.name)] ? ' · ' + esc(lastBy[ckey(x.c.name)].staffName) : ''}</span></span><span class="r ${x.t != null && x.t < t0 ? 'bad' : x.t != null && x.t <= d7 ? 'warn' : ''}">${x.t == null ? 'ไม่ระบุวัน' : x.t < t0 ? 'เลยกำหนด ' + Math.round((t0 - x.t) / 864e5) + ' วัน' : x.t === t0 ? 'วันนี้' : 'อีก ' + Math.round((x.t - t0) / 864e5) + ' วัน'}</span></button>`;
+  const overdue = fu.filter(x => x.t != null && x.t < t0), soon = fu.filter(x => x.t != null && x.t >= t0 && x.t <= d7), later = fu.filter(x => !(x.t != null && x.t <= d7));
+  const fuHtml = fu.length ? `<div class="mini">${[...overdue, ...soon, ...later].slice(0, 10).map(fuItem).join('')}</div>${fu.length > 10 ? `<p class="sub" style="margin-top:8px">และอีก ${fu.length - 10} รายการ ดูได้ในหน้าลูกค้า</p>` : ''}` : '<p class="sub">ไม่มีงานค้าง ระบุ "สิ่งที่ต้องทำต่อ" ตอนเช็คอินเพื่อให้ขึ้นที่นี่</p>';
+  // dormant
+  const dormant = custs.filter(c => c.stage !== 'ไม่ได้งาน').map(c => ({ c, last: (lastBy[ckey(c.name)] || {}).createdAt || null })).filter(x => x.last == null || t0 - x.last > 30 * 864e5).sort((a, b) => (a.last ?? 0) - (b.last ?? 0));
+  const dormHtml = dormant.length ? `<div class="mini">${dormant.slice(0, 8).map(x => `<button class="it" data-cust="${esc(x.c.id)}"><span><b>${esc(x.c.name)}</b><br><span class="m">${esc(x.c.stage || '')}${x.c.dealValue ? ' · ฿' + fmtB(x.c.dealValue).replace(/\.00$/, '') : ''}${team && lastBy[ckey(x.c.name)] ? ' · ' + esc(lastBy[ckey(x.c.name)].staffName) : ''}</span></span><span class="r warn">${x.last ? 'ห่าง ' + Math.round((t0 - x.last) / 864e5) + ' วัน' : 'ยังไม่เคยพบ'}</span></button>`).join('')}</div>${dormant.length > 8 ? `<p class="sub" style="margin-top:8px">และอีก ${dormant.length - 8} ราย</p>` : ''}` : '<p class="sub">ทุกรายได้เข้าพบภายใน 30 วัน</p>';
+  // travel
+  const byVeh = {}; live.forEach(v => { const k = VEHICLES[v.vehicle] || v.vehicle; byVeh[k] = byVeh[k] || { n: 0, km: 0, amt: 0 }; byVeh[k].n++; byVeh[k].km += v.kmRoundTrip || 0; byVeh[k].amt += v.total || 0; });
+  const stCount = k => month.filter(v => statusOf(v) === k).length;
+  const travel = `<dl class="kv"><dt>ระยะทางรวม</dt><dd class="num">${fmtKm(km)} กม.</dd><dt>ยอดเบิกรวม</dt><dd class="num">฿${fmtB(amt)}</dd><dt>ต่อการเข้าพบ</dt><dd class="num">${n ? '฿' + fmtB(amt / n) : '-'}</dd><dt>สถานะ</dt><dd>อนุมัติ ${stCount('approved')} · รอตรวจ ${stCount('pending')} · ตีกลับ ${stCount('rejected')}</dd>${Object.entries(byVeh).map(([k, x]) => `<dt>${esc(k)}</dt><dd class="num">${x.n} ครั้ง · ${fmtKm(x.km)} กม. · ฿${fmtB(x.amt)}</dd>`).join('')}</dl><p class="sub" style="margin-top:10px">รายละเอียดรายรายการและไฟล์ CSV อยู่ในหน้าเบิก</p>`;
+  let teamHtml = '';
+  if (team) {
+    const rows = peopleOptions().map(([k, name]) => { const vs = month.filter(v => staffKey(v) === k), lv = vs.filter(v => statusOf(v) !== 'rejected'), a = sumBy(lv, 'total');
+      return { k, name, n: vs.length, cust: new Set(vs.map(v => ckey(v.customer))).size, amt: a, per: vs.length ? a / vs.length : 0, gps: vs.length ? Math.round(vs.filter(v => v.gps && v.gps.source === 'device').length / vs.length * 100) : null, photo: vs.length ? Math.round(vs.filter(v => v.photos && v.photos.length).length / vs.length * 100) : null, flags: vs.filter(v => auditFlags(v).length).length, pend: vs.filter(v => statusOf(v) === 'pending').length, won: vs.filter(v => v.stage === 'ปิดการขาย').length }; }).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'th'));
+    const tgt = +S.settings.visitTarget || 0;
+    const pc = x => x == null ? '-' : `<span class="${x < 70 ? 'r warn' : ''}">${x}%</span>`;
+    teamHtml += `<div class="card wide"><h2>เทียบพนักงานขายรายคน</h2><div class="tablewrap" style="background:var(--sunk)"><table>
+      <thead><tr><th>พนักงาน</th><th class="n">เข้าพบ / เป้า</th><th class="n">ลูกค้า</th><th class="n">ปิดได้</th><th class="n">ยอดเบิก</th><th class="n">ต่อครั้ง</th><th class="n">พิกัดจากเครื่อง</th><th class="n">มีรูป</th><th class="n">ควรตรวจ</th><th class="n">รอตรวจ</th></tr></thead>
+      <tbody>${rows.length ? rows.map(r => `<tr data-reportfor="${esc(r.k)}" style="cursor:pointer"><td><b>${esc(r.name)}</b></td><td class="n">${r.n} / ${tgt}<div class="meter" style="width:72px;margin-left:auto"><i class="${tgt && r.n >= tgt ? 'done' : ''}" style="width:${tgt ? Math.min(100, r.n / tgt * 100) : 0}%"></i></div></td><td class="n">${r.cust}</td><td class="n">${r.won}</td><td class="n">${fmtB(r.amt)}</td><td class="n">${r.n ? fmtB(r.per) : '-'}</td><td class="n">${pc(r.gps)}</td><td class="n">${pc(r.photo)}</td><td class="n">${r.flags ? `<span class="pill pending">${r.flags}</span>` : '-'}</td><td class="n">${r.pend || '-'}</td></tr>`).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:16px">ยังไม่มีพนักงานขาย</td></tr>'}</tbody></table></div>
+      <p class="sub" style="margin-top:10px">"พิกัดจากเครื่อง" และ "มีรูป" บอกสัดส่วนรายการที่ตรวจสอบได้ ต่ำกว่า 70% จะขึ้นสีส้ม แตะชื่อเพื่อดูรายงานรายคน</p></div>`;
+    const anomalies = month.filter(v => auditFlags(v).length).sort((a, b) => auditFlags(b).length - auditFlags(a).length || b.createdAt - a.createdAt);
+    teamHtml += `<div class="card wide"><h2>รายการที่ควรตรวจ (${anomalies.length})</h2>${anomalies.length ? `<div class="list" style="display:flex">${anomalies.slice(0, 8).map(v => visitItem(v, { staff: true, flags: true })).join('')}</div>${anomalies.length > 8 ? `<p class="sub" style="margin-top:8px">และอีก ${anomalies.length - 8} รายการ ดูทั้งหมดในหน้าอนุมัติ</p>` : ''}` : '<p class="sub">ไม่พบรายการผิดปกติในเดือนนี้</p>'}</div>`;
+  }
+  $('#rpBody').innerHTML = `<div class="card wide"><h2>จำนวนเข้าพบรายวัน</h2>${chart}</div>
+    <div class="card"><h2>โอกาสขายตามขั้น (${custs.length} ราย)</h2>${pipe}</div>
+    <div class="card"><h2>ค่าเดินทางเดือนนี้</h2>${travel}</div>
+    <div class="card"><h2>งานที่ต้องติดตาม${overdue.length ? ` <span class="pill rejected">เลยกำหนด ${overdue.length}</span>` : ''}${soon.length ? ` <span class="pill pending">ใน 7 วัน ${soon.length}</span>` : ''}</h2>${fuHtml}</div>
+    <div class="card"><h2>ลูกค้าที่ขาดการติดต่อเกิน 30 วัน (${dormant.length})</h2>${dormHtml}</div>${teamHtml}`;
+  S.repText = [`รายงาน${team ? 'ทีมขาย' : 'การขาย'} ${nameOf} ${ym}`, `เข้าพบ ${n}/${target} ครั้ง · ลูกค้า ${custMonth} ราย (ใหม่ ${newCust}) · ปิดการขาย ${won.length}`, `โอกาสขายเปิดอยู่ ${openC.length} ราย มูลค่า ฿${fmtB(openVal)}`, `ค่าเดินทาง ฿${fmtB(amt)} (${fmtKm(km)} กม.) รออนุมัติ ฿${fmtB(pendAmt)}`, `งานเลยกำหนด ${overdue.length} · ใน 7 วัน ${soon.length} · ลูกค้าขาดการติดต่อ ${dormant.length}`].join('\n');
+}
+$('#btnRepCopy').addEventListener('click', () => { const t = S.repText || ''; try { navigator.clipboard.writeText(t).then(() => toast('คัดลอกสรุปแล้ว'), () => { const ta = $('#repFallback'); ta.value = t; ta.hidden = false; ta.select(); }); } catch { const ta = $('#repFallback'); ta.value = t; ta.hidden = false; } });
+
+let stageSel = 'ทั้งหมด';
+function renderCustomers() {
+  $('#stageFilter').innerHTML = ['ทั้งหมด', ...STAGES].map(s => `<button class="chip" data-stage="${esc(s)}" aria-pressed="${s === stageSel}">${esc(s)}</button>`).join('');
+  const q = $('#custSearch').value.trim().toLowerCase();
+  const lastVisit = {}; S.visits.forEach(v => { const k = v.customer.trim().toLowerCase(); if (!lastVisit[k] || lastVisit[k].createdAt < v.createdAt) lastVisit[k] = v; });
+  const rows = S.customers.filter(c => (stageSel === 'ทั้งหมด' || c.stage === stageSel) && (!q || [c.name, c.contact, c.phone].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => ((lastVisit[b.name.trim().toLowerCase()] || {}).createdAt || b.updatedAt || 0) - ((lastVisit[a.name.trim().toLowerCase()] || {}).createdAt || a.updatedAt || 0));
+  $('#custList').innerHTML = rows.length ? rows.map(c => { const lv = lastVisit[c.name.trim().toLowerCase()]; return `<button class="item" data-cust="${esc(c.id)}"><div class="main">
+      <div class="t">${esc(c.name)} ${c.isExample ? '<span class="pill ex">ตัวอย่าง</span>' : ''}</div>
+      <div class="m">${esc(c.contact || 'ยังไม่มีผู้ติดต่อ')}${c.phone ? ' · ' + esc(c.phone) : ''}</div>
+      <div class="m">${lv ? 'เข้าพบล่าสุด ' + dt(lv.createdAt) : 'ยังไม่เคยเข้าพบ'}${c.followUp ? ' · ต้องทำต่อ: ' + esc(c.followUp) : ''}</div>
+    </div>${c.stage ? `<span class="pill stage">${esc(c.stage)}</span>` : ''}</button>`; }).join('')
+    : `<div class="empty">${S.customers.length ? 'ไม่พบลูกค้าที่ตรงกับคำค้น' : 'ยังไม่มีลูกค้า<br>ลูกค้าจะถูกเพิ่มให้อัตโนมัติเมื่อเช็คอินครั้งแรก หรือกดเพิ่มลูกค้าด้านบน'}</div>`;
+}
+function renderDatalist() { $('#dlCustomers').innerHTML = S.customers.map(c => `<option value="${esc(c.name)}">`).join(''); }
+function claimsRows() {
+  const ym = $('#clMonth').value, who = $('#clWho').value;
+  return S.visits.filter(v => ymOf(v.createdAt) === ym && (who === '__all' || (who === '__me' ? isMine(v) : staffKey(v) === who))).sort((a, b) => a.createdAt - b.createdAt);
+}
+function renderClaims() {
+  if (!$('#clMonth').value) $('#clMonth').value = ymOf(Date.now());
+  const sel = $('#clWho'), cur = sel.value || '__me';
+  const people = {}; Object.entries(S.staff).forEach(([id, p]) => people[id] = p.name || 'ไม่ระบุชื่อ'); S.visits.forEach(v => { const k = staffKey(v); if (!people[k]) people[k] = v.staffName + (v.isExample ? ' (ตัวอย่าง)' : ''); });
+  sel.innerHTML = `<option value="__me">ของฉัน</option>${S.admin ? '<option value="__all">ทุกคน</option>' + Object.entries(people).sort((a, b) => a[1].localeCompare(b[1], 'th')).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('') : ''}`;
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__me';
+  const rows = claimsRows(), live = rows.filter(v => statusOf(v) !== 'rejected');
+  const sum = k => live.reduce((s, v) => s + (+v[k] || 0), 0);
+  $('#clKm').textContent = fmtKm(sum('kmRoundTrip')); $('#clFuel').textContent = fmtB(sum('fuelAmount')); $('#clTotal').textContent = fmtB(sum('total'));
+  $('#clBody').innerHTML = rows.length ? rows.map(v => { const st = statusOf(v); return `<tr data-visit="${esc(v.id)}" style="cursor:pointer${st === 'rejected' ? ';opacity:.55' : ''}">
+    <td class="num" style="white-space:nowrap">${dt(v.createdAt)}</td><td>${esc(v.staffName)}</td><td>${esc(v.customer)}</td>
+    <td class="n">${v.vehicle === 'company' ? '-' : fmtKm(v.kmRoundTrip)}</td><td class="n">${v.vehicle === 'company' ? 'ตามบิล' : fmtB(v.rate)}</td>
+    <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td><td><span class="pill ${st}">${STATUS[st]}</span></td></tr>`; }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">ไม่มีรายการในเดือนนี้</td></tr>';
+  $('#clFoot').innerHTML = rows.length ? `<tr><td colspan="3">รวม</td><td class="n">${fmtKm(sum('kmRoundTrip'))}</td><td></td><td class="n">${fmtB(sum('fuelAmount'))}</td><td class="n">${fmtB(sum('toll'))}</td><td class="n">${fmtB(sum('total'))}</td><td></td></tr>` : '';
+}
+let apSel = 'pending';
+function renderApprove() {
+  const pend = S.visits.filter(v => statusOf(v) === 'pending');
+  $('#apBadge').hidden = !(S.admin && pend.length); $('#apBadge').textContent = pend.length;
+  $('#apNote').textContent = S.admin ? 'แตะรายการเพื่อดูพิกัด รูป และจุดที่ระบบแนะนำให้ตรวจ ก่อนกดอนุมัติ' : 'หน้านี้สำหรับผู้จัดการฝ่ายขาย';
+  const counts = { pending: pend.length, approved: S.visits.filter(v => statusOf(v) === 'approved').length, rejected: S.visits.filter(v => statusOf(v) === 'rejected').length };
+  $('#apFilter').innerHTML = Object.keys(STATUS).map(k => `<button class="chip" data-ap="${k}" aria-pressed="${k === apSel}">${STATUS[k]} ${counts[k]}</button>`).join('');
+  const rows = S.visits.filter(v => statusOf(v) === apSel);
+  $('#apList').innerHTML = rows.length ? rows.map(v => visitItem(v, { staff: true, flags: true })).join('') : '<div class="empty">ไม่มีรายการในสถานะนี้</div>';
+}
+
+// ---------- check-in form ----------
+const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || 'car', gps: null, photos: [] };
+function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
+function renderFormChips() {
+  chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
+  chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
+  chipGroup($('#ciVehicle'), Object.entries(VEHICLES).map(([k, l]) => [k, l + (k === 'car' ? ` ${S.settings.rateCar} บ./กม.` : k === 'moto' ? ` ${S.settings.rateMoto} บ./กม.` : ' (ตามบิล)')]), F.vehicle, 'veh');
+}
+function renderGps() {
+  const b = $('#gpsBox'), g = F.gps;
+  if (!g) { b.className = 'gps'; b.innerHTML = 'ยังไม่ได้บันทึกตำแหน่ง กดปุ่มด้านบนเมื่อถึงหน้างานลูกค้า'; return; }
+  const c = custByName($('#ciCustomer').value);
+  let site = '';
+  if (c && c.lat != null) { const m = haversineKm(g.lat, g.lng, c.lat, c.lng) * 1000; site = `<div>${m <= S.settings.siteRadiusM ? '✓ อยู่ในรัศมีที่ตั้งลูกค้า' : '⚠ ห่างจากที่ตั้งลูกค้าที่บันทึกไว้'} (${m < 1000 ? Math.round(m) + ' ม.' : fmtKm(m / 1000) + ' กม.'})</div>`; }
+  b.className = 'gps ok';
+  b.innerHTML = `<div class="coord">${g.lat.toFixed(6)}, ${g.lng.toFixed(6)}</div><div>${g.source === 'device' ? 'จับจากเครื่อง ±' + Math.round(g.acc) + ' ม.' : 'ใส่พิกัดเอง'} · ${dt(g.at)}</div>${site}<a href="${mapsPin(g.lat, g.lng)}" target="_blank" rel="noopener">ดูบน Google Maps</a>`;
+}
+function currentDest() { if (F.gps) return F.gps; const c = custByName($('#ciCustomer').value); return c && c.lat != null ? { lat: c.lat, lng: c.lng } : null; }
+function computeForm() {
+  const v = F.vehicle, s = S.settings, kmOne = Math.max(0, +$('#ciKm').value || 0), toll = Math.max(0, +$('#ciToll').value || 0);
+  const kmRT = v === 'company' ? 0 : Math.round(kmOne * 2 * 10) / 10;
+  const rate = v === 'car' ? +s.rateCar : v === 'moto' ? +s.rateMoto : 0;
+  const fuel = v === 'company' ? n2(Math.max(0, +$('#ciFuel').value || 0)) : n2(kmRT * rate);
+  return { kmOne, kmRT, rate, fuel, toll: n2(toll), total: n2(fuel + toll) };
+}
+function updateCalc() {
+  renderFormChips();
+  const v = F.vehicle, c = computeForm(), d = currentDest();
+  $('#kmBlock').hidden = v === 'company'; $('#fuelBlock').hidden = v !== 'company';
+  const est = d ? estimateRoundTrip(d.lat, d.lng) : null, s = S.settings;
+  $('#estBox').innerHTML = !officeSet() ? 'ยังไม่ได้ปักพิกัดบริษัท ระบบจึงเปิดเส้นทางและประมาณระยะให้ไม่ได้ ใส่ระยะจาก Google Maps เองได้'
+    : !d ? 'บันทึกตำแหน่งในข้อ 2 ก่อน ระบบจะเปิดเส้นทางจากบริษัทให้ดูระยะใน Google Maps'
+    : `ระบบประมาณไป-กลับ <b class="num">${fmtKm(est)} กม.</b> (เส้นตรง × ${s.roadFactor})<br><a href="${mapsDir(s.officeLat, s.officeLng, d.lat, d.lng)}" target="_blank" rel="noopener">เปิดเส้นทางจาก ${esc(s.officeName)} ใน Google Maps</a> แล้วนำระยะขาไปมาใส่`;
+  $('#calcBox').innerHTML = v === 'company'
+    ? `<span>ค่าน้ำมันตามใบเสร็จ</span><span class="num">${fmtB(c.fuel)}</span><span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(c.toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(c.total)}</span>`
+    : `<span>ไป-กลับ ${fmtKm(c.kmRT)} กม. × ${fmtB(c.rate)} บาท</span><span class="num">${fmtB(c.fuel)}</span><span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(c.toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(c.total)}</span>`;
+  $('#wrapPlate').querySelector('input').placeholder = v === 'company' ? 'ทะเบียนรถส่วนกลาง' : 'เช่น 1กข 1234';
+  const draft = buildVisit(true), fl = auditFlags(draft);
+  $('#ciFlags').innerHTML = fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ข้อมูลครบสำหรับการตรวจ</li>';
+  renderGps();
+}
+function buildVisit(draft) {
+  const c = computeForm(), cust = $('#ciCustomer').value.trim(), cu = custByName(cust), d = currentDest();
+  const g = F.gps;
+  return {
+    id: draft ? 'draft' : uid('v'), createdAt: Date.now(), createdBy: S.myId || null,
+    staffName: S.me.name || 'ไม่ระบุชื่อ', staffCode: S.me.code || '', dept: S.me.dept || '',
+    customer: cust, customerId: cu ? cu.id : null, contact: $('#ciContact').value.trim(), purpose: F.purpose,
+    gps: g ? { lat: +g.lat.toFixed(6), lng: +g.lng.toFixed(6), acc: g.acc ?? null, source: g.source, at: g.at } : null,
+    siteDistM: g && cu && cu.lat != null ? Math.round(haversineKm(g.lat, g.lng, cu.lat, cu.lng) * 1000) : null,
+    report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: $('#ciNext').value.trim(), nextDate: $('#ciNextDate').value,
+    photos: F.photos.slice(), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
+    kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d ? estimateRoundTrip(d.lat, d.lng) : null, rate: c.rate,
+    fuelAmount: c.fuel, receiptNo: $('#ciReceipt').value.trim(), toll: c.toll, total: c.total,
+    officeAt: officeSet() ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null,
+  };
+}
+function resetForm() {
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.stage = ''; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
+  $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
+}
+function renderPhotos() { $('#ciPhotos').innerHTML = F.photos.map((p, i) => `<figure><img src="${p}" alt="รูปที่ ${i + 1}"><button type="button" data-rmphoto="${i}" aria-label="ลบรูป">×</button></figure>`).join(''); }
+function compress(file, max = 900, q = 0.62) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      let out = cv.toDataURL('image/jpeg', q); if (out.length > 70000) out = cv.toDataURL('image/jpeg', 0.45); res(out); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('อ่านรูปไม่ได้')); }; img.src = url;
+  });
+}
+
+$('#ciPhotoInput').addEventListener('change', async e => {
+  const files = [...e.target.files].slice(0, 3 - F.photos.length);
+  for (const f of files) { try { F.photos.push(await compress(f)); } catch { toast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น'); } }
+  e.target.value = ''; renderPhotos(); updateCalc();
+  if ([...e.target.files].length > files.length) toast('แนบได้สูงสุด 3 รูป');
+});
+$('#btnGps').addEventListener('click', () => {
+  const btn = $('#btnGps');
+  if (!navigator.geolocation) { $('#manualGps').open = true; toast('เครื่องนี้จับตำแหน่งไม่ได้ ใส่พิกัดเองด้านล่าง'); return; }
+  btn.disabled = true; btn.textContent = 'กำลังหาตำแหน่ง…';
+  navigator.geolocation.getCurrentPosition(p => {
+    F.gps = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy, source: 'device', at: Date.now() };
+    btn.disabled = false; btn.textContent = 'บันทึกตำแหน่งใหม่'; updateCalc(); toast('บันทึกตำแหน่งแล้ว');
+  }, () => {
+    btn.disabled = false; btn.textContent = 'บันทึกตำแหน่งปัจจุบัน'; $('#manualGps').open = true;
+    toast('จับตำแหน่งไม่ได้ ใส่พิกัดจาก Google Maps ด้านล่างแทน');
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+});
+$('#btnManual').addEventListener('click', () => {
+  const c = parseCoords($('#ciManual').value);
+  if (!c) { toast('อ่านพิกัดไม่ออก ใส่เป็นตัวเลข เช่น 13.7563, 100.5018'); return; }
+  F.gps = { ...c, acc: null, source: 'manual', at: Date.now() }; updateCalc(); toast('ใช้พิกัดนี้แล้ว');
+});
+$('#fCheckin').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.purpose) { F.purpose = t.dataset.purpose; updateCalc(); }
+  else if (t.dataset.cstage !== undefined && t.dataset.cstage) { F.stage = F.stage === t.dataset.cstage ? '' : t.dataset.cstage; updateCalc(); }
+  else if (t.dataset.veh) { F.vehicle = t.dataset.veh; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
+  else if (t.dataset.rmphoto !== undefined) { F.photos.splice(+t.dataset.rmphoto, 1); renderPhotos(); updateCalc(); }
+});
+['ciKm', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
+$('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } updateCalc(); });
+$('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.photos.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
+$('#fCheckin').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนส่งรายงาน'); return; }
+  if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
+  if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อนส่ง'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
+  if (!S.canWrite) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
+  const v = buildVisit(false), btn = $('#btnSubmit');
+  if (!(await confirmBox({ title: 'ส่งรายงานและขอเบิก?', body: `${v.customer} · ${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(v.total)} ส่งแล้วแก้ไขเองไม่ได้ ต้องให้ผู้จัดการตีกลับ`, ok: 'ส่งรายงาน' }))) return;
+  btn.disabled = true; btn.textContent = 'กำลังส่ง…';
+  try {
+    let cu = custByName(v.customer);
+    if (!cu) { cu = { id: uid('c'), name: v.customer, contact: v.contact, phone: '', address: '', lat: v.gps.lat, lng: v.gps.lng, stage: v.stage || 'ติดต่อใหม่', dealValue: v.dealValue || 0, followUp: v.nextStep, followDate: v.nextDate, note: '', createdBy: S.myId, updatedAt: Date.now() }; }
+    else { cu = { ...cu, contact: cu.contact || v.contact, lat: cu.lat ?? v.gps.lat, lng: cu.lng ?? v.gps.lng, stage: v.stage || cu.stage, dealValue: v.dealValue || cu.dealValue || 0, followUp: v.nextStep || cu.followUp || '', followDate: v.nextDate || cu.followDate || '', updatedAt: Date.now() }; }
+    v.customerId = cu.id;
+    await store.saveCustomer(cu); await store.saveVisit(v);
+    S.me.vehicle = v.vehicle; if (v.vehicle !== 'company' && v.plate) S.me.plate = v.plate; lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
+    toast(`ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ`); resetForm(); go('home');
+  } catch (err) {
+    toast(err && err.code === 'quota_exceeded' ? 'พื้นที่เก็บข้อมูลเต็ม แจ้งผู้ดูแล' : err && err.code === 'invalid_argument' ? 'บันทึกไม่ได้ อาจเป็นเพราะรูปใหญ่เกินหรือไม่มีสิทธิ์เขียน ลองลดรูปลง' : 'ส่งไม่สำเร็จ ลองอีกครั้ง');
+  } finally { btn.disabled = false; btn.textContent = 'ส่งรายงานและขอเบิก'; }
+});
+
+// ---------- sheets ----------
+function openSheet(html) { $('#sheetPanel').innerHTML = html; $('#sheet').hidden = false; $('#sheetPanel').scrollTop = 0; }
+function closeSheet() { $('#sheet').hidden = true; $('#sheetPanel').innerHTML = ''; }
+$('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.target.closest('[data-close]')) closeSheet(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
+const bar = t => `<div class="bar"><h1>${t}</h1><button class="iconbtn" data-close aria-label="ปิด">✕</button></div>`;
+
+function openVisit(id) {
+  const v = S.visits.find(x => x.id === id); if (!v) return;
+  const st = statusOf(v), ap = S.approvals[v.id], fl = auditFlags(v), s = S.settings;
+  const o = v.officeAt || (officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null);
+  openSheet(`${bar(esc(v.customer))}
+    <div class="row"><span class="pill ${st}">${STATUS[st]}</span><span class="sub num">${ref(v)}</span>${v.isExample ? '<span class="pill ex">ตัวอย่าง</span>' : ''}</div>
+    <dl class="kv card">
+      <dt>พนักงาน</dt><dd>${esc(v.staffName)}${v.staffCode ? ' (' + esc(v.staffCode) + ')' : ''}</dd>
+      <dt>เช็คอิน</dt><dd>${dt(v.createdAt)}</dd>
+      <dt>ผู้ติดต่อ</dt><dd>${esc(v.contact || '-')}</dd>
+      <dt>วัตถุประสงค์</dt><dd>${esc(v.purpose || '-')}</dd>
+      <dt>พิกัด</dt><dd>${v.gps ? `<a href="${mapsPin(v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener" class="num">${v.gps.lat}, ${v.gps.lng}</a><br><span class="sub">${v.gps.source === 'device' ? 'จับจากเครื่อง' + (v.gps.acc != null ? ' ±' + Math.round(v.gps.acc) + ' ม.' : '') : 'ใส่เอง'}</span>` : '-'}</dd>
+      ${v.stage ? `<dt>สถานะงาน</dt><dd>${esc(v.stage)}</dd>` : ''}
+      ${v.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(v.dealValue)}</dd>` : ''}
+      ${v.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(v.nextStep)}${v.nextDate ? ' ภายใน ' + esc(v.nextDate) : ''}</dd>` : ''}
+    </dl>
+    <div class="card stack"><h2>รายงานผลการเข้าพบ</h2><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.report || '-')}</div>
+      ${v.photos && v.photos.length ? `<div class="photos">${v.photos.map((p, i) => `<figure><img src="${p}" alt="รูปหน้างาน ${i + 1}" data-zoom="${i}"></figure>`).join('')}</div>` : ''}</div>
+    <div class="card stack"><h2>ค่าเดินทาง · ${VEHICLES[v.vehicle] || v.vehicle}${v.plate ? ' · ' + esc(v.plate) : ''}</h2>
+      <div class="calc">${v.vehicle === 'company'
+        ? `<span>ค่าน้ำมันตามใบเสร็จ${v.receiptNo ? ' (' + esc(v.receiptNo) + ')' : ''}</span><span class="num">${fmtB(v.fuelAmount)}</span>`
+        : `<span>ไป-กลับ ${fmtKm(v.kmRoundTrip)} กม. × ${fmtB(v.rate)}</span><span class="num">${fmtB(v.fuelAmount)}</span>${v.kmEstimate ? `<span class="sub">ระบบประมาณไว้</span><span class="num sub">${fmtKm(v.kmEstimate)} กม.</span>` : ''}`}
+        <span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(v.toll)}</span><span class="total">รวมเบิกสุทธิ</span><span class="total num">${fmtB(v.total)}</span></div>
+      ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>
+    <div class="card stack"><h2>จุดที่ควรตรวจ</h2><ul class="flags">${fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ไม่พบจุดผิดปกติ</li>'}</ul></div>
+    ${ap && ap.status !== 'pending' ? `<p class="sub">${STATUS[ap.status]}โดย ${esc(ap.byName || '-')} เมื่อ ${dt(ap.at)}${ap.note ? '<br>หมายเหตุ: ' + esc(ap.note) : ''}</p>` : ''}
+    ${S.admin ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
+      <div class="row"><button class="btn ok grow" data-approve="${esc(v.id)}">อนุมัติ</button><button class="btn bad grow" data-reject="${esc(v.id)}">ตีกลับ</button></div>
+      ${st !== 'pending' ? `<button class="btn ghost sm" data-unset="${esc(v.id)}">ย้ายกลับไปรอตรวจ</button>` : ''}
+      ${v.isExample ? `<button class="btn ghost sm" data-delvisit="${esc(v.id)}">ลบรายการตัวอย่างนี้</button>` : ''}</div>` : ''}`);
+}
+async function decide(id, status) {
+  const v = S.visits.find(x => x.id === id), who = v ? `${v.customer} · ${v.staffName} · ฿${fmtB(v.total)}` : '';
+  const q = status === 'approved' ? { title: 'อนุมัติรายการนี้?', body: who, ok: 'อนุมัติ' } : status === 'rejected' ? { title: 'ตีกลับรายการนี้?', body: who + (($('#apNoteIn') || {}).value ? '' : ' ยังไม่ได้ใส่หมายเหตุให้พนักงาน'), ok: 'ตีกลับ', danger: true } : { title: 'ย้ายกลับไปรอตรวจ?', body: who, ok: 'ย้ายกลับ' };
+  if (!(await confirmBox(q))) return;
+  const a = { status, note: ($('#apNoteIn') || {}).value || '', by: S.myId, byName: S.me.name || 'ผู้ตรวจ', at: Date.now() };
+  try { await store.setApproval(id, a); toast(status === 'approved' ? 'อนุมัติแล้ว' : status === 'rejected' ? 'ตีกลับแล้ว' : 'ย้ายกลับไปรอตรวจแล้ว'); closeSheet(); }
+  catch { toast('บันทึกผลตรวจไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์อนุมัติ'); }
+}
+function openCustomer(id) {
+  const c = S.customers.find(x => x.id === id); if (!c) return;
+  const vs = S.visits.filter(v => v.customerId === c.id || v.customer.trim().toLowerCase() === c.name.trim().toLowerCase());
+  openSheet(`${bar(esc(c.name))}
+    <div class="row">${c.stage ? `<span class="pill stage">${esc(c.stage)}</span>` : ''}<span class="sub">เข้าพบ ${vs.length} ครั้ง</span></div>
+    <dl class="kv card"><dt>ผู้ติดต่อ</dt><dd>${esc(c.contact || '-')}</dd><dt>โทร</dt><dd class="num">${esc(c.phone || '-')}</dd><dt>ที่อยู่</dt><dd>${esc(c.address || '-')}</dd>
+      <dt>ที่ตั้ง</dt><dd>${c.lat != null ? `<a href="${mapsPin(c.lat, c.lng)}" target="_blank" rel="noopener" class="num">${c.lat}, ${c.lng}</a>` : 'ยังไม่มี จะบันทึกจากการเช็คอินครั้งแรก'}</dd>
+      ${c.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(c.dealValue)}</dd>` : ''}
+      ${c.followUp ? `<dt>ทำต่อ</dt><dd>${esc(c.followUp)}${c.followDate ? ' ภายใน ' + esc(c.followDate) : ''}</dd>` : ''}
+      ${c.note ? `<dt>บันทึก</dt><dd style="white-space:pre-wrap">${esc(c.note)}</dd>` : ''}</dl>
+    <div class="row"><button class="btn primary grow" data-checkinat="${esc(c.id)}">เช็คอินที่ลูกค้านี้</button><button class="btn ghost" data-editcust="${esc(c.id)}">แก้ไข</button></div>
+    <h2>ประวัติการเข้าพบ</h2><div class="list">${vs.length ? vs.map(v => visitItem(v, { staff: true })).join('') : '<div class="empty">ยังไม่เคยเข้าพบ</div>'}</div>`);
+}
+function editCustomer(id) {
+  const c = id ? S.customers.find(x => x.id === id) : { id: '', name: '', contact: '', phone: '', address: '', stage: 'ติดต่อใหม่', note: '', lat: null, lng: null };
+  openSheet(`${bar(id ? 'แก้ไขลูกค้า' : 'เพิ่มลูกค้า')}
+    <form id="fCust" class="stack" novalidate>
+      <label class="f">ชื่อบริษัท<input type="text" id="cuName" value="${esc(c.name)}" required></label>
+      <label class="f">ผู้ติดต่อ / แผนก<input type="text" id="cuContact" value="${esc(c.contact)}"></label>
+      <label class="f">เบอร์โทร<input type="tel" id="cuPhone" value="${esc(c.phone)}" inputmode="tel"></label>
+      <label class="f">ที่อยู่<input type="text" id="cuAddr" value="${esc(c.address)}"></label>
+      <label class="f">พิกัดที่ตั้ง<span class="hint">วางพิกัดตัวเลข Plus Code หรือลิงก์ Google Maps เว้นว่างได้ ระบบจะเก็บจากการเช็คอินครั้งแรก</span><input type="text" id="cuGeo" value="${c.lat != null ? c.lat + ', ' + c.lng : ''}"></label>
+      <label class="f">มูลค่าโอกาสขาย (บาท)<input type="number" id="cuValue" min="0" step="1" value="${c.dealValue || ''}"></label>
+      <label class="f">สถานะโอกาสขาย<select id="cuStage">${STAGES.map(s => `<option ${s === c.stage ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></label>
+      <label class="f">บันทึก<textarea id="cuNote">${esc(c.note || '')}</textarea></label>
+      <button class="btn primary block" type="submit">บันทึกลูกค้า</button>
+    </form>`);
+  $('#fCust').addEventListener('submit', async e => {
+    e.preventDefault(); const name = $('#cuName').value.trim(); if (!name) { toast('ใส่ชื่อบริษัท'); return; }
+    const dup = custByName(name); if (dup && dup.id !== c.id) { toast('มีลูกค้าชื่อนี้แล้ว'); return; }
+    const geoRaw = $('#cuGeo').value.trim(), g = geoRaw ? parseCoords(geoRaw) : null; if (geoRaw && !g) { toast('อ่านพิกัดไม่ออก'); return; }
+    const out = { ...c, id: c.id || uid('c'), name, contact: $('#cuContact').value.trim(), phone: $('#cuPhone').value.trim(), address: $('#cuAddr').value.trim(), stage: $('#cuStage').value, dealValue: n2(Math.max(0, +$('#cuValue').value || 0)), note: $('#cuNote').value.trim(), lat: g ? g.lat : null, lng: g ? g.lng : null, updatedAt: Date.now(), createdBy: c.createdBy || S.myId };
+    try { await store.saveCustomer(out); toast('บันทึกลูกค้าแล้ว'); openCustomer(out.id); } catch { toast('บันทึกไม่สำเร็จ'); }
+  });
+}
+function openSettings() {
+  const s = S.settings, m = S.me, dis = S.admin ? '' : 'disabled';
+  openSheet(`${bar('ตั้งค่า')}
+    <form id="fSet" class="stack" novalidate>
+      <div class="card stack"><h2>ข้อมูลพนักงาน · ${S.admin ? 'ผู้จัดการฝ่ายขาย' : 'พนักงานขาย'}</h2>
+        <label class="f">ชื่อ-นามสกุล<input type="text" id="seName" value="${esc(m.name)}" placeholder="ชื่อที่จะติดไปกับรายงาน"></label>
+        <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="seCode" value="${esc(m.code)}"></label><label class="f grow">แผนก<input type="text" id="seDept" value="${esc(m.dept)}"></label></div>
+        <label class="f">ทะเบียนรถส่วนตัว<input type="text" id="sePlate" value="${esc(m.plate)}"></label>
+      </div>
+      <div class="card stack"><h2>ค่าบริษัท ${S.admin ? '' : '(ผู้จัดการฝ่ายขายเท่านั้นที่แก้ได้)'}</h2>
+        <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
+        <p class="sub">อัตราใหม่ใช้กับรายการที่ส่งหลังจากนี้ รายการเดิมคงอัตราตอนส่งไว้เพื่อการตรวจย้อนหลัง</p>
+        <label class="f">เป้าเข้าพบต่อคนต่อเดือน (ครั้ง)<span class="hint">ใช้ในหน้ารายงานของเซลส์และทีม</span><input type="number" id="seTarget" min="0" step="1" value="${s.visitTarget}" ${dis}></label>
+        <label class="f">ชื่อจุดเริ่มต้น<input type="text" id="seOffice" value="${esc(s.officeName)}" ${dis}></label>
+        <label class="f">พิกัดบริษัท<span class="hint">วางพิกัดตัวเลข Plus Code (เช่น RJP4+XC) หรือลิงก์ Google Maps ของออฟฟิศ/โรงงาน</span><input type="text" id="seGeo" value="${officeSet() ? s.officeLat + ', ' + s.officeLng : ''}" placeholder="13.xxxx, 100.xxxx หรือ RJP4+XC" ${dis}></label>
+        ${S.admin ? '<button type="button" class="btn ghost sm" id="seHere" style="align-self:flex-start">ใช้ตำแหน่งที่ยืนอยู่ตอนนี้</button>' : ''}
+        <details><summary>ค่าการตรวจสอบ</summary><div class="stack" style="margin-top:10px">
+          <label class="f">ตัวคูณถนนจากระยะเส้นตรง<input type="number" id="seFactor" step="0.05" min="1" value="${s.roadFactor}" ${dis}></label>
+          <label class="f">เตือนเมื่อระยะเบิกเกินประมาณการ (%)<input type="number" id="seFlag" step="1" min="0" value="${s.flagPct}" ${dis}></label>
+          <label class="f">รัศมีถือว่าอยู่ที่ลูกค้า (เมตร)<input type="number" id="seRadius" step="50" min="50" value="${s.siteRadiusM}" ${dis}></label>
+        </div></details>
+      </div>
+      <button class="btn primary block" type="submit">บันทึกการตั้งค่า</button>
+      <p class="sub">${S.mode === 'shared' ? 'ข้อมูลรายงาน ลูกค้า และผลอนุมัติเก็บไว้ที่ส่วนกลาง ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลชุดเดียวกัน' : 'ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น เปิดผ่านลิงก์ใน Claude ขณะล็อกอินเพื่อใช้ข้อมูลกลางของทีม'}</p>
+    </form>`);
+  const here = $('#seHere'); if (here) here.addEventListener('click', () => {
+    if (!navigator.geolocation) { toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; }
+    navigator.geolocation.getCurrentPosition(p => { $('#seGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); }, () => toast('จับตำแหน่งไม่ได้ วางพิกัดจาก Google Maps แทน'), { enableHighAccuracy: true, timeout: 15000 });
+  });
+  $('#fSet').addEventListener('submit', async e => {
+    e.preventDefault();
+    S.me = { ...S.me, name: $('#seName').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
+    try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
+    if (S.admin) {
+      const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? parseCoords(geoRaw) : null;
+      if (geoRaw && !g) { toast('อ่านพิกัดบริษัทไม่ออก'); return; }
+      const ns = { officeName: $('#seOffice').value.trim() || DEFAULT_SETTINGS.officeName, officeLat: g ? +g.lat.toFixed(6) : null, officeLng: g ? +g.lng.toFixed(6) : null,
+        rateCar: n2(+$('#seCar').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), updatedAt: Date.now(), updatedBy: S.myId };
+      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget'].some(k => ns[k] !== S.settings[k]);
+      if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} บ./กม. · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
+      if (changed) { try { await store.saveSettings(ns); } catch { toast('บันทึกค่าบริษัทไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์'); return; } }
+    }
+    toast('บันทึกการตั้งค่าแล้ว'); closeSheet(); renderAll(); updateCalc();
+  });
+}
+$('#btnSettings').addEventListener('click', openSettings);
+$('#btnNewCustomer').addEventListener('click', () => editCustomer(null));
+$('#custSearch').addEventListener('input', renderCustomers);
+$('#tmMonth').addEventListener('change', renderTeam); $('#rpMonth').addEventListener('change', renderReport); $('#rpWho').addEventListener('change', renderReport); $('#clMonth').addEventListener('change', renderClaims); $('#clWho').addEventListener('change', renderClaims);
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
+  if (!t) return; const d = t.dataset;
+  if (d.staff) openStaff(d.staff);
+  else if (d.reportfor) { closeSheet(); $('#rpMonth').value = $('#tmMonth').value; renderReport(); $('#rpWho').value = d.reportfor; renderReport(); go('report'); }
+  else if (d.claimsfor) { closeSheet(); $('#clMonth').value = $('#tmMonth').value; renderClaims(); $('#clWho').value = d.claimsfor; renderClaims(); go('claims'); }
+  else if (d.open === 'settings') openSettings();
+  else if (d.visit) openVisit(d.visit);
+  else if (d.cust) openCustomer(d.cust);
+  else if (d.stage) { stageSel = d.stage; renderCustomers(); }
+  else if (d.ap) { apSel = d.ap; renderApprove(); }
+  else if (d.approve) decide(d.approve, 'approved');
+  else if (d.reject) decide(d.reject, 'rejected');
+  else if (d.unset) decide(d.unset, 'pending');
+  else if (d.delvisit) { confirmBox({ title: 'ลบรายการนี้ถาวร?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteVisit(S.visits.find(x => x.id === d.delvisit)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้')); }); }
+  else if (d.checkinat) { const c = S.customers.find(x => x.id === d.checkinat); closeSheet(); resetForm(); $('#ciCustomer').value = c.name; $('#ciContact').value = c.contact || ''; F.stage = c.stage || ''; go('checkin'); }
+  else if (d.editcust) editCustomer(d.editcust);
+  else if (d.zoom !== undefined) { const img = t.getAttribute('src'); openSheet(`${bar('รูปหน้างาน')}<img src="${img}" alt="รูปหน้างาน" style="width:100%;border-radius:12px">`); }
+});
+
+// ---------- export ----------
+function csvText() {
+  const rows = claimsRows(), q = x => `"${String(x ?? '').replace(/"/g, '""')}"`;
+  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนรูป', 'ประเภทรถ', 'ทะเบียน', 'ระยะทางไป-กลับ (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
+  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length, VEHICLES[v.vehicle], v.plate, v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
+  return '﻿' + [head, ...body].map(r => r.map(q).join(',')).join('\r\n');
+}
+$('#btnCsv').addEventListener('click', async () => {
+  const name = `fuel-claim-${$('#clMonth').value}.csv`, data = csvText();
+  const dl = window.claude && claude.use ? await claude.use('downloads').catch(() => null) : null;
+  if (!dl) { showFallback(data); toast('บันทึกไฟล์ในหน้านี้ไม่ได้ คัดลอกข้อความด้านล่างไปวางใน Excel แทน'); return; }
+  try { await dl.save({ filename: name, data: new Blob([data], { type: 'text/csv;charset=utf-8' }) }); } catch (e) { if (e && e.code !== 'cancelled' && e.code !== 'declined') { showFallback(data); toast('บันทึกไฟล์ไม่สำเร็จ คัดลอกข้อความด้านล่างแทน'); } }
+});
+function showFallback(t) { const ta = $('#csvFallback'); ta.value = t.replace(/^﻿/, ''); ta.hidden = false; ta.focus(); ta.select(); }
+$('#btnCopy').addEventListener('click', () => {
+  const t = csvText().replace(/^﻿/, '').split('\r\n').map(l => l.split('","').map(x => x.replace(/^"|"$/g, '').replace(/""/g, '"')).join('\t')).join('\n');
+  try { navigator.clipboard.writeText(t).then(() => toast('คัดลอกแล้ว วางใน Excel หรือ Google Sheets ได้เลย'), () => { showFallback(t); toast('คัดลอกอัตโนมัติไม่ได้ กดค้างที่ข้อความด้านล่างเพื่อคัดลอก'); }); }
+  catch { showFallback(t); }
+});
+
+// ---------- boot ----------
+$('#ciPlate').value = S.me.plate || '';
+applyRole(); renderPhotos(); renderAll(); updateCalc();
+connect();
+})();
+</script>
