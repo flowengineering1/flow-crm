@@ -1,12 +1,4 @@
-<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
-</head>
-<body>
-<title>Flow CRM ภาคสนาม</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flow CRM</title><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Flow CRM ภาคสนาม</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
@@ -84,6 +76,7 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .pill.approved{background:var(--ok-soft);color:var(--ok)}
 .pill.rejected{background:var(--bad-soft);color:var(--bad)}
 .pill.stage{background:var(--accent-soft);color:var(--accent)}
+.pill.draft{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
 .pill.ex{background:var(--bg);color:var(--muted);border:1px dashed var(--line)}
 .step{display:flex;gap:8px;align-items:center}
 .step i{font-style:normal;font-size:13px;font-weight:600;color:var(--on-accent);background:var(--accent);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;flex:none}
@@ -108,6 +101,14 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .photos figure{margin:0;position:relative;width:84px;height:84px;border-radius:var(--rb);overflow:hidden;background:var(--sunk)}
 .photos img{width:100%;height:100%;object-fit:cover;display:block}
 .photos button{position:absolute;top:4px;right:4px;border:0;border-radius:999px;width:24px;height:24px;background:rgba(0,0,0,.6);color:#FFFFFF;font-size:14px;line-height:24px;cursor:pointer}
+.files{display:flex;flex-direction:column;gap:6px}
+.file{display:flex;align-items:center;gap:10px;background:var(--sunk);border:1px solid var(--line);border-radius:var(--rb);padding:8px 10px;font-size:14px}
+.file .ic{flex:none;width:32px;height:32px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:11px;font-weight:700;letter-spacing:0}
+.file .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .sz{color:var(--muted);font-size:12px;white-space:nowrap}
+.file button{border:0;background:none;color:var(--muted);font:inherit;font-size:18px;cursor:pointer;padding:0 4px}
+.file .btn{font-size:13px;padding:6px 10px}
+.photos figure.pending::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.25)}
 .empty{text-align:center;color:var(--muted);padding:28px 12px;background:var(--elev);border:1px dashed var(--line);border-radius:var(--r);font-size:14px}
 .tablewrap{overflow-x:auto;border-radius:var(--r);background:var(--surface)}
 table{border-collapse:collapse;font-size:13px;min-width:640px;width:100%}
@@ -245,6 +246,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     เช็คอินเข้าพบลูกค้า
   </button><button class="btn ghost block" data-go="report" style="margin-top:8px">ดูรายงานเดือนนี้</button></div>
   <div class="notice" id="setupNotice" hidden></div>
+  <div class="notice" id="draftNotice" hidden></div>
   <h2 id="homeListH">รายการเข้าพบของฉันล่าสุด</h2>
   <div class="list" id="homeList"></div>
 </section>
@@ -302,12 +304,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
         <label class="f" style="width:150px">ภายในวันที่<input type="date" id="ciNextDate"></label>
       </div>
       <div class="stack" style="gap:8px">
-        <span style="font-size:14px;font-weight:500">รูปหน้างาน / ชิ้นงาน <span class="sub" style="display:inline">(สูงสุด 3 รูป)</span></span>
+        <span style="font-size:14px;font-weight:500">รูปหน้างานและไฟล์แนบ <span class="sub" style="display:inline" id="ciFileCount">(สูงสุด 10 ไฟล์)</span></span>
         <div class="photos" id="ciPhotos"></div>
-        <label class="btn ghost sm" style="align-self:flex-start">
-          ถ่ายรูปหรือเลือกรูป
-          <input type="file" id="ciPhotoInput" accept="image/*" capture="environment" multiple hidden>
-        </label>
+        <div class="files" id="ciFiles"></div>
+        <div class="row">
+          <label class="btn ghost sm">ถ่ายรูป<input type="file" id="ciPhotoInput" accept="image/*" capture="environment" multiple hidden></label>
+          <label class="btn ghost sm">แนบรูปหรือไฟล์จากเครื่อง<input type="file" id="ciFileInput" accept="image/*,.pdf,.xls,.xlsx,.csv,.doc,.docx,.ppt,.pptx,.txt,.dwg,.dxf,.step,.stp,.zip" multiple hidden></label>
+        </div>
+        <p class="sub">รูปจะถูกย่อให้อัตโนมัติ ไฟล์อื่น เช่น PDF, Excel, แบบ DWG ได้ไม่เกิน 3 MB ต่อไฟล์</p>
       </div>
     </div>
 
@@ -335,6 +339,8 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 
     <ul class="flags" id="ciFlags"></ul>
     <button type="submit" class="btn primary block lg" id="btnSubmit">ส่งรายงานและขอเบิก</button>
+    <button type="button" class="btn soft block" id="btnSave">บันทึกไว้ก่อน ยังไม่ขอเบิก</button>
+    <p class="sub" style="text-align:center;margin:0">บันทึกไว้ก่อนได้ถ้ายังไม่รู้ระยะทางหรือยังไม่มีใบเสร็จ แล้วกลับมากดขอเบิกย้อนหลังจากรายการนั้นภายหลัง</p>
     <button type="button" class="btn ghost block" id="btnReset">ล้างฟอร์ม</button>
   </form>
 </section>
@@ -422,7 +428,8 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 const PURPOSES = ['เข้าพบลูกค้า / สำรวจหน้างาน','ซ่อมบำรุง / ทดสอบระบบ','รับ-ส่งสินค้า / อะไหล่ / เอกสาร','ติดต่อหน่วยงานราชการ / ธนาคาร','อื่นๆ'];
 const STAGES = ['ติดต่อใหม่','สำรวจ / นำเสนอ','เสนอราคา','ต่อรอง','ปิดการขาย','ไม่ได้งาน'];
 const VEHICLES = { car:'รถยนต์ส่วนตัว', moto:'มอเตอร์ไซค์ส่วนตัว', company:'รถส่วนกลางบริษัท' };
-const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ' };
+const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
+const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
 const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:7, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
 const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
@@ -494,7 +501,24 @@ loadLocal();
 // ---------- store ----------
 const store = {
   async saveVisit(v) { if (S.db) { if (!v.createdBy) throw { code: 'no_id' }; return S.db.collection('visits/' + v.createdBy + '/items').doc(v.id).set(v); } local.visits = local.visits.filter(x => x.id !== v.id).concat(v); persist(); },
-  async deleteVisit(v) { if (S.db) return S.db.collection('visits/' + (v.createdBy || 'example') + '/items').doc(v.id).delete(); local.visits = local.visits.filter(x => x.id !== v.id); persist(); },
+  async deleteVisit(v) {
+    if (S.db) { for (const f of v.files || []) { try { const d = this.fileDoc(v, f.id); const sn = await d.get(); const n = sn.exists ? sn.data().chunks || 1 : 1; for (let i = 1; i < n; i++) await d.collection('chunks').doc(String(i)).delete(); await d.delete(); } catch {} } return S.db.collection('visits/' + (v.createdBy || 'example') + '/items').doc(v.id).delete(); }
+    for (const f of v.files || []) if (local.files) delete local.files[f.id]; local.visits = local.visits.filter(x => x.id !== v.id); persist(); },
+  fileDoc(v, fid) { return S.db.doc('visits/' + v.createdBy + '/items/' + v.id + '/files/' + fid); },
+  async saveFileData(v, f, dataUrl) {
+    if (!S.db) { local.files = local.files || {}; local.files[f.id] = dataUrl; persist(); return; }
+    const parts = []; for (let i = 0; i < dataUrl.length; i += CHUNK) parts.push(dataUrl.slice(i, i + CHUNK));
+    const d = this.fileDoc(v, f.id);
+    for (let i = 1; i < parts.length; i++) await d.collection('chunks').doc(String(i)).set({ data: parts[i] });
+    await d.set({ name: f.name, type: f.type, size: f.size, chunks: parts.length, data: parts[0], at: Date.now() });
+  },
+  async loadFileData(v, f) {
+    if (!S.db) return (local.files || {})[f.id] || null;
+    const d = this.fileDoc(v, f.id), sn = await d.get(); if (!sn.exists) return null;
+    const x = sn.data(); let out = x.data || '';
+    for (let i = 1; i < (x.chunks || 1); i++) { const c = await d.collection('chunks').doc(String(i)).get(); out += c.exists ? c.data().data : ''; }
+    return out;
+  },
   async saveStaff(p) { lsSet(LS_ME, S.me); if (S.db && S.myId) return S.db.doc('staff/' + S.myId).set(p); },
   async saveCustomer(c) { if (S.db) return S.db.collection('customers').doc(c.id).set(c); local.customers = local.customers.filter(x => x.id !== c.id).concat(c); persist(); },
   async setApproval(id, a) { if (S.db) return S.db.collection('approvals').doc(id).set(a); local.approvals[id] = a; persist(); },
@@ -541,7 +565,8 @@ function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); do
 const staffKey = v => v.createdBy || ('n:' + v.staffName);
 
 // ---------- derived ----------
-const statusOf = v => (S.approvals[v.id] && S.approvals[v.id].status) || 'pending';
+const statusOf = v => v.claimStatus === 'none' ? 'draft' : (S.approvals[v.id] && S.approvals[v.id].status) || 'pending';
+const hasPhotos = v => (v.photos && v.photos.length) || (v.files && v.files.some(f => f.kind === 'image'));
 const isMine = v => S.myId ? v.createdBy === S.myId : (S.me.name && v.staffName === S.me.name);
 function custByName(name) { const k = String(name || '').trim().toLowerCase(); return S.customers.find(c => c.name.trim().toLowerCase() === k); }
 function officeSet() { return S.settings.officeLat != null && S.settings.officeLng != null; }
@@ -552,8 +577,9 @@ function auditFlags(v) {
   else if (v.gps.source === 'manual') f.push('พิกัดใส่เอง ไม่ได้จับจากเครื่อง');
   else if (v.gps.acc > 200) f.push(`พิกัดคลาดเคลื่อนสูง ±${Math.round(v.gps.acc)} ม.`);
   if (v.siteDistM != null && v.siteDistM > S.settings.siteRadiusM) f.push(`เช็คอินห่างจากที่ตั้งลูกค้า ${fmtKm(v.siteDistM/1000)} กม.`);
-  if (!v.photos || !v.photos.length) f.push('ไม่มีรูปหน้างาน');
+  if (!hasPhotos(v)) f.push('ไม่มีรูปหน้างาน');
   if (!v.report || v.report.trim().length < 10) f.push('รายงานสั้นเกินไป');
+  if (v.claimStatus === 'none') return f;
   if (v.vehicle !== 'company' && v.kmEstimate && v.kmRoundTrip > v.kmEstimate * (1 + S.settings.flagPct / 100)) f.push(`ระยะเบิกสูงกว่าที่ระบบประมาณ ${Math.round((v.kmRoundTrip / v.kmEstimate - 1) * 100)}% (ประมาณ ${fmtKm(v.kmEstimate)} กม.)`);
   if (v.vehicle === 'company' && !v.receiptNo && v.fuelAmount > 0) f.push('ไม่มีเลขที่ใบเสร็จน้ำมัน');
   return f;
@@ -586,8 +612,8 @@ function visitItem(v, opts = {}) {
   return `<button class="item" data-visit="${esc(v.id)}"><div class="main">
     <div class="t">${esc(v.customer)} ${v.isExample ? '<span class="pill ex">ตัวอย่าง</span>' : ''}</div>
     <div class="m">${dt(v.createdAt)}${opts.staff ? ' · ' + esc(v.staffName) : ''} · ${esc(v.contact || '-')}</div>
-    <div class="m">${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. × ' + v.rate} ${opts.flags && auditFlags(v).length ? '· <span style="color:var(--warn)">ต้องดู ' + auditFlags(v).length + ' จุด</span>' : ''}</div>
-  </div><div class="stack" style="gap:6px;align-items:flex-end"><span class="amt">฿${fmtB(v.total)}</span><span class="pill ${st}">${STATUS[st]}</span></div></button>`;
+    <div class="m">${st === 'draft' ? 'ยังไม่ได้ขอเบิก' : v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. × ' + v.rate} ${opts.flags && auditFlags(v).length ? '· <span style="color:var(--warn)">ต้องดู ' + auditFlags(v).length + ' จุด</span>' : ''}</div>
+  </div><div class="stack" style="gap:6px;align-items:flex-end">${st === 'draft' ? '<span class="amt" style="color:var(--muted)">—</span>' : `<span class="amt">฿${fmtB(v.total)}</span>`}<span class="pill ${st}">${STATUS[st]}</span></div></button>`;
 }
 function renderHome() {
   const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = S.admin;
@@ -600,6 +626,8 @@ function renderHome() {
   $('#tToday').textContent = scope.filter(v => dayKey(v.createdAt) === dk).length;
   $('#tKm').textContent = fmtKm(month.reduce((s, v) => s + (v.kmRoundTrip || 0), 0)) + ' กม.';
   $('#tAmt').textContent = '฿' + Math.round(month.reduce((s, v) => s + (v.total || 0), 0)).toLocaleString('th-TH');
+  const drafts = S.visits.filter(v => isMine(v) && statusOf(v) === 'draft');
+  $('#draftNotice').hidden = !drafts.length; $('#draftNotice').innerHTML = `<b>มี ${drafts.length} รายการเข้าพบที่ยังไม่ได้ขอเบิก</b> <button class="btn soft sm" data-drafts="1" style="margin-left:8px">ขอเบิกย้อนหลัง</button>`;
   $('#homeListH').textContent = mgr ? 'รายการเข้าพบล่าสุดของทีม' : 'รายการเข้าพบของฉันล่าสุด';
   const list = (scope.length ? scope : S.visits.filter(v => v.isExample)).slice(0, 8);
   $('#homeList').innerHTML = list.length ? list.map(v => visitItem(v, { staff: mgr })).join('') + (scope.length ? '' : '<p class="sub">ยังไม่มีรายการจริง ด้านบนเป็นรายการตัวอย่างจากแบบฟอร์ม</p>') : '<div class="empty">ยังไม่มีรายการเข้าพบ<br>กดปุ่มเช็คอินเมื่อถึงหน้างานลูกค้า</div>';
@@ -710,7 +738,7 @@ function renderReport() {
   let teamHtml = '';
   if (team) {
     const rows = peopleOptions().map(([k, name]) => { const vs = month.filter(v => staffKey(v) === k), lv = vs.filter(v => statusOf(v) !== 'rejected'), a = sumBy(lv, 'total');
-      return { k, name, n: vs.length, cust: new Set(vs.map(v => ckey(v.customer))).size, amt: a, per: vs.length ? a / vs.length : 0, gps: vs.length ? Math.round(vs.filter(v => v.gps && v.gps.source === 'device').length / vs.length * 100) : null, photo: vs.length ? Math.round(vs.filter(v => v.photos && v.photos.length).length / vs.length * 100) : null, flags: vs.filter(v => auditFlags(v).length).length, pend: vs.filter(v => statusOf(v) === 'pending').length, won: vs.filter(v => v.stage === 'ปิดการขาย').length }; }).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'th'));
+      return { k, name, n: vs.length, cust: new Set(vs.map(v => ckey(v.customer))).size, amt: a, per: vs.length ? a / vs.length : 0, gps: vs.length ? Math.round(vs.filter(v => v.gps && v.gps.source === 'device').length / vs.length * 100) : null, photo: vs.length ? Math.round(vs.filter(hasPhotos).length / vs.length * 100) : null, flags: vs.filter(v => auditFlags(v).length).length, pend: vs.filter(v => statusOf(v) === 'pending').length, won: vs.filter(v => v.stage === 'ปิดการขาย').length }; }).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'th'));
     const tgt = +S.settings.visitTarget || 0;
     const pc = x => x == null ? '-' : `<span class="${x < 70 ? 'r warn' : ''}">${x}%</span>`;
     teamHtml += `<div class="card wide"><h2>เทียบพนักงานขายรายคน</h2><div class="tablewrap" style="background:var(--sunk)"><table>
@@ -746,7 +774,7 @@ function renderCustomers() {
 function renderDatalist() { $('#dlCustomers').innerHTML = S.customers.map(c => `<option value="${esc(c.name)}">`).join(''); }
 function claimsRows() {
   const ym = $('#clMonth').value, who = $('#clWho').value;
-  return S.visits.filter(v => ymOf(v.createdAt) === ym && (who === '__all' || (who === '__me' ? isMine(v) : staffKey(v) === who))).sort((a, b) => a.createdAt - b.createdAt);
+  return S.visits.filter(v => statusOf(v) !== 'draft' && ymOf(v.createdAt) === ym && (who === '__all' || (who === '__me' ? isMine(v) : staffKey(v) === who))).sort((a, b) => a.createdAt - b.createdAt);
 }
 function renderClaims() {
   if (!$('#clMonth').value) $('#clMonth').value = ymOf(Date.now());
@@ -776,7 +804,7 @@ function renderApprove() {
 }
 
 // ---------- check-in form ----------
-const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || 'car', gps: null, photos: [] };
+const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || 'car', gps: null, photos: [], files: [] };
 function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
 function renderFormChips() {
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
@@ -826,32 +854,51 @@ function buildVisit(draft) {
     gps: g ? { lat: +g.lat.toFixed(6), lng: +g.lng.toFixed(6), acc: g.acc ?? null, source: g.source, at: g.at } : null,
     siteDistM: g && cu && cu.lat != null ? Math.round(haversineKm(g.lat, g.lng, cu.lat, cu.lng) * 1000) : null,
     report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: $('#ciNext').value.trim(), nextDate: $('#ciNextDate').value,
-    photos: F.photos.slice(), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
+    photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
     kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d ? estimateRoundTrip(d.lat, d.lng) : null, rate: c.rate,
     fuelAmount: c.fuel, receiptNo: $('#ciReceipt').value.trim(), toll: c.toll, total: c.total,
     officeAt: officeSet() ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null,
   };
 }
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.stage = ''; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
 }
-function renderPhotos() { $('#ciPhotos').innerHTML = F.photos.map((p, i) => `<figure><img src="${p}" alt="รูปที่ ${i + 1}"><button type="button" data-rmphoto="${i}" aria-label="ลบรูป">×</button></figure>`).join(''); }
-function compress(file, max = 900, q = 0.62) {
-  return new Promise((res, rej) => {
-    const url = URL.createObjectURL(file), img = new Image();
-    img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)); const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
-      let out = cv.toDataURL('image/jpeg', q); if (out.length > 70000) out = cv.toDataURL('image/jpeg', 0.45); res(out); };
-    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('อ่านรูปไม่ได้')); }; img.src = url;
-  });
+const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
+const extOf = n => (String(n).split('.').pop() || '').slice(0, 4).toUpperCase();
+function renderPhotos() {
+  $('#ciPhotos').innerHTML = F.files.filter(f => f.kind === 'image').map(f => `<figure><img src="${f.thumb}" alt="${esc(f.name)}"><button type="button" data-rmfile="${f.id}" aria-label="ลบรูป">×</button></figure>`).join('');
+  $('#ciFiles').innerHTML = F.files.filter(f => f.kind !== 'image').map(f => `<div class="file"><span class="ic">${esc(extOf(f.name) || 'FILE')}</span><span class="nm">${esc(f.name)}</span><span class="sz">${fmtSize(f.size)}</span><button type="button" data-rmfile="${f.id}" aria-label="ลบไฟล์">×</button></div>`).join('');
+  $('#ciFileCount').textContent = `(${F.files.length}/${MAX_FILES} ไฟล์)`;
 }
-
-$('#ciPhotoInput').addEventListener('change', async e => {
-  const files = [...e.target.files].slice(0, 3 - F.photos.length);
-  for (const f of files) { try { F.photos.push(await compress(f)); } catch { toast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น'); } }
-  e.target.value = ''; renderPhotos(); updateCalc();
-  if ([...e.target.files].length > files.length) toast('แนบได้สูงสุด 3 รูป');
-});
+function loadImage(file) {
+  return new Promise((res, rej) => { const url = URL.createObjectURL(file), img = new Image(); img.onload = () => res({ img, url }); img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('อ่านรูปไม่ได้')); }; img.src = url; });
+}
+function drawTo(img, max, q) { const k = Math.min(1, max / Math.max(img.width, img.height)); const cv = document.createElement('canvas'); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); return cv.toDataURL('image/jpeg', q); }
+// Full image ≤ ~350 KB (stored in its own documents), thumbnail ≤ ~8 KB (kept on the visit for lists)
+async function compressImage(file) {
+  const { img, url } = await loadImage(file);
+  const cap = S.db ? 480000 : 110000, steps = [[1600, .78], [1280, .7], [1024, .6], [800, .5], [640, .45]];
+  let full = drawTo(img, steps[0][0], steps[0][1]); for (let i = 1; i < steps.length && full.length > cap; i++) full = drawTo(img, steps[i][0], steps[i][1]);
+  let thumb = drawTo(img, 220, 0.6); if (thumb.length > 12000) thumb = drawTo(img, 160, 0.5);
+  URL.revokeObjectURL(url); return { full, thumb };
+}
+const readAsDataUrl = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(new Error('อ่านไฟล์ไม่ได้')); r.readAsDataURL(file); });
+async function addFiles(list) {
+  const files = [...list], room = MAX_FILES - F.files.length;
+  if (files.length > room) toast(`แนบได้สูงสุด ${MAX_FILES} ไฟล์ต่อครั้ง`);
+  for (const file of files.slice(0, Math.max(0, room))) {
+    try {
+      let asImage = null;
+      if (/^image\/(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i.test(file.type)) { try { asImage = await compressImage(file); } catch { asImage = null; } }
+      if (asImage) F.files.push({ id: uid('f'), name: file.name || 'photo.jpg', type: 'image/jpeg', size: Math.round(asImage.full.length * 3 / 4), kind: 'image', thumb: asImage.thumb, data: asImage.full });
+      else { if (file.size > MAX_FILE_BYTES) { toast(`${file.name} ใหญ่เกิน 3 MB แนบไม่ได้`); continue; } F.files.push({ id: uid('f'), name: file.name, type: file.type || 'application/octet-stream', size: file.size, kind: 'file', thumb: null, data: await readAsDataUrl(file) }); }
+    } catch { toast(`อ่าน ${file.name || 'ไฟล์นี้'} ไม่ได้`); }
+  }
+  renderPhotos(); updateCalc();
+}
+$('#ciPhotoInput').addEventListener('change', async e => { await addFiles(e.target.files); e.target.value = ''; });
+$('#ciFileInput').addEventListener('change', async e => { await addFiles(e.target.files); e.target.value = ''; });
 $('#btnGps').addEventListener('click', () => {
   const btn = $('#btnGps');
   if (!navigator.geolocation) { $('#manualGps').open = true; toast('เครื่องนี้จับตำแหน่งไม่ได้ ใส่พิกัดเองด้านล่าง'); return; }
@@ -874,32 +921,42 @@ $('#fCheckin').addEventListener('click', e => {
   if (t.dataset.purpose) { F.purpose = t.dataset.purpose; updateCalc(); }
   else if (t.dataset.cstage !== undefined && t.dataset.cstage) { F.stage = F.stage === t.dataset.cstage ? '' : t.dataset.cstage; updateCalc(); }
   else if (t.dataset.veh) { F.vehicle = t.dataset.veh; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
-  else if (t.dataset.rmphoto !== undefined) { F.photos.splice(+t.dataset.rmphoto, 1); renderPhotos(); updateCalc(); }
+  else if (t.dataset.rmfile) { F.files = F.files.filter(f => f.id !== t.dataset.rmfile); renderPhotos(); updateCalc(); }
 });
 ['ciKm', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
 $('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } updateCalc(); });
-$('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.photos.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
-$('#fCheckin').addEventListener('submit', async e => {
-  e.preventDefault();
+$('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.files.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
+async function saveCheckin(claim) {
   if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนส่งรายงาน'); return; }
   if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
-  if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อนส่ง'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
+  if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อน'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
   if (!S.canWrite) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
-  const v = buildVisit(false), btn = $('#btnSubmit');
-  if (!(await confirmBox({ title: 'ส่งรายงานและขอเบิก?', body: `${v.customer} · ${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(v.total)} ส่งแล้วแก้ไขเองไม่ได้ ต้องให้ผู้จัดการตีกลับ`, ok: 'ส่งรายงาน' }))) return;
-  btn.disabled = true; btn.textContent = 'กำลังส่ง…';
+  const v = buildVisit(false), btn = claim ? $('#btnSubmit') : $('#btnSave'), label = btn.textContent;
+  if (claim) { v.claimStatus = 'claimed'; v.claimedAt = v.createdAt; }
+  else Object.assign(v, { kmOneWay: 0, kmRoundTrip: 0, rate: 0, fuelAmount: 0, receiptNo: '', toll: 0, total: 0, claimStatus: 'none' });
+  const q = claim
+    ? { title: 'ส่งรายงานและขอเบิก?', body: `${v.customer} · ${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(v.total)} ส่งแล้วแก้ไขเองไม่ได้ ต้องให้ผู้จัดการตีกลับ`, ok: 'ส่งรายงาน' }
+    : { title: 'บันทึกการเข้าพบไว้ก่อน?', body: `${v.customer} · ยังไม่ส่งขอเบิก กลับมากดขอเบิกย้อนหลังได้จากรายการนี้ในหน้าแรก`, ok: 'บันทึกไว้ก่อน' };
+  if (!(await confirmBox(q))) return;
+  btn.disabled = true; $('#btnSubmit').disabled = $('#btnSave').disabled = true; btn.textContent = 'กำลังบันทึก…';
   try {
     let cu = custByName(v.customer);
     if (!cu) { cu = { id: uid('c'), name: v.customer, contact: v.contact, phone: '', address: '', lat: v.gps.lat, lng: v.gps.lng, stage: v.stage || 'ติดต่อใหม่', dealValue: v.dealValue || 0, followUp: v.nextStep, followDate: v.nextDate, note: '', createdBy: S.myId, updatedAt: Date.now() }; }
     else { cu = { ...cu, contact: cu.contact || v.contact, lat: cu.lat ?? v.gps.lat, lng: cu.lng ?? v.gps.lng, stage: v.stage || cu.stage, dealValue: v.dealValue || cu.dealValue || 0, followUp: v.nextStep || cu.followUp || '', followDate: v.nextDate || cu.followDate || '', updatedAt: Date.now() }; }
     v.customerId = cu.id;
     await store.saveCustomer(cu); await store.saveVisit(v);
+    const failed = [];
+    for (const f of F.files) { btn.textContent = `กำลังอัปโหลดไฟล์ ${failed.length + F.files.indexOf(f) + 1}/${F.files.length}…`; try { await store.saveFileData(v, f, f.data); } catch { failed.push(f.name); } }
+    if (failed.length) { v.files = v.files.filter(f => !failed.includes(f.name)); await store.saveVisit(v).catch(() => {}); }
     S.me.vehicle = v.vehicle; if (v.vehicle !== 'company' && v.plate) S.me.plate = v.plate; lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
-    toast(`ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ`); resetForm(); go('home');
+    toast(failed.length ? `บันทึกแล้ว แต่แนบไม่สำเร็จ ${failed.length} ไฟล์` : claim ? `ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ` : `บันทึกแล้ว ${ref(v)} ขอเบิกย้อนหลังได้จากหน้าแรก`);
+    resetForm(); go('home');
   } catch (err) {
-    toast(err && err.code === 'quota_exceeded' ? 'พื้นที่เก็บข้อมูลเต็ม แจ้งผู้ดูแล' : err && err.code === 'invalid_argument' ? 'บันทึกไม่ได้ อาจเป็นเพราะรูปใหญ่เกินหรือไม่มีสิทธิ์เขียน ลองลดรูปลง' : 'ส่งไม่สำเร็จ ลองอีกครั้ง');
-  } finally { btn.disabled = false; btn.textContent = 'ส่งรายงานและขอเบิก'; }
-});
+    toast(err && err.code === 'quota_exceeded' ? 'พื้นที่เก็บข้อมูลเต็ม แจ้งผู้ดูแล' : err && err.code === 'invalid_argument' ? 'บันทึกไม่ได้ อาจไม่มีสิทธิ์เขียนหรือข้อมูลใหญ่เกิน' : 'ส่งไม่สำเร็จ ลองอีกครั้ง');
+  } finally { $('#btnSubmit').disabled = $('#btnSave').disabled = false; btn.textContent = label; }
+}
+$('#fCheckin').addEventListener('submit', e => { e.preventDefault(); saveCheckin(true); });
+$('#btnSave').addEventListener('click', () => saveCheckin(false));
 
 // ---------- sheets ----------
 function openSheet(html) { $('#sheetPanel').innerHTML = html; $('#sheet').hidden = false; $('#sheetPanel').scrollTop = 0; }
@@ -925,19 +982,80 @@ function openVisit(id) {
       ${v.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(v.nextStep)}${v.nextDate ? ' ภายใน ' + esc(v.nextDate) : ''}</dd>` : ''}
     </dl>
     <div class="card stack"><h2>รายงานผลการเข้าพบ</h2><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.report || '-')}</div>
-      ${v.photos && v.photos.length ? `<div class="photos">${v.photos.map((p, i) => `<figure><img src="${p}" alt="รูปหน้างาน ${i + 1}" data-zoom="${i}"></figure>`).join('')}</div>` : ''}</div>
-    <div class="card stack"><h2>ค่าเดินทาง · ${VEHICLES[v.vehicle] || v.vehicle}${v.plate ? ' · ' + esc(v.plate) : ''}</h2>
+      ${attachmentsHtml(v)}</div>
+    ${st === 'draft' ? `<div class="card stack"><h2>ค่าเดินทาง</h2><p class="sub">ยังไม่ได้ขอเบิกสำหรับการเข้าพบครั้งนี้</p>${(isMine(v) || S.admin) && S.canWrite ? `<button class="btn primary" data-claim="${esc(v.id)}">ขอเบิกค่าเดินทางย้อนหลัง</button>` : ''}</div>` : `<div class="card stack"><h2>ค่าเดินทาง · ${VEHICLES[v.vehicle] || v.vehicle}${v.plate ? ' · ' + esc(v.plate) : ''}</h2>
       <div class="calc">${v.vehicle === 'company'
         ? `<span>ค่าน้ำมันตามใบเสร็จ${v.receiptNo ? ' (' + esc(v.receiptNo) + ')' : ''}</span><span class="num">${fmtB(v.fuelAmount)}</span>`
         : `<span>ไป-กลับ ${fmtKm(v.kmRoundTrip)} กม. × ${fmtB(v.rate)}</span><span class="num">${fmtB(v.fuelAmount)}</span>${v.kmEstimate ? `<span class="sub">ระบบประมาณไว้</span><span class="num sub">${fmtKm(v.kmEstimate)} กม.</span>` : ''}`}
         <span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(v.toll)}</span><span class="total">รวมเบิกสุทธิ</span><span class="total num">${fmtB(v.total)}</span></div>
-      ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>
+      ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>`}
     <div class="card stack"><h2>จุดที่ควรตรวจ</h2><ul class="flags">${fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ไม่พบจุดผิดปกติ</li>'}</ul></div>
     ${ap && ap.status !== 'pending' ? `<p class="sub">${STATUS[ap.status]}โดย ${esc(ap.byName || '-')} เมื่อ ${dt(ap.at)}${ap.note ? '<br>หมายเหตุ: ' + esc(ap.note) : ''}</p>` : ''}
-    ${S.admin ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
+    ${S.admin && st !== 'draft' ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
       <div class="row"><button class="btn ok grow" data-approve="${esc(v.id)}">อนุมัติ</button><button class="btn bad grow" data-reject="${esc(v.id)}">ตีกลับ</button></div>
       ${st !== 'pending' ? `<button class="btn ghost sm" data-unset="${esc(v.id)}">ย้ายกลับไปรอตรวจ</button>` : ''}
       ${v.isExample ? `<button class="btn ghost sm" data-delvisit="${esc(v.id)}">ลบรายการตัวอย่างนี้</button>` : ''}</div>` : ''}`);
+}
+function attachmentsHtml(v) {
+  const legacy = (v.photos || []).map((p, i) => `<figure><img src="${p}" alt="รูปหน้างาน ${i + 1}" data-zoom="${i}"></figure>`);
+  const imgs = (v.files || []).filter(f => f.kind === 'image').map(f => `<figure><img src="${f.thumb || ''}" alt="${esc(f.name)}" data-openfile="${esc(f.id)}" data-vid="${esc(v.id)}"></figure>`);
+  const docs = (v.files || []).filter(f => f.kind !== 'image').map(f => `<div class="file"><span class="ic">${esc(extOf(f.name) || 'FILE')}</span><span class="nm">${esc(f.name)}</span><span class="sz">${fmtSize(f.size)}</span><button type="button" class="btn soft" data-openfile="${esc(f.id)}" data-vid="${esc(v.id)}">เปิด</button></div>`);
+  return (legacy.length || imgs.length ? `<div class="photos">${legacy.join('')}${imgs.join('')}</div>` : '') + (docs.length ? `<div class="files">${docs.join('')}</div>` : '');
+}
+async function openFile(vid, fid) {
+  const v = S.visits.find(x => x.id === vid), f = v && (v.files || []).find(x => x.id === fid); if (!f) return;
+  toast('กำลังโหลดไฟล์…');
+  let data = null; try { data = await store.loadFileData(v, f); } catch {}
+  if (!data) { toast('โหลดไฟล์ไม่ได้ อาจถูกลบหรือไม่มีสิทธิ์'); return; }
+  if (f.kind === 'image') { openSheet(`${bar(esc(f.name))}<img src="${data}" alt="${esc(f.name)}" style="width:100%;border-radius:12px"><div class="row"><button class="btn soft" data-savefile="${esc(fid)}" data-vid="${esc(vid)}">บันทึกรูปลงเครื่อง</button><button class="btn ghost" data-visit="${esc(vid)}">กลับ</button></div>`); return; }
+  await saveToDevice(f, data);
+}
+async function saveToDevice(f, data) {
+  const bin = atob(data.split(',')[1] || ''), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  const blob = new Blob([u8], { type: f.type || 'application/octet-stream' });
+  const dl = window.claude && claude.use ? await claude.use('downloads').catch(() => null) : null;
+  if (dl) { try { await dl.save({ filename: f.name, data: blob }); } catch (e) { if (e && e.code !== 'cancelled' && e.code !== 'declined') toast('บันทึกไฟล์ไม่สำเร็จ'); } return; }
+  const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = f.name; a.target = '_blank'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+function openClaim(id) {
+  const v = S.visits.find(x => x.id === id); if (!v) return;
+  const s = S.settings, est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, C = { vehicle: S.me.vehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: '' };
+  const render = () => {
+    const rate = C.vehicle === 'car' ? +s.rateCar : C.vehicle === 'moto' ? +s.rateMoto : 0;
+    openSheet(`${bar('ขอเบิกย้อนหลัง')}
+      <p class="sub">${esc(v.customer)} · เช็คอิน ${dt(v.createdAt)}</p>
+      <form id="fClaim" class="stack" novalidate>
+        <div class="chips">${Object.entries(VEHICLES).map(([k, l]) => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${l}${k === 'car' ? ` ${s.rateCar} บ./กม.` : k === 'moto' ? ` ${s.rateMoto} บ./กม.` : ' (ตามบิล)'}</button>`).join('')}</div>
+        <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
+        ${C.vehicle !== 'company' ? `<div class="notice">${!officeSet() ? 'ยังไม่ได้ปักพิกัดบริษัท ใส่ระยะจาก Google Maps เอง' : v.gps ? `ระบบประมาณไป-กลับ <b class="num">${fmtKm(est)} กม.</b><br><a href="${mapsDir(s.officeLat, s.officeLng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">เปิดเส้นทางจากบริษัทใน Google Maps</a> แล้วนำระยะขาไปมาใส่` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
+          <label class="f">ระยะทางขาไปตาม Google Maps (กม.)<span class="hint">ระบบคูณ 2 เป็นระยะไป-กลับให้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>`
+        : `<label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="cmFuel" inputmode="decimal" min="0" step="0.01" value="${esc(C.fuel)}"></label><label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="cmReceipt" value="${esc(C.receipt)}"></label>`}
+        <label class="f">ค่าทางด่วน / ที่จอดรถ (บาท)<input type="number" id="cmToll" inputmode="decimal" min="0" step="0.01" value="${esc(C.toll)}"></label>
+        <div class="calc" id="cmCalc"></div>
+        <button class="btn primary block lg" type="submit">ส่งขอเบิก</button>
+      </form>`);
+    const val = sel => { const el = $(sel); return el ? el.value : ''; };
+    const calc = () => { const km1 = Math.max(0, +val('#cmKm') || 0), kmRT = Math.round(km1 * 2 * 10) / 10, toll = n2(Math.max(0, +val('#cmToll') || 0)), fuel = C.vehicle === 'company' ? n2(Math.max(0, +val('#cmFuel') || 0)) : n2(kmRT * rate), total = n2(fuel + toll);
+      $('#cmCalc').innerHTML = (C.vehicle === 'company' ? `<span>ค่าน้ำมันตามใบเสร็จ</span><span class="num">${fmtB(fuel)}</span>` : `<span>ไป-กลับ ${fmtKm(kmRT)} กม. × ${fmtB(rate)} บาท</span><span class="num">${fmtB(fuel)}</span>`) + `<span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(total)}</span>`;
+      return { kmOne: km1, kmRT, rate, fuel, toll, total }; };
+    calc();
+    const keep = () => { C.plate = val('#cmPlate'); C.km = val('#cmKm'); C.fuel = val('#cmFuel'); C.receipt = val('#cmReceipt'); C.toll = val('#cmToll'); };
+    $('#fClaim').addEventListener('input', calc);
+    $('#fClaim').addEventListener('click', e => { const t = e.target.closest('[data-cveh]'); if (!t) return; keep(); C.vehicle = t.dataset.cveh; render(); });
+    $('#fClaim').addEventListener('submit', async e => {
+      e.preventDefault(); const c = calc(); keep();
+      if (C.vehicle !== 'company' && !c.kmOne) { toast('ใส่ระยะทางก่อน'); return; }
+      if (!(await confirmBox({ title: 'ส่งขอเบิกรายการนี้?', body: `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(c.total)} ส่งแล้วแก้ไขเองไม่ได้`, ok: 'ส่งขอเบิก' }))) return;
+      const nv = { ...v, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null };
+      try { await store.saveVisit(nv); S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); toast(`ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`); closeSheet(); }
+      catch { toast('ส่งไม่สำเร็จ ลองอีกครั้ง'); }
+    });
+  };
+  render();
+}
+function openDrafts() {
+  const ds = S.visits.filter(v => isMine(v) && statusOf(v) === 'draft');
+  openSheet(`${bar('รายการที่ยังไม่ได้ขอเบิก')}<p class="sub">แตะรายการแล้วกด "ขอเบิกค่าเดินทางย้อนหลัง"</p><div class="list" style="display:flex">${ds.length ? ds.map(v => visitItem(v)).join('') : '<div class="empty">ไม่มีรายการค้าง</div>'}</div>`);
 }
 async function decide(id, status) {
   const v = S.visits.find(x => x.id === id), who = v ? `${v.customer} · ${v.staffName} · ฿${fmtB(v.total)}` : '';
@@ -1033,9 +1151,13 @@ $('#custSearch').addEventListener('input', renderCustomers);
 $('#tmMonth').addEventListener('change', renderTeam); $('#rpMonth').addEventListener('change', renderReport); $('#rpWho').addEventListener('change', renderReport); $('#clMonth').addEventListener('change', renderClaims); $('#clWho').addEventListener('change', renderClaims);
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
+  const t = e.target.closest('[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
   if (!t) return; const d = t.dataset;
-  if (d.staff) openStaff(d.staff);
+  if (d.claim) openClaim(d.claim);
+  else if (d.drafts) openDrafts();
+  else if (d.openfile) openFile(d.vid, d.openfile);
+  else if (d.savefile) { const v = S.visits.find(x => x.id === d.vid), f = v && v.files.find(x => x.id === d.savefile); if (f) store.loadFileData(v, f).then(data => data && saveToDevice(f, data)); }
+  else if (d.staff) openStaff(d.staff);
   else if (d.reportfor) { closeSheet(); $('#rpMonth').value = $('#tmMonth').value; renderReport(); $('#rpWho').value = d.reportfor; renderReport(); go('report'); }
   else if (d.claimsfor) { closeSheet(); $('#clMonth').value = $('#tmMonth').value; renderClaims(); $('#clWho').value = d.claimsfor; renderClaims(); go('claims'); }
   else if (d.open === 'settings') openSettings();
@@ -1055,8 +1177,8 @@ document.addEventListener('click', e => {
 // ---------- export ----------
 function csvText() {
   const rows = claimsRows(), q = x => `"${String(x ?? '').replace(/"/g, '""')}"`;
-  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนรูป', 'ประเภทรถ', 'ทะเบียน', 'ระยะทางไป-กลับ (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
-  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length, VEHICLES[v.vehicle], v.plate, v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
+  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนไฟล์แนบ', 'ประเภทรถ', 'ทะเบียน', 'ระยะทางไป-กลับ (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
+  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length + (v.files || []).length, VEHICLES[v.vehicle], v.plate, v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
   return '﻿' + [head, ...body].map(r => r.map(q).join(',')).join('\r\n');
 }
 $('#btnCsv').addEventListener('click', async () => {
@@ -1078,6 +1200,4 @@ applyRole(); renderPhotos(); renderAll(); updateCalc();
 connect();
 })();
 </script>
-
-</body>
-</html>
+</body></html>
