@@ -299,10 +299,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
       </label>
       <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">สถานะโอกาสขายหลังเข้าพบ</span><div class="chips" id="ciStage"></div></div>
       <label class="f">มูลค่าโอกาสขาย (บาท)<span class="hint">ไม่บังคับ ใส่ยอดที่คาดว่าจะเสนอหรือปิดได้ เพื่อให้รายงานรวมมูลค่าได้</span><input type="number" id="ciValue" inputmode="decimal" min="0" step="1" placeholder="0"></label>
-      <div class="row" style="align-items:flex-end">
-        <label class="f grow">สิ่งที่ต้องทำต่อ<input type="text" id="ciNext" placeholder="เช่น ส่งใบเสนอราคา"></label>
-        <label class="f" style="width:150px">ภายในวันที่<input type="date" id="ciNextDate"></label>
+      <div class="row" style="align-items:flex-end;flex-wrap:wrap">
+        <label class="f" style="flex:1 1 240px;min-width:0">สิ่งที่ต้องทำต่อ<select id="ciNext" style="width:100%;min-width:0;text-overflow:ellipsis"></select></label>
+        <label class="f" style="flex:0 1 150px">ภายในวันที่<input type="date" id="ciNextDate"></label>
       </div>
+      <div class="row" id="ciNextNewRow" hidden style="align-items:flex-end">
+        <label class="f grow">ชื่อตัวเลือกใหม่<span class="hint">จะถูกเพิ่มในรายการให้เลือกครั้งต่อไป</span><input type="text" id="ciNextNew" placeholder="เช่น ส่งตัวอย่างสีให้เลือก"></label>
+      </div>
+      <label class="f">หมายเหตุสิ่งที่ต้องทำต่อ<span class="hint">ไม่บังคับ เช่น เงื่อนไขเฉพาะหน้างาน</span><input type="text" id="ciNextNote" placeholder="เช่น ลูกค้าขอ COA ของล็อตล่าสุด"></label>
       <div class="stack" style="gap:8px">
         <span style="font-size:14px;font-weight:500">รูปหน้างานและไฟล์แนบ <span class="sub" style="display:inline" id="ciFileCount">(สูงสุด 10 ไฟล์)</span></span>
         <div class="photos" id="ciPhotos"></div>
@@ -428,6 +432,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 const PURPOSES = ['เข้าพบลูกค้า / สำรวจหน้างาน','ซ่อมบำรุง / ทดสอบระบบ','รับ-ส่งสินค้า / อะไหล่ / เอกสาร','ติดต่อหน่วยงานราชการ / ธนาคาร','อื่นๆ'];
 const STAGES = ['ติดต่อใหม่','สำรวจ / นำเสนอ','เสนอราคา','ต่อรอง','ปิดการขาย','ไม่ได้งาน'];
 const VEHICLES = { car:'รถยนต์ส่วนตัว', moto:'มอเตอร์ไซค์ส่วนตัว', company:'รถส่วนกลางบริษัท' };
+const NEXT_ACTIONS = [
+  ['เอกสารและเทคนิค', 2, ['ส่ง Spec Sheet / แคตตาล็อก / ใบรับรอง (COA, Material Test Report)', 'ถอดแบบหน้างาน / ทำ Drawing ส่งให้ลูกค้าอนุมัติ', 'ประสานงานทีมช่าง / โรงกลึง เช็กความเป็นไปได้ในการผลิต', 'ตรวจสอบเทียบเบอร์ / รหัสสินค้าเดิม (Cross Reference Part)']],
+  ['ตัวอย่างและการทดสอบ', 7, ['จัดส่งตัวอย่างสินค้า (Sample) ไปให้ทดลองใช้งาน', 'นำตัวอย่างของลูกค้ากลับมาวัดขนาด / ตรวจสอบความเสียหาย', 'นัดหมายเข้าติดตั้งตัวอย่างหน้างาน (Field Test)', 'ติดตามผลการทดสอบการใช้งาน (Sample Evaluation Follow-up)']],
+  ['การประสานงานและเจรจา', 3, ['ติดตามผลใบเสนอราคาเดิม / เจรจาต่อรองเงื่อนไข', 'นัดประชุมนำเสนอทางเทคนิค (Technical Presentation)', 'นัดสำรวจหน้างานเพิ่มเติมร่วมกับทีมวิศวกร / ช่างซ่อมบำรุง', 'ขอขึ้นทะเบียนผู้ค้า (Vendor Registration / Approved Vendor List)']],
+  ['การปิดการขายและส่งมอบ', 3, ['ติดตามใบสั่งซื้อ (Follow-up PO)', 'แจ้งกำหนดการส่งมอบสินค้า / ติดตามสถานะสต็อก', 'เข้าตรวจเช็กหน้างานหลังส่งมอบหรือหลังการเดินระบบ (After-sales Inspection)']],
+  ['งานอื่น ๆ และการดูแลความสัมพันธ์', 14, ['นัดเข้าเยี่ยมรอบถัดไปตามรอบ (Routine Visit)', 'นำส่งของขวัญ / ปฏิทิน / เอกสารแนะนำบริษัท', 'ปิดงาน / ไม่มี Action ต่อเนื่อง (Lost / Case Closed)']]
+];
+const NEXT_NEW = '__new';
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
 const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:7, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
@@ -560,7 +572,7 @@ async function connect() {
   db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
   renderAll();
 }
-function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', updatedAt: Date.now() }; }
+function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
 function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); document.body.classList.toggle('role-sales', !S.admin); }
 const staffKey = v => v.createdBy || ('n:' + v.staffName);
 
@@ -596,7 +608,7 @@ function go(view) {
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); } });
 
 // ---------- render ----------
-function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); }
+function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); if (typeof renderNextOptions === 'function') renderNextOptions(); }
 function renderHeader() {
   const nm = S.me.name || 'ยังไม่ได้ตั้งชื่อ';
   $('#whoLine').textContent = `${nm} · ${S.admin ? 'ผู้จัดการฝ่ายขาย' : 'พนักงานขาย'} · ${S.mode === 'shared' ? 'ข้อมูลกลางของทีม' : 'บันทึกในเครื่องนี้'}`;
@@ -853,15 +865,40 @@ function buildVisit(draft) {
     customer: cust, customerId: cu ? cu.id : null, contact: $('#ciContact').value.trim(), purpose: F.purpose,
     gps: g ? { lat: +g.lat.toFixed(6), lng: +g.lng.toFixed(6), acc: g.acc ?? null, source: g.source, at: g.at } : null,
     siteDistM: g && cu && cu.lat != null ? Math.round(haversineKm(g.lat, g.lng, cu.lat, cu.lng) * 1000) : null,
-    report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: $('#ciNext').value.trim(), nextDate: $('#ciNextDate').value,
+    report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: nextStepValue(), nextNote: $('#ciNextNote').value.trim(), nextDate: $('#ciNextDate').value,
     photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
     kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d ? estimateRoundTrip(d.lat, d.lng) : null, rate: c.rate,
     fuelAmount: c.fuel, receiptNo: $('#ciReceipt').value.trim(), toll: c.toll, total: c.total,
     officeAt: officeSet() ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null,
   };
 }
+function customActions() { return [...new Set([...(S.settings.customActions || []), ...(S.me.customActions || [])])].filter(Boolean); }
+function renderNextOptions(keep) {
+  const sel = $('#ciNext'), cur = keep ?? sel.value, cust = customActions();
+  sel.innerHTML = `<option value="">ยังไม่ระบุ</option>` + NEXT_ACTIONS.map(([g, , items]) => `<optgroup label="${esc(g)}">${items.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('')}</optgroup>`).join('')
+    + (cust.length ? `<optgroup label="ตัวเลือกที่เพิ่มเอง">${cust.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('')}</optgroup>` : '')
+    + `<optgroup label="ไม่มีในรายการ"><option value="${NEXT_NEW}">+ เพิ่มตัวเลือกใหม่…</option></optgroup>`;
+  sel.value = cur; if (sel.value !== cur) sel.value = '';
+  $('#ciNextNewRow').hidden = sel.value !== NEXT_NEW;
+}
+function nextStepValue() { const v = $('#ciNext').value; return v === NEXT_NEW ? $('#ciNextNew').value.trim() : v; }
+function addWorkDays(d, n) { const x = new Date(d); while (n > 0) { x.setDate(x.getDate() + 1); if (x.getDay() !== 0 && x.getDay() !== 6) n--; } return x; }
+const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+$('#ciNext').addEventListener('change', () => {
+  const v = $('#ciNext').value; $('#ciNextNewRow').hidden = v !== NEXT_NEW; if (v === NEXT_NEW) setTimeout(() => $('#ciNextNew').focus(), 50);
+  const grp = NEXT_ACTIONS.find(([, , items]) => items.includes(v));
+  if (grp && !F.dateTouched) $('#ciNextDate').value = isoDate(addWorkDays(new Date(), grp[1]));
+  if (!v && !F.dateTouched) $('#ciNextDate').value = '';
+});
+$('#ciNextDate').addEventListener('input', () => { F.dateTouched = !!$('#ciNextDate').value; });
+renderNextOptions('');
+async function rememberCustomAction(name) {
+  if (!name || NEXT_ACTIONS.some(([, , items]) => items.includes(name)) || customActions().includes(name)) return;
+  if (S.admin) { const st = { ...S.settings, customActions: [...(S.settings.customActions || []), name] }; S.settings = st; try { await store.saveSettings(st); } catch {} }
+  else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
+}
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
 }
 const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
@@ -931,6 +968,7 @@ async function saveCheckin(claim) {
   if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
   if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อน'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
   if (!S.canWrite) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
+  if ($('#ciNext').value === NEXT_NEW && !$('#ciNextNew').value.trim()) { $('#ciNextNew').focus(); toast('พิมพ์ชื่อตัวเลือกใหม่ หรือเลือกจากรายการ'); return; }
   const v = buildVisit(false), btn = claim ? $('#btnSubmit') : $('#btnSave'), label = btn.textContent;
   if (claim) { v.claimStatus = 'claimed'; v.claimedAt = v.createdAt; }
   else Object.assign(v, { kmOneWay: 0, kmRoundTrip: 0, rate: 0, fuelAmount: 0, receiptNo: '', toll: 0, total: 0, claimStatus: 'none' });
@@ -944,7 +982,7 @@ async function saveCheckin(claim) {
     if (!cu) { cu = { id: uid('c'), name: v.customer, contact: v.contact, phone: '', address: '', lat: v.gps.lat, lng: v.gps.lng, stage: v.stage || 'ติดต่อใหม่', dealValue: v.dealValue || 0, followUp: v.nextStep, followDate: v.nextDate, note: '', createdBy: S.myId, updatedAt: Date.now() }; }
     else { cu = { ...cu, contact: cu.contact || v.contact, lat: cu.lat ?? v.gps.lat, lng: cu.lng ?? v.gps.lng, stage: v.stage || cu.stage, dealValue: v.dealValue || cu.dealValue || 0, followUp: v.nextStep || cu.followUp || '', followDate: v.nextDate || cu.followDate || '', updatedAt: Date.now() }; }
     v.customerId = cu.id;
-    await store.saveCustomer(cu); await store.saveVisit(v);
+    await store.saveCustomer(cu); await store.saveVisit(v); await rememberCustomAction(v.nextStep);
     const failed = [];
     for (const f of F.files) { btn.textContent = `กำลังอัปโหลดไฟล์ ${failed.length + F.files.indexOf(f) + 1}/${F.files.length}…`; try { await store.saveFileData(v, f, f.data); } catch { failed.push(f.name); } }
     if (failed.length) { v.files = v.files.filter(f => !failed.includes(f.name)); await store.saveVisit(v).catch(() => {}); }
@@ -979,7 +1017,7 @@ function openVisit(id) {
       <dt>พิกัด</dt><dd>${v.gps ? `<a href="${mapsPin(v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener" class="num">${v.gps.lat}, ${v.gps.lng}</a><br><span class="sub">${v.gps.source === 'device' ? 'จับจากเครื่อง' + (v.gps.acc != null ? ' ±' + Math.round(v.gps.acc) + ' ม.' : '') : 'ใส่เอง'}</span>` : '-'}</dd>
       ${v.stage ? `<dt>สถานะงาน</dt><dd>${esc(v.stage)}</dd>` : ''}
       ${v.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(v.dealValue)}</dd>` : ''}
-      ${v.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(v.nextStep)}${v.nextDate ? ' ภายใน ' + esc(v.nextDate) : ''}</dd>` : ''}
+      ${v.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(v.nextStep)}${v.nextDate ? ' ภายใน ' + esc(v.nextDate) : ''}${v.nextNote ? `<br><span class="sub">${esc(v.nextNote)}</span>` : ''}</dd>` : ''}
     </dl>
     <div class="card stack"><h2>รายงานผลการเข้าพบ</h2><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.report || '-')}</div>
       ${attachmentsHtml(v)}</div>
