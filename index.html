@@ -1,4 +1,7 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flow CRM</title><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Flow CRM ภาคสนาม</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flow CRM</title><style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head><body><title>Flow CRM ภาคสนาม</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
@@ -50,7 +53,7 @@ h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02
 .tile b.money{color:var(--accent)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:500}
 label.f > span.hint{font-weight:400;color:var(--muted);font-size:12px}
-input[type=text],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=search],textarea,select{
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=search],textarea,select{
   font:inherit;font-size:17px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:var(--rb);padding:12px;width:100%;min-width:0}
 textarea{min-height:96px;resize:vertical;line-height:1.47}
 input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.btn:focus-within{outline:2px solid var(--focus);outline-offset:1px}
@@ -76,6 +79,13 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .pill.approved{background:var(--ok-soft);color:var(--ok)}
 .pill.rejected{background:var(--bad-soft);color:var(--bad)}
 .pill.stage{background:var(--accent-soft);color:var(--accent)}
+.pill.active{background:var(--ok-soft);color:var(--ok)}
+.pill.disabled{background:var(--bad-soft);color:var(--bad)}
+.gate{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
+.gate .wrap{max-width:520px;margin:0 auto;padding:28px 16px 40px}
+.gate .logo{width:56px;height:56px;border-radius:14px;margin-bottom:14px}
+.gate h1{font-size:28px;margin-bottom:4px}
+.gate .card{margin-top:16px}
 .pill.draft{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
 .pill.ex{background:var(--bg);color:var(--muted);border:1px dashed var(--line)}
 .step{display:flex;gap:8px;align-items:center}
@@ -402,6 +412,20 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <textarea id="repFallback" hidden readonly></textarea>
 </section>
 
+<!-- ADMIN / BACK OFFICE -->
+<section class="view wrap" id="v-admin" hidden>
+  <div class="stack" style="gap:4px"><h1>หลังบ้าน</h1><p class="sub">สำหรับเจ้าของ CEO และผู้จัดการ ดูภาพรวมการทำงาน อนุมัติ และจัดการผู้ใช้งาน</p></div>
+  <div class="tiles" id="adTiles"></div>
+  <div class="stack" id="adPendingWrap" hidden><h2>คำขอลงทะเบียนใหม่ <span class="pill pending" id="adPendN">0</span></h2><div class="list" id="adPending"></div></div>
+  <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite">+ เพิ่มพนักงาน</button></div>
+  <div class="chips" id="adFilter"></div>
+  <div class="list" id="adUsers"></div>
+  <div class="stack" id="adInvitesWrap" hidden><h2>รหัสเชิญที่ยังไม่ได้ใช้</h2><div class="list" id="adInvites"></div></div>
+  <h2>กิจกรรมล่าสุด</h2>
+  <div class="list" id="adActivity"></div>
+  <p class="sub" id="adFoot"></p>
+</section>
+
 <!-- APPROVE -->
 <section class="view wrap" id="v-approve" hidden>
   <h1>ตรวจและอนุมัติ</h1>
@@ -419,8 +443,10 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <button data-go="claims" class="desk-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>เบิก</button>
   <button data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
   <button data-go="approve" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>อนุมัติ<span class="badge" id="apBadge" hidden>0</span></button>
+  <button data-go="admin" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 20V10"/></svg>หลังบ้าน<span class="badge" id="adBadge" hidden>0</span></button>
 </div></nav>
 
+<div class="gate" id="gate" hidden></div>
 <div class="sheet" id="sheet" hidden><div class="panel" id="sheetPanel"></div></div>
 <div class="confirm" id="confirm" hidden role="dialog" aria-modal="true"><div class="box"><h3 id="cfTitle"></h3><p id="cfBody"></p><div class="acts"><button class="btn ghost" id="cfNo">ยกเลิก</button><button class="btn primary" id="cfYes">ยืนยัน</button></div></div></div>
 <div class="toast" id="toast" hidden></div>
@@ -440,6 +466,8 @@ const NEXT_ACTIONS = [
   ['งานอื่น ๆ และการดูแลความสัมพันธ์', 14, ['นัดเข้าเยี่ยมรอบถัดไปตามรอบ (Routine Visit)', 'นำส่งของขวัญ / ปฏิทิน / เอกสารแนะนำบริษัท', 'ปิดงาน / ไม่มี Action ต่อเนื่อง (Lost / Case Closed)']]
 ];
 const NEXT_NEW = '__new';
+const ROLES = { owner: 'เจ้าของ / CEO', manager: 'ผู้จัดการฝ่ายขาย', sales: 'พนักงานขาย' };
+const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
 const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:7, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
@@ -504,7 +532,7 @@ let toastT; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.
 
 // ---------- state ----------
 const S = { mode: 'local', db: null, user: null, myId: null, admin: true, canWrite: true,
-  staff: {}, visitsBy: {}, visits: [], customers: [], approvals: {}, settings: { ...DEFAULT_SETTINGS }, view: 'home',
+  staff: {}, visitsBy: {}, visits: [], customers: [], approvals: {}, settings: { ...DEFAULT_SETTINGS }, view: 'home', meDoc: null, meLoaded: false, invites: {},
   me: lsGet(LS_ME, { name: '', code: '', dept: '', vehicle: 'car', plate: '' }) };
 let local = lsGet(LS_KEY, { visits: [], customers: [], approvals: {}, settings: null });
 function loadLocal() { S.visits = [...local.visits].sort((a,b) => b.createdAt - a.createdAt); S.customers = [...local.customers]; S.approvals = { ...local.approvals }; S.settings = { ...DEFAULT_SETTINGS, ...(local.settings || {}) }; }
@@ -531,7 +559,11 @@ const store = {
     for (let i = 1; i < (x.chunks || 1); i++) { const c = await d.collection('chunks').doc(String(i)).get(); out += c.exists ? c.data().data : ''; }
     return out;
   },
-  async saveStaff(p) { lsSet(LS_ME, S.me); if (S.db && S.myId) return S.db.doc('staff/' + S.myId).set(p); },
+  async saveStaff(p) { lsSet(LS_ME, S.me); if (!S.db || !S.myId) return; const d = S.db.doc('staff/' + S.myId); if (S.meDoc) return d.update(p); return d.set({ ...p, status: 'active', role: S.admin ? 'manager' : 'sales', registeredAt: Date.now() }); },
+  async registerStaff(doc) { if (!S.db || !S.myId) return; return S.db.doc('staff/' + S.myId).set(doc); },
+  async setStaff(uid, patch) { if (S.db) return S.db.doc('staff/' + uid).update(patch); },
+  async deleteStaff(uid) { if (S.db) return S.db.doc('staff/' + uid).delete(); },
+  async saveInvites(codes) { if (S.db) return S.db.doc('config/invites').set({ codes, updatedAt: Date.now() }); S.invites = codes; renderAll(); },
   async saveCustomer(c) { if (S.db) return S.db.collection('customers').doc(c.id).set(c); local.customers = local.customers.filter(x => x.id !== c.id).concat(c); persist(); },
   async setApproval(id, a) { if (S.db) return S.db.collection('approvals').doc(id).set(a); local.approvals[id] = a; persist(); },
   async saveSettings(s) { if (S.db) return S.db.doc('config/settings').set(s); local.settings = s; persist(); },
@@ -539,6 +571,7 @@ const store = {
 function persist() { if (!lsSet(LS_KEY, local)) toast('เครื่องนี้บันทึกข้อมูลไม่ได้ (พื้นที่เต็มหรือโหมดส่วนตัว)'); loadLocal(); renderAll(); }
 
 async function connect() {
+  if (SB) return connectSupabase();
   if (!window.claude || !claude.use) { applyRole(); return; }
   const [db, user] = await Promise.all([claude.use('db').catch(() => null), claude.use('user').catch(() => null)]);
   if (user) {
@@ -563,16 +596,29 @@ async function connect() {
   };
   watchVisits(S.myId);
   db.doc('staff/' + S.myId).onSnapshot(sn => {
-    if (sn.exists) { const d = sn.data(); const merged = { ...d, ...Object.fromEntries(Object.entries(S.me).filter(([, v]) => v)) }; S.me = merged; lsSet(LS_ME, S.me); renderAll(); }
-    else if (S.me.name) store.saveStaff(staffDoc()).catch(() => {});
+    S.meLoaded = true; S.meDoc = sn.exists ? sn.data() : null;
+    if (sn.exists) { const d = sn.data(); S.me = { ...d, ...Object.fromEntries(Object.entries(S.me).filter(([, v]) => v)), status: d.status || 'active', role: d.role || (S.admin ? 'manager' : 'sales') }; lsSet(LS_ME, S.me); }
+    else if (S.admin && S.me.name) store.saveStaff(staffDoc()).catch(() => {});
+    renderAll(); renderGate();
   }, err);
-  if (S.admin) db.collection('staff').limit(200).onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { m[d.id] = d.data(); watchVisits(d.id); }); S.staff = m; renderAll(); }, err);
+  db.doc('config/invites').onSnapshot(sn => { S.invites = sn.exists ? (sn.data().codes || {}) : {}; renderAll(); if (S.admin) cleanupInvites(); }, err);
+  if (S.admin) db.collection('staff').limit(200).onSnapshot(sn => { const m = {}; sn.docs.forEach(d => { m[d.id] = d.data(); watchVisits(d.id); }); S.staff = m; renderAll(); cleanupInvites(); }, err);
   db.collection('customers').limit(1000).onSnapshot(sn => { S.customers = sn.docs.map(d => ({ ...d.data(), id: d.id })); renderAll(); }, err);
   db.collection('approvals').limit(1000).onSnapshot(sn => { const m = {}; sn.docs.forEach(d => m[d.id] = d.data()); S.approvals = m; renderAll(); }, err);
   db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
   renderAll();
 }
-function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+function isActive() { return S.mode !== 'shared' || S.admin || (S.meDoc && S.meDoc.status === 'active'); }
+function roleLabel() { return ROLES[S.me.role] || (S.admin ? ROLES.manager : ROLES.sales); }
+let cleaning = false;
+async function cleanupInvites() {
+  if (cleaning || !S.admin || !S.db) return;
+  const used = Object.keys(S.invites).filter(code => Object.values(S.staff).some(p => p.inviteCode === code));
+  if (!used.length) return;
+  cleaning = true; const codes = { ...S.invites }; used.forEach(c => delete codes[c]);
+  try { await store.saveInvites(codes); } catch {} finally { cleaning = false; }
+}
 function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); document.body.classList.toggle('role-sales', !S.admin); }
 const staffKey = v => v.createdBy || ('n:' + v.staffName);
 
@@ -608,14 +654,15 @@ function go(view) {
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); } });
 
 // ---------- render ----------
-function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); if (typeof renderNextOptions === 'function') renderNextOptions(); }
+function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); if (typeof renderNextOptions === 'function') renderNextOptions(); if (typeof renderAdmin === 'function') renderAdmin(); }
 function renderHeader() {
   const nm = S.me.name || 'ยังไม่ได้ตั้งชื่อ';
-  $('#whoLine').textContent = `${nm} · ${S.admin ? 'ผู้จัดการฝ่ายขาย' : 'พนักงานขาย'} · ${S.mode === 'shared' ? 'ข้อมูลกลางของทีม' : 'บันทึกในเครื่องนี้'}`;
+  $('#whoLine').textContent = `${nm} · ${roleLabel()} · ${S.mode === 'shared' ? 'ข้อมูลกลางของทีม' : 'บันทึกในเครื่องนี้'}`;
   $('#hello').textContent = S.me.name ? `สวัสดี ${S.me.name}` : 'สวัสดี';
   const d = new Date(); $('#todayLine').textContent = d.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const notes = [];
   if (!S.me.name) notes.push('<b>ตั้งชื่อพนักงานก่อน</b> กดปุ่มตั้งค่ามุมขวาบน ชื่อจะติดไปกับทุกรายงาน');
+  if (window.FLOW_SUPABASE && !S.sb && S.mode === 'local') notes.push('<b>ยังไม่ได้เชื่อมฐานข้อมูล</b> ข้อมูลเก็บในเครื่องนี้เท่านั้น ใส่ Project URL และ anon key ของ Supabase ในไฟล์ config.js');
   if (!officeSet()) notes.push(`<b>ยังไม่ได้ปักพิกัดบริษัท</b> ระบบจึงยังประมาณระยะทางเพื่อตรวจสอบไม่ได้${S.admin ? ' ตั้งได้ที่ปุ่มตั้งค่า' : ' แจ้งผู้ดูแลให้ตั้งค่า'}`);
   $('#setupNotice').hidden = !notes.length; $('#setupNotice').innerHTML = notes.join('<br>');
 }
@@ -968,6 +1015,7 @@ async function saveCheckin(claim) {
   if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
   if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อน'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
   if (!S.canWrite) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
+  if (!isActive()) { toast('บัญชียังไม่ได้รับอนุมัติให้ใช้งาน'); renderGate(); return; }
   if ($('#ciNext').value === NEXT_NEW && !$('#ciNextNew').value.trim()) { $('#ciNextNew').focus(); toast('พิมพ์ชื่อตัวเลือกใหม่ หรือเลือกจากรายการ'); return; }
   const v = buildVisit(false), btn = claim ? $('#btnSubmit') : $('#btnSave'), label = btn.textContent;
   if (claim) { v.claimStatus = 'claimed'; v.claimedAt = v.createdAt; }
@@ -1142,10 +1190,10 @@ function openSettings() {
   const s = S.settings, m = S.me, dis = S.admin ? '' : 'disabled';
   openSheet(`${bar('ตั้งค่า')}
     <form id="fSet" class="stack" novalidate>
-      <div class="card stack"><h2>ข้อมูลพนักงาน · ${S.admin ? 'ผู้จัดการฝ่ายขาย' : 'พนักงานขาย'}</h2>
+      <div class="card stack"><h2>ข้อมูลพนักงาน · ${roleLabel()}</h2>
         <label class="f">ชื่อ-นามสกุล<input type="text" id="seName" value="${esc(m.name)}" placeholder="ชื่อที่จะติดไปกับรายงาน"></label>
         <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="seCode" value="${esc(m.code)}"></label><label class="f grow">แผนก<input type="text" id="seDept" value="${esc(m.dept)}"></label></div>
-        <label class="f">ทะเบียนรถส่วนตัว<input type="text" id="sePlate" value="${esc(m.plate)}"></label>
+        <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label><label class="f grow">ทะเบียนรถส่วนตัว<input type="text" id="sePlate" value="${esc(m.plate)}"></label></div>
       </div>
       <div class="card stack"><h2>ค่าบริษัท ${S.admin ? '' : '(ผู้จัดการฝ่ายขายเท่านั้นที่แก้ได้)'}</h2>
         <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
@@ -1161,15 +1209,17 @@ function openSettings() {
         </div></details>
       </div>
       <button class="btn primary block" type="submit">บันทึกการตั้งค่า</button>
-      <p class="sub">${S.mode === 'shared' ? 'ข้อมูลรายงาน ลูกค้า และผลอนุมัติเก็บไว้ที่ส่วนกลาง ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลชุดเดียวกัน' : 'ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น เปิดผ่านลิงก์ใน Claude ขณะล็อกอินเพื่อใช้ข้อมูลกลางของทีม'}</p>
+      ${S.backend === 'supabase' ? `<button class="btn ghost block" type="button" id="btnSignOut">ออกจากระบบ${S.email ? ' (' + esc(showUser(S.email)) + ')' : ''}</button>` : ''}
+      <p class="sub">${S.backend === 'supabase' ? 'ข้อมูลทั้งหมดเก็บในฐานข้อมูล Supabase ของบริษัท ทุกคนที่ล็อกอินเห็นข้อมูลตามสิทธิ์ของตน' : S.mode === 'shared' ? 'ข้อมูลรายงาน ลูกค้า และผลอนุมัติเก็บไว้ที่ส่วนกลาง ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลชุดเดียวกัน' : 'ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น เปิดผ่านลิงก์ใน Claude ขณะล็อกอินเพื่อใช้ข้อมูลกลางของทีม'}</p>
     </form>`);
+  const so = $('#btnSignOut'); if (so) so.addEventListener('click', async () => { if (await confirmBox({ title: 'ออกจากระบบ?', body: 'ต้องใส่อีเมลและรหัสผ่านอีกครั้งเมื่อกลับมาใช้', ok: 'ออกจากระบบ' })) { closeSheet(); await S.sb.auth.signOut(); } });
   const here = $('#seHere'); if (here) here.addEventListener('click', () => {
     if (!navigator.geolocation) { toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; }
     navigator.geolocation.getCurrentPosition(p => { $('#seGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); }, () => toast('จับตำแหน่งไม่ได้ วางพิกัดจาก Google Maps แทน'), { enableHighAccuracy: true, timeout: 15000 });
   });
   $('#fSet').addEventListener('submit', async e => {
     e.preventDefault();
-    S.me = { ...S.me, name: $('#seName').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
+    S.me = { ...S.me, name: $('#seName').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
     try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
     if (S.admin) {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? parseCoords(geoRaw) : null;
@@ -1184,14 +1234,19 @@ function openSettings() {
   });
 }
 $('#btnSettings').addEventListener('click', openSettings);
+$('#btnInvite').addEventListener('click', openInvite);
+$('#adFilter').addEventListener('click', e => { const c = e.target.closest('[data-uf]'); if (!c) return; S.userFilter = c.dataset.uf; renderAdmin(); });
 $('#btnNewCustomer').addEventListener('click', () => editCustomer(null));
 $('#custSearch').addEventListener('input', renderCustomers);
 $('#tmMonth').addEventListener('change', renderTeam); $('#rpMonth').addEventListener('change', renderReport); $('#rpWho').addEventListener('change', renderReport); $('#clMonth').addEventListener('change', renderClaims); $('#clWho').addEventListener('change', renderClaims);
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
+  const t = e.target.closest('[data-user],[data-ureg],[data-rminvite],[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
   if (!t) return; const d = t.dataset;
-  if (d.claim) openClaim(d.claim);
+  if (d.user) openUser(d.user);
+  else if (d.ureg) decideUser(d.ureg, t.dataset.to);
+  else if (d.rminvite) removeInvite(d.rminvite);
+  else if (d.claim) openClaim(d.claim);
   else if (d.drafts) openDrafts();
   else if (d.openfile) openFile(d.vid, d.openfile);
   else if (d.savefile) { const v = S.visits.find(x => x.id === d.vid), f = v && v.files.find(x => x.id === d.savefile); if (f) store.loadFileData(v, f).then(data => data && saveToDevice(f, data)); }
@@ -1235,6 +1290,285 @@ $('#btnCopy').addEventListener('click', () => {
 // ---------- boot ----------
 $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
+// ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
+const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
+const PROFILE_COLS = { name: 'name', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
+const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
+function sbFail(e) { const err = new Error(e.message || 'db'); err.code = /row-level security|permission|policy/i.test(e.message || '') ? 'invalid_argument' : (e.code || 'db'); console.error(e); throw err; }
+function dataUrlToBlob(dataUrl, type) { const bin = atob(dataUrl.split(',')[1] || ''), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: type || 'application/octet-stream' }); }
+const blobToDataUrl = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+const filePath = (v, f) => `${v.createdBy}/${v.id}/${f.id}`;
+const sb = {
+  async saveVisit(v) { const { error } = await S.sb.from('visits').upsert({ id: v.id, created_by: v.createdBy, created_at: v.createdAt, staff_name: v.staffName, customer: v.customer, customer_id: v.customerId || null, claim_status: v.claimStatus || 'claimed', total: v.total || 0, km_round_trip: v.kmRoundTrip || 0, data: v, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async deleteVisit(v) { const paths = (v.files || []).map(f => filePath(v, f)); if (paths.length) await S.sb.storage.from('attachments').remove(paths); const { error } = await S.sb.from('visits').delete().eq('id', v.id); if (error) sbFail(error); sbRefresh(); },
+  async saveFileData(v, f, dataUrl) { const { error } = await S.sb.storage.from('attachments').upload(filePath(v, f), dataUrlToBlob(dataUrl, f.type), { contentType: f.type || 'application/octet-stream', upsert: true }); if (error) sbFail(error); },
+  async loadFileData(v, f) { const { data, error } = await S.sb.storage.from('attachments').download(filePath(v, f)); if (error || !data) return null; return blobToDataUrl(data); },
+  async saveStaff(p) { lsSet(LS_ME, S.me); if (!S.myId) return; if (!S.meDoc) return this.registerStaff({ ...p, registeredAt: Date.now() }); const { error } = await S.sb.from('profiles').update(profileToRow(p)).eq('id', S.myId); if (error) sbFail(error); sbRefresh(); },
+  async registerStaff(doc) { const row = profileToRow(doc); delete row.role; delete row.status; const { error } = await S.sb.from('profiles').insert({ id: S.myId, email: S.email || null, ...row }); if (error) sbFail(error); await sbLoadAll(); },
+  async setStaff(uid, patch) { const { error } = await S.sb.from('profiles').update(profileToRow(patch)).eq('id', uid); if (error) sbFail(error); sbRefresh(); },
+  async deleteStaff(uid) { const { error } = await S.sb.from('profiles').delete().eq('id', uid); if (error) sbFail(error); sbRefresh(); },
+  async saveInvites(codes) { const { error } = await S.sb.from('settings').upsert({ key: 'invites', value: { codes }, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async saveCustomer(c) { const { error } = await S.sb.from('customers').upsert({ id: c.id, name: c.name || '', data: c, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async setApproval(id, a) { const { error } = await S.sb.from('approvals').upsert({ visit_id: id, status: a.status, note: a.note || '', by_id: a.by || null, by_name: a.byName || '', at: a.at }); if (error) sbFail(error); sbRefresh(); },
+  async saveSettings(st) { const { error } = await S.sb.from('settings').upsert({ key: 'settings', value: st, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+};
+Object.keys(sb).forEach(k => { const orig = store[k]; store[k] = function (...a) { return S.sb ? sb[k](...a) : orig.apply(this, a); }; });
+let sbTimer = null, sbLoading = null;
+function sbRefresh() { clearTimeout(sbTimer); sbTimer = setTimeout(() => sbLoadAll(), 200); }
+async function sbLoadMe() {
+  const { data, error } = await S.sb.from('profiles').select('*').eq('id', S.myId).maybeSingle();
+  if (error) { console.error(error); return; }
+  S.meLoaded = true; S.meDoc = data ? rowToProfile(data) : null;
+  if (S.meDoc) { S.me = { ...S.me, ...S.meDoc }; lsSet(LS_ME, S.me); }
+  S.admin = !!(S.meDoc && ['manager', 'owner'].includes(S.meDoc.role) && S.meDoc.status === 'active');
+  applyRole();
+}
+async function sbLoadAll() {
+  if (!S.sb || !S.myId) return;
+  if (sbLoading) return sbLoading;
+  sbLoading = (async () => {
+    try {
+      await sbLoadMe();
+      const [vs, cs, aps, st, pf] = await Promise.all([
+        S.sb.from('visits').select('data').order('created_at', { ascending: false }).limit(3000),
+        S.sb.from('customers').select('data').limit(3000),
+        S.sb.from('approvals').select('*').limit(5000),
+        S.sb.from('settings').select('*'),
+        S.admin ? S.sb.from('profiles').select('*').limit(500) : Promise.resolve({ data: [] }),
+      ]);
+      const by = {}; (vs.data || []).forEach(r => { const v = r.data; (by[v.createdBy] = by[v.createdBy] || []).push(v); });
+      S.visitsBy = by; S.visits = (vs.data || []).map(r => r.data);
+      S.customers = (cs.data || []).map(r => r.data);
+      const m = {}; (aps.data || []).forEach(a => m[a.visit_id] = { status: a.status, note: a.note, by: a.by_id, byName: a.by_name, at: a.at }); S.approvals = m;
+      (st.data || []).forEach(r => { if (r.key === 'settings') S.settings = { ...DEFAULT_SETTINGS, ...(r.value || {}) }; if (r.key === 'invites') S.invites = (r.value && r.value.codes) || {}; });
+      const sm = {}; (pf.data || []).forEach(r => sm[r.id] = rowToProfile(r)); S.staff = sm;
+    } catch (e) { console.error(e); toast('โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ'); }
+    finally { sbLoading = null; renderAll(); updateCalc(); renderGate(); }
+  })();
+  return sbLoading;
+}
+function sbSubscribe() {
+  if (S.sbChan) return;
+  S.sbChan = S.sb.channel('flow-crm');
+  ['visits', 'approvals', 'profiles', 'customers', 'settings'].forEach(t => S.sbChan.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => sbRefresh()));
+  S.sbChan.subscribe();
+}
+async function connectSupabase() {
+  S.sb = window.supabase.createClient(SB.url, SB.anonKey);
+  S.mode = 'shared'; S.backend = 'supabase'; S.admin = false; S.canWrite = true;
+  S.visits = []; S.customers = []; S.approvals = {}; S.visitsBy = {}; S.staff = {};
+  applyRole(); renderAll();
+  S.sb.auth.onAuthStateChange(async (ev, session) => {
+    const u = session && session.user;
+    if (u) {
+      if (S.myId === u.id) return;
+      S.myId = u.id; S.email = u.email || ''; S.meLoaded = false; S.meDoc = null;
+      const meta = u.user_metadata || {}; if (!S.me.name && meta.name) S.me.name = meta.name;
+      renderGate(); await sbLoadAll(); sbSubscribe();
+    } else {
+      S.myId = null; S.email = ''; S.meLoaded = false; S.meDoc = null; S.admin = false;
+      S.visits = []; S.visitsBy = {}; S.staff = {}; S.customers = []; S.approvals = {};
+      S.me = { name: '', code: '', dept: '', vehicle: 'car', plate: '' }; lsSet(LS_ME, S.me);
+      if (S.sbChan) { try { S.sb.removeChannel(S.sbChan); } catch {} S.sbChan = null; }
+      applyRole(); renderAll(); renderGate();
+    }
+  });
+  const { data } = await S.sb.auth.getSession(); if (!data || !data.session) renderGate();
+}
+function authMsg(e) {
+  const m = (e && e.message) || '';
+  if (/invalid login credentials/i.test(m)) return 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+  if (/already registered|already been registered/i.test(m)) return 'ชื่อผู้ใช้นี้มีอยู่แล้ว ใช้ "เข้าสู่ระบบ" แทน';
+  if (/email not confirmed/i.test(m)) return 'ต้องยืนยันอีเมลก่อน เปิดลิงก์ในอีเมลที่ได้รับ หรือให้ผู้ดูแลปิดการยืนยันอีเมลใน Supabase';
+  if (/password should be at least|weak password/i.test(m)) return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+  if (/rate limit|too many/i.test(m)) return 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่';
+  if (/invalid email|validate email/i.test(m)) return 'ชื่อผู้ใช้ใช้ได้เฉพาะตัวอักษรอังกฤษ ตัวเลข จุด ขีด (เช่น somchai.k)';
+  if (/signups? not allowed|sign ?ups? (are )?disabled/i.test(m)) return 'ระบบปิดการสมัครด้วยตนเอง ให้ผู้ดูแลสร้างบัญชีให้แล้วใช้ "เข้าสู่ระบบ"';
+  if (/fetch|network/i.test(m)) return 'เชื่อมต่อฐานข้อมูลไม่ได้ ตรวจอินเทอร์เน็ตหรือค่าใน config.js';
+  return m || 'ไม่สำเร็จ ลองอีกครั้ง';
+}
+let loginMode = 'in';
+const loginDomain = () => (SB && SB.loginDomain) || 'flowcrm.local';
+const toLoginEmail = raw => { const v = String(raw || '').trim().toLowerCase().replace(/\s+/g, ''); return !v ? '' : v.includes('@') ? v : v + '@' + loginDomain(); };
+const showUser = email => { const e = String(email || ''); return e.endsWith('@' + loginDomain()) ? e.slice(0, -(loginDomain().length + 1)) : e; };
+function renderLogin(g) {
+  const up = loginMode === 'up';
+  g.innerHTML = `<div class="wrap"><img class="logo" src="${document.querySelector('header .logo').src}" alt=""><p class="sub" style="margin:0">Flow CRM ภาคสนาม · FLOW ENG</p>
+    <h1>${up ? 'สมัครใช้งานครั้งแรก' : 'เข้าสู่ระบบ'}</h1><p class="sub">${up ? 'ใช้อีเมลของคุณสร้างบัญชี จากนั้นกรอกข้อมูลพนักงานในขั้นถัดไป' : 'ใช้อีเมลและรหัสผ่านที่สมัครไว้'}</p>
+    <form id="fLogin" class="card stack" novalidate>
+      ${up ? '<label class="f">ชื่อ-นามสกุล<input type="text" id="lgName" autocomplete="name"></label>' : ''}
+      <label class="f">ชื่อผู้ใช้<span class="hint">ชื่อผู้ใช้ที่ผู้ดูแลตั้งให้ เช่น somchai หรือจะใส่อีเมลก็ได้</span><input type="text" id="lgEmail" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
+      <label class="f">รหัสผ่าน<span class="hint">${up ? 'อย่างน้อย 6 ตัวอักษร' : ''}</span><input type="password" id="lgPass" autocomplete="${up ? 'new-password' : 'current-password'}" required></label>
+      <div class="notice" id="lgErr" hidden style="color:var(--bad)"></div>
+      <button class="btn primary block lg" type="submit" id="lgGo">${up ? 'สมัครใช้งาน' : 'เข้าสู่ระบบ'}</button>
+      ${SB.selfSignup === false && !up ? '<p class="sub" style="text-align:center">บัญชีผู้ใช้สร้างโดยผู้ดูแลระบบ ถ้ายังไม่มีให้ติดต่อผู้จัดการฝ่ายขาย</p>' : `<button class="btn ghost block" type="button" id="lgSwitch">${up ? 'มีบัญชีแล้ว เข้าสู่ระบบ' : 'ยังไม่มีบัญชี สมัครใช้งานครั้งแรก'}</button>`}
+      ${up ? '' : '<button class="btn ghost block sm" type="button" id="lgForgot">ลืมรหัสผ่าน</button>'}
+    </form></div>`;
+  const sw = $('#lgSwitch'); if (sw) sw.addEventListener('click', () => { loginMode = up ? 'in' : 'up'; renderLogin(g); });
+  const showErr = t => { $('#lgErr').hidden = !t; $('#lgErr').textContent = t || ''; };
+  const fg = $('#lgForgot'); if (fg) fg.addEventListener('click', async () => {
+    const email = toLoginEmail($('#lgEmail').value); if (!email) { showErr('ใส่ชื่อผู้ใช้ก่อน แล้วกดลืมรหัสผ่าน'); return; }
+    if (email.endsWith('@' + loginDomain())) { showErr('บัญชีแบบชื่อผู้ใช้ไม่มีอีเมลจริง ให้ผู้ดูแลตั้งรหัสผ่านใหม่ให้ในหน้า Supabase → Authentication → Users'); return; }
+    const { error } = await S.sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] }); showErr(error ? authMsg(error) : 'ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว');
+  });
+  $('#fLogin').addEventListener('submit', async e => {
+    e.preventDefault(); showErr('');
+    const email = toLoginEmail($('#lgEmail').value), pass = $('#lgPass').value;
+    if (!email || !pass) { showErr('ใส่ชื่อผู้ใช้และรหัสผ่าน'); return; }
+    if (up && !$('#lgName').value.trim()) { showErr('ใส่ชื่อ-นามสกุล'); return; }
+    $('#lgGo').disabled = true;
+    try {
+      if (up) { const name = $('#lgName').value.trim(); S.me.name = name; const { data, error } = await S.sb.auth.signUp({ email, password: pass, options: { data: { name } } }); if (error) throw error; if (data && !data.session) showErr('สมัครแล้ว กรุณายืนยันอีเมลจากลิงก์ที่ส่งไป แล้วกลับมาเข้าสู่ระบบ'); }
+      else { const { error } = await S.sb.auth.signInWithPassword({ email, password: pass }); if (error) throw error; }
+    } catch (err) { showErr(authMsg(err)); }
+    finally { const b = $('#lgGo'); if (b) b.disabled = false; }
+  });
+}
+// ---------- registration gate ----------
+function renderGate() {
+  const g = $('#gate');
+  if (S.backend === 'supabase' && !S.myId) { g.hidden = false; renderLogin(g); return; }
+  if (S.backend === 'supabase' && !S.meLoaded) { g.hidden = false; g.innerHTML = `<div class="wrap"><p class="sub" style="text-align:center;margin-top:40px">กำลังเชื่อมต่อฐานข้อมูล…</p></div>`; return; }
+  if (S.mode !== 'shared' || S.admin || !S.meLoaded) { g.hidden = true; return; }
+  const st = S.meDoc ? S.meDoc.status || 'active' : null;
+  if (st === 'active') { g.hidden = true; return; }
+  g.hidden = false;
+  const head = `<img class="logo" src="${document.querySelector('header .logo').src}" alt=""><p class="sub" style="margin:0">Flow CRM ภาคสนาม · FLOW ENG</p>`;
+  if (!S.meDoc) {
+    let code = (S.me.code || '').trim(), inv = S.invites[code];
+    if (!inv && S.email) { const hit = Object.entries(S.invites).find(([, i]) => (i.email || '').trim().toLowerCase() === S.email.trim().toLowerCase()); if (hit) { code = hit[0]; inv = hit[1]; } }
+    g.innerHTML = `<div class="wrap">${head}<h1>ลงทะเบียนพนักงานขาย</h1><p class="sub">กรอกครั้งเดียว ข้อมูลนี้จะติดไปกับทุกรายงานของคุณ ถ้าผู้จัดการให้รหัสพนักงานมาแล้ว ใส่ให้ตรงเพื่อเปิดใช้งานได้ทันที</p>
+      <form id="fReg" class="card stack" novalidate>
+        <label class="f">รหัสพนักงาน<span class="hint">ตามที่ผู้จัดการแจ้ง ถ้ายังไม่มีเว้นว่างได้</span><input type="text" id="rgCode" value="${esc(code)}" autocomplete="off"></label>
+        <div class="notice" id="rgInv" ${inv ? '' : 'hidden'}>${inv ? `พบรหัสเชิญของ <b>${esc(inv.name)}</b> ${inv.dept ? '· ' + esc(inv.dept) : ''} ลงทะเบียนแล้วใช้งานได้ทันที` : ''}</div>
+        <label class="f">ชื่อ-นามสกุล<input type="text" id="rgName" value="${esc(S.me.name || (inv ? inv.name : ''))}" required></label>
+        <div class="row"><label class="f grow">แผนก / ทีม<input type="text" id="rgDept" value="${esc(S.me.dept || (inv ? inv.dept : ''))}" placeholder="เช่น Sales ภาคกลาง"></label><label class="f grow">เบอร์โทร<input type="tel" id="rgPhone" value="${esc(S.me.phone || '')}"></label></div>
+        <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="rgVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (S.me.vehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="rgPlate" value="${esc(S.me.plate || '')}"></label></div>
+        <button class="btn primary block lg" type="submit">ส่งลงทะเบียน</button>
+        <p class="sub" style="text-align:center">ถ้าไม่มีรหัสเชิญ คำขอจะไปรอให้ผู้จัดการอนุมัติก่อนเริ่มใช้งาน</p>
+      </form></div>`;
+    $('#rgCode').addEventListener('input', () => { const i = S.invites[$('#rgCode').value.trim()]; $('#rgInv').hidden = !i; if (i) { $('#rgInv').innerHTML = `พบรหัสเชิญของ <b>${esc(i.name)}</b> ${i.dept ? '· ' + esc(i.dept) : ''} ลงทะเบียนแล้วใช้งานได้ทันที`; if (!$('#rgName').value) $('#rgName').value = i.name || ''; if (!$('#rgDept').value) $('#rgDept').value = i.dept || ''; } });
+    $('#fReg').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = $('#rgName').value.trim(), code = $('#rgCode').value.trim(); if (!name) { $('#rgName').focus(); toast('ใส่ชื่อ-นามสกุล'); return; }
+      const i = S.invites[code];
+      if (!(await confirmBox({ title: 'ส่งลงทะเบียน?', body: `${name}${code ? ' · รหัส ' + code : ''} · ${i ? 'มีรหัสเชิญ ใช้งานได้ทันที' : 'รอผู้จัดการอนุมัติ'}`, ok: 'ลงทะเบียน' }))) return;
+      const doc = { name, code, dept: $('#rgDept').value.trim(), phone: $('#rgPhone').value.trim(), vehicle: $('#rgVeh').value, plate: $('#rgPlate').value.trim(), role: i ? (i.role || 'sales') : 'sales', status: i ? 'active' : 'pending', inviteCode: i ? code : '', registeredAt: Date.now(), updatedAt: Date.now(), customActions: [] };
+      S.me = { ...S.me, ...doc }; lsSet(LS_ME, S.me);
+      try { await store.registerStaff(doc); toast(i ? 'ลงทะเบียนสำเร็จ เริ่มใช้งานได้เลย' : 'ส่งคำขอแล้ว รอผู้จัดการอนุมัติ'); }
+      catch { toast('ส่งไม่สำเร็จ ลองอีกครั้ง'); }
+    });
+    return;
+  }
+  const d = S.meDoc;
+  g.innerHTML = `<div class="wrap">${head}<h1>${st === 'disabled' ? 'บัญชีถูกระงับการใช้งาน' : st === 'rejected' ? 'คำขอไม่ได้รับอนุมัติ' : 'รอผู้จัดการอนุมัติ'}</h1>
+    <div class="card stack"><dl class="kv"><dt>ชื่อ</dt><dd>${esc(d.name)}</dd><dt>รหัส</dt><dd>${esc(d.code || '-')}</dd><dt>แผนก</dt><dd>${esc(d.dept || '-')}</dd><dt>ส่งเมื่อ</dt><dd>${d.registeredAt ? dt(d.registeredAt) : '-'}</dd>${d.note ? `<dt>หมายเหตุ</dt><dd>${esc(d.note)}</dd>` : ''}</dl>
+    <p class="sub">${st === 'pending' ? 'ผู้จัดการจะเห็นคำขอนี้ในหน้าหลังบ้าน เมื่ออนุมัติแล้วหน้านี้จะเปิดให้ใช้งานเอง' : st === 'disabled' ? 'ติดต่อผู้จัดการฝ่ายขายเพื่อขอเปิดใช้งานอีกครั้ง' : 'ติดต่อผู้จัดการฝ่ายขายหากคิดว่าเป็นความผิดพลาด'}</p>
+    ${st === 'pending' ? '<button class="btn ghost block" id="rgEdit">แก้ไขข้อมูลที่ส่ง</button>' : ''}</div></div>`;
+  const ed = $('#rgEdit'); if (ed) ed.addEventListener('click', () => { S.meDoc = null; renderGate(); });
+}
+
+// ---------- back office ----------
+function userRows() { return Object.entries(S.staff).filter(([id]) => id !== 'example').map(([id, p]) => ({ id, ...p, status: p.status || 'active', role: p.role || 'sales' })); }
+function renderAdmin() {
+  if (!$('#adTiles')) return;
+  const users = userRows(), pend = users.filter(u => u.status === 'pending'), active = users.filter(u => u.status === 'active');
+  const today = dayKey(Date.now()), pendClaims = S.visits.filter(v => !v.isExample && statusOf(v) === 'pending');
+  $('#adBadge').hidden = !(S.admin && pend.length); $('#adBadge').textContent = pend.length;
+  $('#adTiles').innerHTML = `<div class="tile"><small>รอตรวจเบิก</small><b>${pendClaims.length}</b></div><div class="tile"><small>รอลงทะเบียน</small><b>${pend.length}</b></div><div class="tile"><small>ผู้ใช้งานที่ใช้งานอยู่</small><b>${active.length}</b></div>
+    <div class="tile"><small>เช็คอินวันนี้</small><b>${S.visits.filter(v => !v.isExample && dayKey(v.createdAt) === today).length}</b></div><div class="tile"><small>ยอดรอเบิก (บาท)</small><b class="money">${fmtB(pendClaims.reduce((s, v) => s + (v.total || 0), 0))}</b></div><div class="tile"><small>รหัสเชิญค้างใช้</small><b>${Object.keys(S.invites).length}</b></div>`;
+  $('#adPendingWrap').hidden = !pend.length; $('#adPendN').textContent = pend.length;
+  $('#adPending').innerHTML = pend.map(u => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}</div><div class="m">${esc([u.code, u.dept, u.phone].filter(Boolean).join(' · ') || '-')}</div><div class="m">ส่งเมื่อ ${u.registeredAt ? dt(u.registeredAt) : '-'}</div></div>
+    <div class="stack" style="gap:6px"><button class="btn primary sm" data-ureg="${esc(u.id)}" data-to="active">อนุมัติ</button><button class="btn ghost sm" data-ureg="${esc(u.id)}" data-to="rejected">ไม่อนุมัติ</button></div></div>`).join('');
+  const f = S.userFilter || 'all', counts = { all: users.length, active: active.length, disabled: users.filter(u => u.status === 'disabled').length, manager: users.filter(u => u.role !== 'sales').length };
+  $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'ผู้จัดการ/เจ้าของ']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
+  const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
+  $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
+  const inv = Object.entries(S.invites);
+  $('#adInvitesWrap').hidden = !inv.length;
+  $('#adInvites').innerHTML = inv.map(([code, i]) => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(i.name)} <span class="pill ex">${esc(code)}</span></div><div class="m">${esc([i.email ? 'ผู้ใช้ ' + showUser(i.email) : '', i.dept, ROLES[i.role || 'sales']].filter(Boolean).join(' · '))} · สร้าง ${i.createdAt ? dt(i.createdAt) : '-'}</div><div class="m">ส่งลิงก์แอปให้พนักงาน แล้วให้ใส่รหัสนี้ตอนลงทะเบียน</div></div><button class="btn ghost sm" data-rminvite="${esc(code)}">ยกเลิก</button></div>`).join('');
+  const acts = [];
+  S.visits.filter(v => !v.isExample).slice(0, 20).forEach(v => acts.push({ at: v.createdAt, text: `${v.staffName} เช็คอิน ${v.customer}${v.claimStatus === 'none' ? ' (ยังไม่เบิก)' : ' · ขอเบิก ฿' + fmtB(v.total)}`, id: v.id }));
+  Object.entries(S.approvals).forEach(([id, a]) => { const v = S.visits.find(x => x.id === id); if (v && !v.isExample && a.at) acts.push({ at: a.at, text: `${a.byName || 'ผู้ตรวจ'} ${a.status === 'approved' ? 'อนุมัติ' : a.status === 'rejected' ? 'ตีกลับ' : 'ย้ายกลับรอตรวจ'} ${v.customer} ของ ${v.staffName}`, id }); });
+  users.forEach(u => { if (u.registeredAt) acts.push({ at: u.registeredAt, text: `${u.name} ลงทะเบียนเข้าใช้งาน${u.inviteCode ? ' ด้วยรหัสเชิญ' : ''}` }); if (u.approvedAt) acts.push({ at: u.approvedAt, text: `${u.approvedByName || 'ผู้จัดการ'} ${u.status === 'active' ? 'อนุมัติ' : u.status === 'disabled' ? 'ระงับ' : 'ปฏิเสธ'}ผู้ใช้ ${u.name}` }); });
+  acts.sort((a, b) => b.at - a.at);
+  $('#adFoot').textContent = S.backend === 'supabase' ? 'สิทธิ์ผู้จัดการ / เจ้าของ กำหนดจากตำแหน่งของผู้ใช้งานในหน้านี้ ข้อมูลเก็บในฐานข้อมูล Supabase ของบริษัท' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
+  $('#adActivity').innerHTML = acts.length ? acts.slice(0, 25).map(a => `<${a.id ? 'button' : 'div'} class="item" ${a.id ? `data-visit="${esc(a.id)}"` : 'style="cursor:default"'}><div class="main"><div class="t" style="font-weight:400">${esc(a.text)}</div><div class="m">${dt(a.at)}</div></div></${a.id ? 'button' : 'div'}>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
+}
+async function decideUser(uid, to, note) {
+  const u = userRows().find(x => x.id === uid); if (!u) return;
+  const q = to === 'active' ? { title: `อนุมัติให้ ${u.name} ใช้งาน?`, body: `${[u.code, u.dept].filter(Boolean).join(' · ')} จะเริ่มเช็คอินและขอเบิกได้ทันที`, ok: 'อนุมัติ' }
+    : to === 'disabled' ? { title: `ระงับการใช้งานของ ${u.name}?`, body: 'จะเช็คอินและขอเบิกไม่ได้จนกว่าจะเปิดใช้งานอีกครั้ง ข้อมูลเดิมยังอยู่', ok: 'ระงับ', danger: true }
+    : { title: `ไม่อนุมัติคำขอของ ${u.name}?`, body: 'พนักงานจะเห็นว่าคำขอไม่ผ่าน และติดต่อผู้จัดการได้', ok: 'ไม่อนุมัติ', danger: true };
+  if (!(await confirmBox(q))) return;
+  try { await store.setStaff(uid, { status: to, approvedAt: Date.now(), approvedBy: S.myId, approvedByName: S.me.name || 'ผู้จัดการ', note: note || '' }); toast(to === 'active' ? 'อนุมัติแล้ว' : to === 'disabled' ? 'ระงับแล้ว' : 'ปฏิเสธคำขอแล้ว'); closeSheet(); }
+  catch { toast('บันทึกไม่ได้ ตรวจสอบสิทธิ์ผู้จัดการ'); }
+}
+function openUser(uid) {
+  const u = userRows().find(x => x.id === uid); if (!u) return;
+  const vs = S.visits.filter(v => v.createdBy === uid), ym = ymOf(Date.now()), m = vs.filter(v => ymOf(v.createdAt) === ym);
+  openSheet(`${bar(esc(u.name || 'ผู้ใช้งาน'))}
+    <p class="sub">${esc(ROLES[u.role])} · <span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span>${u.registeredAt ? ' · ลงทะเบียน ' + dt(u.registeredAt) : ''}</p>
+    <div class="tiles"><div class="tile"><small>เข้าพบเดือนนี้</small><b>${m.length}</b></div><div class="tile"><small>รอตรวจ</small><b>${vs.filter(v => statusOf(v) === 'pending').length}</b></div><div class="tile"><small>เบิกเดือนนี้</small><b class="money">${fmtB(m.filter(v => statusOf(v) !== 'rejected').reduce((s, v) => s + (v.total || 0), 0))}</b></div></div>
+    <form id="fUser" class="card stack" novalidate>
+      <h2>ข้อมูลผู้ใช้งาน</h2>
+      <label class="f">ชื่อ-นามสกุล<input type="text" id="usName" value="${esc(u.name || '')}"></label>
+      <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
+      <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole">${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+      <p class="sub">${S.backend === 'supabase' ? 'ตำแหน่ง "ผู้จัดการ" หรือ "เจ้าของ / CEO" จะได้สิทธิ์ดูทั้งทีม อนุมัติ และจัดการผู้ใช้งานทันที' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
+      <label class="f">หมายเหตุภายใน<input type="text" id="usNote" value="${esc(u.note || '')}"></label>
+      <button class="btn primary block" type="submit">บันทึกข้อมูล</button>
+    </form>
+    <div class="row">
+      ${u.status === 'pending' ? `<button class="btn primary grow" data-ureg="${esc(uid)}" data-to="active">อนุมัติ</button><button class="btn ghost grow" data-ureg="${esc(uid)}" data-to="rejected">ไม่อนุมัติ</button>`
+      : u.status === 'active' ? `<button class="btn soft grow" data-reportfor="${esc(uid)}">ดูรายงาน</button>${uid !== S.myId ? `<button class="btn ghost grow" data-ureg="${esc(uid)}" data-to="disabled">ระงับการใช้งาน</button>` : ''}`
+      : `<button class="btn primary grow" data-ureg="${esc(uid)}" data-to="active">เปิดใช้งานอีกครั้ง</button>`}
+    </div>
+    ${uid !== S.myId ? `<button class="btn ghost block" id="usDelete" style="color:var(--bad)">ลบผู้ใช้งานออกจากระบบ</button><p class="sub" style="text-align:center">รายการเข้าพบและการเบิกเดิมยังอยู่เพื่อการตรวจสอบย้อนหลัง</p>` : ''}`);
+  $('#fUser').addEventListener('submit', async e => {
+    e.preventDefault();
+    const patch = { name: $('#usName').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
+    if (!patch.name) { toast('ใส่ชื่อ'); return; }
+    if (!(await confirmBox({ title: 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}`, ok: 'บันทึก' }))) return;
+    try { await store.setStaff(uid, patch); toast('บันทึกแล้ว'); closeSheet(); } catch { toast('บันทึกไม่ได้'); }
+  });
+  const del = $('#usDelete'); if (del) del.addEventListener('click', async () => {
+    if (!(await confirmBox({ title: `ลบ ${u.name} ออกจากระบบ?`, body: 'ถ้าคนนี้เปิดลิงก์อีกจะต้องลงทะเบียนใหม่และรออนุมัติ ถ้าต้องการแค่หยุดใช้งานชั่วคราว ให้ใช้ "ระงับ" แทน', ok: 'ลบผู้ใช้งาน', danger: true }))) return;
+    try { await store.deleteStaff(uid); toast('ลบแล้ว'); closeSheet(); } catch { toast('ลบไม่ได้'); }
+  });
+}
+function openInvite() {
+  openSheet(`${bar('เพิ่มพนักงาน')}
+    <p class="sub">สร้างรหัสเชิญล่วงหน้า เมื่อพนักงานเปิดลิงก์แอปและใส่รหัสนี้ตอนลงทะเบียน จะใช้งานได้ทันทีโดยไม่ต้องรออนุมัติ</p>
+    <form id="fInv" class="card stack" novalidate>
+      <label class="f">รหัสพนักงาน<span class="hint">ใช้เป็นรหัสเชิญ เช่น S012</span><input type="text" id="ivCode" required autocomplete="off"></label>
+      <label class="f">ชื่อ-นามสกุล<input type="text" id="ivName" required></label>
+      ${S.backend === 'supabase' ? '<label class="f">ชื่อผู้ใช้สำหรับเข้าสู่ระบบ<span class="hint">ชื่อเดียวกับที่สร้างบัญชีใน Supabase เช่น somchai เมื่อล็อกอินครั้งแรกจะเปิดใช้งานทันที</span><input type="text" id="ivEmail" autocapitalize="off" spellcheck="false"></label>' : ''}
+      <div class="row"><label class="f grow">แผนก / ทีม<input type="text" id="ivDept"></label><label class="f grow">ตำแหน่ง<select id="ivRole">${Object.entries(ROLES).map(([k, l]) => `<option value="${k}">${l}</option>`).join('')}</select></label></div>
+      <button class="btn primary block" type="submit">สร้างรหัสเชิญ</button>
+    </form>
+    <p class="sub">${S.backend === 'supabase' ? 'ขั้นตอนถัดไป: สร้างบัญชีอีเมล+รหัสผ่านให้พนักงานใน Supabase (Authentication → Users → Add user) หรือให้พนักงานสมัครเอง แล้วส่งลิงก์แอปให้' : 'ขั้นตอนถัดไป: แชร์ลิงก์แอปนี้ให้พนักงาน (ผ่านเมนู Share ของหน้า) แล้วแจ้งรหัสให้ใส่ตอนลงทะเบียน'}</p>`);
+  $('#ivRole').value = 'sales';
+  $('#fInv').addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = $('#ivCode').value.trim(), name = $('#ivName').value.trim();
+    if (!code || !name) { toast('ใส่รหัสพนักงานและชื่อ'); return; }
+    if (S.invites[code] || userRows().some(u => (u.code || '').trim() === code)) { toast('รหัสนี้มีอยู่แล้ว'); return; }
+    if (!(await confirmBox({ title: 'สร้างรหัสเชิญ?', body: `${name} · รหัส ${code} · ${ROLES[$('#ivRole').value]}`, ok: 'สร้าง' }))) return;
+    try { await store.saveInvites({ ...S.invites, [code]: { name, email: ($('#ivEmail') ? toLoginEmail($('#ivEmail').value) : ''), dept: $('#ivDept').value.trim(), role: $('#ivRole').value, createdAt: Date.now(), by: S.myId } }); toast('สร้างรหัสเชิญแล้ว'); closeSheet(); }
+    catch { toast('บันทึกไม่ได้'); }
+  });
+}
+async function removeInvite(code) {
+  if (!(await confirmBox({ title: `ยกเลิกรหัสเชิญ ${code}?`, body: S.invites[code] ? S.invites[code].name : '', ok: 'ยกเลิกรหัส', danger: true }))) return;
+  const codes = { ...S.invites }; delete codes[code];
+  try { await store.saveInvites(codes); toast('ยกเลิกแล้ว'); } catch { toast('บันทึกไม่ได้'); }
+}
+renderGate();
+
 connect();
 })();
 </script>
