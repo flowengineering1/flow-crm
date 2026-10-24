@@ -10,7 +10,7 @@
 // selfSignup: false = ผู้ดูแลสร้างบัญชีให้ใน Supabase (ซ่อนปุ่มสมัครในแอป), true = พนักงานสมัครเองแล้วรออนุมัติ
 
 window.FLOW_SUPABASE = {
-  url: 'sb_publishable_zfqhJxIgMb8UP6Occ38dNA_RyOtC4ur',
+  url: 'https://voyqlxixtnqpikqphtvl.supabase.co',
   anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZveXFseGl4dG5xcGlrcXBodHZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NDMwMDAsImV4cCI6MjEwODQxOTAwMH0.ha7wVAjbfUN4cYzPELRR_SQgwm3Q9dmDCE63hp0y8z0',
   selfSignup: false,        // false = ผู้ดูแลสร้างบัญชีให้, true = พนักงานสมัครเองแล้วรออนุมัติ
   loginDomain: 'flowcrm.local'  // โดเมนภายในที่ต่อท้ายชื่อผู้ใช้
