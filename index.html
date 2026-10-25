@@ -1383,7 +1383,11 @@ async function connectSupabase() {
       if (S.myId === u.id) return;
       S.myId = u.id; S.email = u.email || ''; S.meLoaded = false; S.meDoc = null;
       const meta = u.user_metadata || {}; if (!S.me.name && meta.name) S.me.name = meta.name;
-      renderGate(); await sbLoadAll(); sbSubscribe();
+      renderGate();
+      // ห้ามเรียก Supabase ซ้อนใน callback นี้โดยตรง (ไลบรารีถือ lock อยู่ จะค้างตอนต่ออายุ token) จึงเลื่อนออกไปรอบถัดไป
+      setTimeout(() => { sbLoadAll().catch(() => {}); sbSubscribe(); }, 0);
+      clearTimeout(S.loadWatch);
+      S.loadWatch = setTimeout(() => { if (S.myId && !S.meLoaded) { S.loadError = { message: 'timeout: no response from database' }; S.meLoaded = true; applyRole(); renderGate(); } }, 20000);
     } else {
       S.myId = null; S.email = ''; S.meLoaded = false; S.meDoc = null; S.admin = false; S.loadError = null;
       S.visits = []; S.visitsBy = {}; S.staff = {}; S.customers = []; S.approvals = {};
@@ -1476,6 +1480,7 @@ function renderGate() {
     const m = String(S.loadError.message || ''), code = S.loadError.code || '';
     const why = /relation .*profiles.* does not exist|42P01|schema cache|Could not find the table/i.test(m + code) ? 'ยังไม่ได้สร้างตารางในฐานข้อมูล ให้ผู้ดูแลเปิด Supabase → SQL Editor วางไฟล์ schema.sql แล้วกด Run จากนั้นกดลองใหม่'
       : /JWT|token|expired|401/i.test(m + code) ? 'เซสชันหมดอายุ ให้ออกจากระบบแล้วเข้าใหม่'
+      : /timeout/i.test(m) ? 'ฐานข้อมูลไม่ตอบกลับภายใน 20 วินาที ลองกดลองใหม่ ถ้ายังไม่ได้ให้ออกจากระบบแล้วเข้าใหม่ หรือโปรเจกต์ Supabase อาจถูกพัก (กด Restore ในหน้า Dashboard)'
       : /Failed to fetch|NetworkError|network/i.test(m) ? 'ติดต่อเซิร์ฟเวอร์ฐานข้อมูลไม่ได้ ตรวจอินเทอร์เน็ต หรือโปรเจกต์ Supabase อาจถูกพัก (กด Restore ในหน้า Dashboard)'
       : 'อ่านข้อมูลผู้ใช้ไม่ได้';
     g.hidden = false; g.innerHTML = `<div class="wrap"><img class="logo" src="${document.querySelector('header .logo').src}" alt=""><h1>เชื่อมต่อฐานข้อมูลไม่สำเร็จ</h1><div class="card stack"><p>${esc(why)}</p><p class="sub">รายละเอียดสำหรับผู้ดูแล: ${esc(code ? code + ' · ' : '')}${esc(m || 'ไม่มีข้อความ')}</p><div class="row"><button class="btn primary grow" id="gateRetry">ลองใหม่</button><button class="btn ghost grow" id="gateOut">ออกจากระบบ</button></div></div></div>`;
