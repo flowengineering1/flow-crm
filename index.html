@@ -198,6 +198,15 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 .xaxis{position:relative;height:16px}
 .xaxis span{position:absolute;transform:translateX(-50%)}
 .rep-grid .card h2{margin-bottom:12px}
+.act{display:flex;flex-direction:column;gap:10px}
+.act .grp{display:flex;flex-direction:column;gap:2px}
+.act .who{font-size:12.5px;color:var(--muted);font-weight:500;padding:0 0 1px;border-bottom:1px solid var(--line);margin-bottom:3px;display:flex;justify-content:space-between;gap:8px}
+.act .who span{font-weight:400}
+.act .ln{display:flex;gap:8px;align-items:baseline;font-size:13px;line-height:1.35;color:var(--ink);border:0;background:none;padding:1px 0;text-align:left;font:inherit;font-size:13px;width:100%;cursor:default}
+.act button.ln{cursor:pointer}
+.act .ln .tm{flex:none;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--muted);min-width:76px}
+.act .ln .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act .ln .tx.k{color:var(--muted)}
 .mini{display:flex;flex-direction:column;gap:8px}
 .mini .it{display:flex;justify-content:space-between;gap:10px;font-size:14px;border:0;background:none;padding:0;text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%}
 .mini .it .m{color:var(--muted);font-size:12.5px}
@@ -491,7 +500,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <div class="list" id="adUsers"></div>
   <div class="stack" id="adInvitesWrap" hidden><h2>รหัสเชิญที่ยังไม่ได้ใช้</h2><div class="list" id="adInvites"></div></div>
   <h2>กิจกรรมล่าสุด</h2>
-  <div class="list" id="adActivity"></div>
+  <div class="act" id="adActivity"></div>
   <p class="sub" id="adFoot"></p>
 </section>
 
@@ -527,7 +536,9 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 // ---------- constants ----------
 const PURPOSES = ['เข้าพบลูกค้า / สำรวจหน้างาน','ซ่อมบำรุง / ทดสอบระบบ','รับ-ส่งสินค้า / อะไหล่ / เอกสาร','ติดต่อหน่วยงานราชการ / ธนาคาร','อื่นๆ'];
 const STAGES = ['ติดต่อใหม่','สำรวจ / นำเสนอ','เสนอราคา','ต่อรอง','ปิดการขาย','ไม่ได้งาน'];
-const VEHICLES = { car:'รถยนต์ส่วนตัว', moto:'มอเตอร์ไซค์ส่วนตัว', company:'รถส่วนกลางบริษัท' };
+const VEHICLES = { car:'รถยนต์ส่วนตัว', ev:'รถยนต์ไฟฟ้าส่วนตัว (EV)', moto:'มอเตอร์ไซค์ส่วนตัว', company:'รถส่วนกลางบริษัท' };
+const rateFor = (v, s) => { s = s || S.settings; return v === 'car' ? +s.rateCar : v === 'ev' ? +(s.rateEv ?? 4) : v === 'moto' ? +s.rateMoto : 0; };
+const vehLabel = (k, s) => { s = s || S.settings; return VEHICLES[k] + (k === 'company' ? ' (ตามบิล)' : ` ${rateFor(k, s)} บ./กม.`); };
 const NEXT_ACTIONS = [
   ['เอกสารและเทคนิค', 2, ['ส่ง Spec Sheet / แคตตาล็อก / ใบรับรอง (COA, Material Test Report)', 'ถอดแบบหน้างาน / ทำ Drawing ส่งให้ลูกค้าอนุมัติ', 'ประสานงานทีมช่าง / โรงกลึง เช็กความเป็นไปได้ในการผลิต', 'ตรวจสอบเทียบเบอร์ / รหัสสินค้าเดิม (Cross Reference Part)']],
   ['ตัวอย่างและการทดสอบ', 7, ['จัดส่งตัวอย่างสินค้า (Sample) ไปให้ทดลองใช้งาน', 'นำตัวอย่างของลูกค้ากลับมาวัดขนาด / ตรวจสอบความเสียหาย', 'นัดหมายเข้าติดตั้งตัวอย่างหน้างาน (Field Test)', 'ติดตามผลการทดสอบการใช้งาน (Sample Evaluation Follow-up)']],
@@ -541,7 +552,7 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
-const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:7, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
+const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:6, rateEv:4, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
 const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
 // ---------- helpers ----------
@@ -939,7 +950,7 @@ function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `
 function renderFormChips() {
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
   chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
-  chipGroup($('#ciVehicle'), Object.entries(VEHICLES).map(([k, l]) => [k, l + (k === 'car' ? ` ${S.settings.rateCar} บ./กม.` : k === 'moto' ? ` ${S.settings.rateMoto} บ./กม.` : ' (ตามบิล)')]), F.vehicle, 'veh');
+  chipGroup($('#ciVehicle'), Object.keys(VEHICLES).map(k => [k, vehLabel(k)]), F.vehicle, 'veh');
 }
 function renderGps() {
   const b = $('#gpsBox'), g = F.gps;
@@ -954,7 +965,7 @@ function currentDest() { if (F.gps) return F.gps; const c = custByName($('#ciCus
 function computeForm() {
   const v = F.vehicle, s = S.settings, kmOne = Math.max(0, +$('#ciKm').value || 0), toll = Math.max(0, +$('#ciToll').value || 0);
   const kmRT = v === 'company' ? 0 : Math.round(kmOne * 2 * 10) / 10;
-  const rate = v === 'car' ? +s.rateCar : v === 'moto' ? +s.rateMoto : 0;
+  const rate = rateFor(v, s);
   const fuel = v === 'company' ? n2(Math.max(0, +$('#ciFuel').value || 0)) : n2(kmRT * rate);
   return { kmOne, kmRT, rate, fuel, toll: n2(toll), total: n2(fuel + toll) };
 }
@@ -1180,12 +1191,12 @@ function openClaim(id) {
   const s = S.settings, est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, dc = v.draftClaim || null;
   const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '' } : { vehicle: S.me.vehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: '' };
   const render = () => {
-    const rate = C.vehicle === 'car' ? +s.rateCar : C.vehicle === 'moto' ? +s.rateMoto : 0;
+    const rate = rateFor(C.vehicle, s);
     openSheet(`${bar('ขอเบิกย้อนหลัง')}
       <p class="sub">${esc(v.customer)} · เช็คอิน ${dt(v.createdAt)}</p>
       ${dc ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม. ไป-กลับ'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
       <form id="fClaim" class="stack" novalidate>
-        <div class="chips">${Object.entries(VEHICLES).map(([k, l]) => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${l}${k === 'car' ? ` ${s.rateCar} บ./กม.` : k === 'moto' ? ` ${s.rateMoto} บ./กม.` : ' (ตามบิล)'}</button>`).join('')}</div>
+        <div class="chips">${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
         <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
         ${C.vehicle !== 'company' ? `<div class="notice">${!officeSet() ? 'ยังไม่ได้ปักพิกัดบริษัท ใส่ระยะจาก Google Maps เอง' : v.gps ? `ระบบประมาณไป-กลับ <b class="num">${fmtKm(est)} กม.</b><br><a href="${mapsDir(s.officeLat, s.officeLng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">เปิดเส้นทางจากบริษัทใน Google Maps</a> แล้วนำระยะขาไปมาใส่` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
           <label class="f">ระยะทางขาไปตาม Google Maps (กม.)<span class="hint">ระบบคูณ 2 เป็นระยะไป-กลับให้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>`
@@ -1271,6 +1282,7 @@ function openSettings() {
       </div>
       <div class="card stack"><h2>ค่าบริษัท ${S.admin ? '' : '(ผู้จัดการฝ่ายขายเท่านั้นที่แก้ได้)'}</h2>
         <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
+        <label class="f">รถยนต์ไฟฟ้าส่วนตัว EV (บาท/กม.)<span class="hint">รวมค่าไฟและค่าสึกหรอ ไม่เบิกสลิปชาร์จซ้ำ</span><input type="number" id="seEv" step="0.01" min="0" value="${s.rateEv ?? 4}" ${dis}></label>
         <p class="sub">อัตราใหม่ใช้กับรายการที่ส่งหลังจากนี้ รายการเดิมคงอัตราตอนส่งไว้เพื่อการตรวจย้อนหลัง</p>
         <label class="f">เป้าเข้าพบต่อคนต่อเดือน (ครั้ง)<span class="hint">ใช้ในหน้ารายงานของเซลส์และทีม</span><input type="number" id="seTarget" min="0" step="1" value="${s.visitTarget}" ${dis}></label>
         <label class="f">ชื่อจุดเริ่มต้น<input type="text" id="seOffice" value="${esc(s.officeName)}" ${dis}></label>
@@ -1300,9 +1312,9 @@ function openSettings() {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? parseCoords(geoRaw) : null;
       if (geoRaw && !g) { toast('อ่านพิกัดบริษัทไม่ออก'); return; }
       const ns = { officeName: $('#seOffice').value.trim() || DEFAULT_SETTINGS.officeName, officeLat: g ? +g.lat.toFixed(6) : null, officeLng: g ? +g.lng.toFixed(6) : null,
-        rateCar: n2(+$('#seCar').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), updatedAt: Date.now(), updatedBy: S.myId };
-      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget'].some(k => ns[k] !== S.settings[k]);
-      if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} บ./กม. · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
+        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), updatedAt: Date.now(), updatedBy: S.myId };
+      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget'].some(k => ns[k] !== S.settings[k]);
+      if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} · EV ${ns.rateEv} · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
       if (changed) { try { await store.saveSettings(ns); } catch { toast('บันทึกค่าบริษัทไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์'); return; } }
     }
     toast('บันทึกการตั้งค่าแล้ว'); closeSheet(); renderAll(); updateCalc();
@@ -1609,13 +1621,14 @@ function renderAdmin() {
   const inv = Object.entries(S.invites);
   $('#adInvitesWrap').hidden = !inv.length;
   $('#adInvites').innerHTML = inv.map(([code, i]) => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(i.name)} <span class="pill ex">${esc(code)}</span></div><div class="m">${esc([i.email ? 'ผู้ใช้ ' + showUser(i.email) : '', i.dept, ROLES[i.role || 'sales']].filter(Boolean).join(' · '))} · สร้าง ${i.createdAt ? dt(i.createdAt) : '-'}</div><div class="m">${S.backend === 'supabase' ? 'รหัสเชิญแบบเก่า: จะเปิดใช้งานอัตโนมัติเมื่อผู้ใช้นี้ล็อกอินครั้งแรก' : 'ส่งลิงก์แอปให้พนักงาน แล้วให้ใส่รหัสนี้ตอนลงทะเบียน'}</div></div><button class="btn ghost sm" data-rminvite="${esc(code)}">ยกเลิก</button></div>`).join('');
-  const acts = [];
-  S.visits.filter(v => !v.isExample).slice(0, 20).forEach(v => acts.push({ at: v.createdAt, text: `${v.staffName} เช็คอิน ${v.customer}${v.claimStatus === 'none' ? ' (ยังไม่เบิก)' : ' · ขอเบิก ฿' + fmtB(v.total)}`, id: v.id }));
-  Object.entries(S.approvals).forEach(([id, a]) => { const v = S.visits.find(x => x.id === id); if (v && !v.isExample && a.at) acts.push({ at: a.at, text: `${a.byName || 'ผู้ตรวจ'} ${a.status === 'approved' ? 'อนุมัติ' : a.status === 'rejected' ? 'ตีกลับ' : 'ย้ายกลับรอตรวจ'} ${v.customer} ของ ${v.staffName}`, id }); });
-  users.forEach(u => { if (u.registeredAt) acts.push({ at: u.registeredAt, text: `${u.name} ลงทะเบียนเข้าใช้งาน${u.inviteCode ? ' ด้วยรหัสเชิญ' : ''}` }); if (u.approvedAt) acts.push({ at: u.approvedAt, text: `${u.approvedByName || 'ผู้จัดการ'} ${u.status === 'active' ? 'อนุมัติ' : u.status === 'disabled' ? 'ระงับ' : 'ปฏิเสธ'}ผู้ใช้ ${u.name}` }); });
-  acts.sort((a, b) => b.at - a.at);
+  // กิจกรรมล่าสุด: แยกกลุ่มตามพนักงาน บรรทัดละรายการ
+  const grp = {}; const push = (k, name, a) => { (grp[k] = grp[k] || { name, items: [] }).items.push(a); };
+  S.visits.filter(v => !v.isExample).slice(0, 60).forEach(v => push(staffKey(v), v.staffName, { at: v.createdAt, text: `เช็คอิน ${v.customer}${v.claimStatus === 'none' ? ' (ยังไม่เบิก)' : ' · เบิก ฿' + fmtB(v.total)}`, id: v.id }));
+  Object.entries(S.approvals).forEach(([id, a]) => { const v = S.visits.find(x => x.id === id); if (v && !v.isExample && a.at) push(staffKey(v), v.staffName, { at: a.at, text: `${a.status === 'approved' ? 'อนุมัติ' : a.status === 'rejected' ? 'ตีกลับ' : 'ย้ายกลับรอตรวจ'} ${v.customer}${a.byName ? ' โดย ' + a.byName : ''}`, id, k: true }); });
+  users.forEach(u => { if (u.registeredAt) push(u.id, u.name, { at: u.registeredAt, text: `ลงทะเบียนเข้าใช้งาน${u.inviteCode ? ' ด้วยรหัสเชิญ' : ''}`, k: true }); if (u.approvedAt) push(u.id, u.name, { at: u.approvedAt, text: `${u.status === 'active' ? 'เปิดใช้งาน' : u.status === 'disabled' ? 'ระงับการใช้งาน' : 'ไม่อนุมัติ'}${u.approvedByName ? ' โดย ' + u.approvedByName : ''}`, k: true }); });
+  const groups = Object.values(grp).map(g => { g.items.sort((a, b) => b.at - a.at); g.last = g.items[0].at; return g; }).sort((a, b) => b.last - a.last);
   $('#adFoot').textContent = S.backend === 'supabase' ? 'กำหนดสิทธิ์ได้ต่อคนในหน้าผู้ใช้งาน: "ระบบปกติเท่านั้น" หรือ "เข้าหลังบ้านได้" สร้างบัญชี ตั้งรหัสผ่าน และลบบัญชีได้จากหน้านี้ทั้งหมด' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
-  $('#adActivity').innerHTML = acts.length ? acts.slice(0, 25).map(a => `<${a.id ? 'button' : 'div'} class="item" ${a.id ? `data-visit="${esc(a.id)}"` : 'style="cursor:default"'}><div class="main"><div class="t" style="font-weight:400">${esc(a.text)}</div><div class="m">${dt(a.at)}</div></div></${a.id ? 'button' : 'div'}>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
+  $('#adActivity').innerHTML = groups.length ? groups.slice(0, 12).map(g => `<div class="grp"><div class="who">${esc(g.name || 'ไม่ระบุชื่อ')}<span>${g.items.length} รายการ</span></div>${g.items.slice(0, 6).map(a => `<${a.id ? 'button' : 'div'} class="ln" ${a.id ? `data-visit="${esc(a.id)}"` : ''}><span class="tm">${dt(a.at)}</span><span class="tx${a.k ? ' k' : ''}">${esc(a.text)}</span></${a.id ? 'button' : 'div'}>`).join('')}${g.items.length > 6 ? `<div class="ln"><span class="tm"></span><span class="tx k">และอีก ${g.items.length - 6} รายการ</span></div>` : ''}</div>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
 }
 async function decideUser(uid, to, note) {
   const u = userRows().find(x => x.id === uid); if (!u) return;
