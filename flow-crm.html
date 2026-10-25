@@ -83,6 +83,19 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .gate .logo{width:56px;height:56px;border-radius:14px;margin-bottom:14px}
 .gate h1{font-size:28px;margin-bottom:4px}
 .gate .card{margin-top:16px}
+.gate.login{display:flex;align-items:center;justify-content:center;padding:24px 0}
+.gate.login .wrap{width:100%;max-width:420px;padding:16px}
+.login-head{text-align:center;margin-bottom:18px}
+.login-head .logo{width:76px;height:76px;border-radius:20px;margin:0 auto 12px;display:block;box-shadow:0 8px 24px rgba(19,74,159,.18)}
+.login-head h1{font-size:26px;margin:0}
+.login-head .sub{margin-top:4px}
+.login-card{background:var(--surface);border-radius:18px;padding:22px 18px;box-shadow:0 10px 30px rgba(0,0,0,.06);border:1px solid var(--line)}
+.pw{position:relative}.pw input{padding-right:58px}
+.pw button{position:absolute;right:8px;bottom:8px;border:0;background:var(--sunk);color:var(--muted);border-radius:8px;font:inherit;font-size:13px;padding:6px 10px;cursor:pointer}
+.login-foot{text-align:center;color:var(--muted);font-size:12px;margin-top:18px}
+.lg-err{background:var(--bad-soft);color:var(--bad);border-radius:var(--rb);padding:10px 12px;font-size:14px}
+.lg-ok{background:var(--ok-soft);color:var(--ok);border-radius:var(--rb);padding:10px 12px;font-size:14px}
+@media (prefers-color-scheme:dark){.login-card{box-shadow:none}}
 .pill.draft{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
 .pill.ex{background:var(--bg);color:var(--muted);border:1px dashed var(--line)}
 .step{display:flex;gap:8px;align-items:center}
@@ -1206,9 +1219,10 @@ function openSettings() {
         </div></details>
       </div>
       <button class="btn primary block" type="submit">บันทึกการตั้งค่า</button>
-      ${S.backend === 'supabase' ? `<button class="btn ghost block" type="button" id="btnSignOut">ออกจากระบบ${S.email ? ' (' + esc(showUser(S.email)) + ')' : ''}</button>` : ''}
+      ${S.backend === 'supabase' ? `<button class="btn soft block" type="button" id="btnChangePw">เปลี่ยนรหัสผ่าน</button><button class="btn ghost block" type="button" id="btnSignOut">ออกจากระบบ${S.email ? ' (' + esc(showUser(S.email)) + ')' : ''}</button>` : ''}
       <p class="sub">${S.backend === 'supabase' ? 'ข้อมูลทั้งหมดเก็บในฐานข้อมูล Supabase ของบริษัท ทุกคนที่ล็อกอินเห็นข้อมูลตามสิทธิ์ของตน' : S.mode === 'shared' ? 'ข้อมูลรายงาน ลูกค้า และผลอนุมัติเก็บไว้ที่ส่วนกลาง ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลชุดเดียวกัน' : 'ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น เปิดผ่านลิงก์ใน Claude ขณะล็อกอินเพื่อใช้ข้อมูลกลางของทีม'}</p>
     </form>`);
+  const cp = $('#btnChangePw'); if (cp) cp.addEventListener('click', openChangePassword);
   const so = $('#btnSignOut'); if (so) so.addEventListener('click', async () => { if (await confirmBox({ title: 'ออกจากระบบ?', body: 'ต้องใส่อีเมลและรหัสผ่านอีกครั้งเมื่อกลับมาใช้', ok: 'ออกจากระบบ' })) { closeSheet(); await S.sb.auth.signOut(); } });
   const here = $('#seHere'); if (here) here.addEventListener('click', () => {
     if (!navigator.geolocation) { toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; }
@@ -1315,8 +1329,8 @@ let sbTimer = null, sbLoading = null;
 function sbRefresh() { clearTimeout(sbTimer); sbTimer = setTimeout(() => sbLoadAll(), 200); }
 async function sbLoadMe() {
   const { data, error } = await S.sb.from('profiles').select('*').eq('id', S.myId).maybeSingle();
-  if (error) { console.error(error); return; }
-  S.meLoaded = true; S.meDoc = data ? rowToProfile(data) : null;
+  if (error) { console.error(error); S.loadError = error; S.meLoaded = true; S.meDoc = null; applyRole(); renderGate(); throw error; }
+  S.loadError = null; S.meLoaded = true; S.meDoc = data ? rowToProfile(data) : null;
   if (S.meDoc) { S.me = { ...S.me, ...S.meDoc }; lsSet(LS_ME, S.me); }
   S.admin = !!(S.meDoc && ['manager', 'owner'].includes(S.meDoc.role) && S.meDoc.status === 'active');
   applyRole();
@@ -1340,7 +1354,7 @@ async function sbLoadAll() {
       const m = {}; (aps.data || []).forEach(a => m[a.visit_id] = { status: a.status, note: a.note, by: a.by_id, byName: a.by_name, at: a.at }); S.approvals = m;
       (st.data || []).forEach(r => { if (r.key === 'settings') S.settings = { ...DEFAULT_SETTINGS, ...(r.value || {}) }; if (r.key === 'invites') S.invites = (r.value && r.value.codes) || {}; });
       const sm = {}; (pf.data || []).forEach(r => sm[r.id] = rowToProfile(r)); S.staff = sm;
-    } catch (e) { console.error(e); toast('โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ'); }
+    } catch (e) { console.error(e); if (!S.loadError) toast('โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ'); }
     finally { sbLoading = null; renderAll(); updateCalc(); renderGate(); }
   })();
   return sbLoading;
@@ -1364,10 +1378,11 @@ async function connectSupabase() {
       const meta = u.user_metadata || {}; if (!S.me.name && meta.name) S.me.name = meta.name;
       renderGate(); await sbLoadAll(); sbSubscribe();
     } else {
-      S.myId = null; S.email = ''; S.meLoaded = false; S.meDoc = null; S.admin = false;
+      S.myId = null; S.email = ''; S.meLoaded = false; S.meDoc = null; S.admin = false; S.loadError = null;
       S.visits = []; S.visitsBy = {}; S.staff = {}; S.customers = []; S.approvals = {};
       S.me = { name: '', code: '', dept: '', vehicle: 'car', plate: '' }; lsSet(LS_ME, S.me);
       if (S.sbChan) { try { S.sb.removeChannel(S.sbChan); } catch {} S.sbChan = null; }
+      loginMode = 'in';
       applyRole(); renderAll(); renderGate();
     }
   });
@@ -1390,43 +1405,77 @@ const loginDomain = () => (SB && SB.loginDomain) || 'flowcrm.local';
 const toLoginEmail = raw => { const v = String(raw || '').trim().toLowerCase().replace(/\s+/g, ''); return !v ? '' : v.includes('@') ? v : v + '@' + loginDomain(); };
 const showUser = email => { const e = String(email || ''); return e.endsWith('@' + loginDomain()) ? e.slice(0, -(loginDomain().length + 1)) : e; };
 function renderLogin(g) {
-  const up = loginMode === 'up';
-  g.innerHTML = `<div class="wrap"><img class="logo" src="${document.querySelector('header .logo').src}" alt=""><p class="sub" style="margin:0">Flow CRM ภาคสนาม · FLOW ENG</p>
-    <h1>${up ? 'สมัครใช้งานครั้งแรก' : 'เข้าสู่ระบบ'}</h1><p class="sub">${up ? 'ใช้อีเมลของคุณสร้างบัญชี จากนั้นกรอกข้อมูลพนักงานในขั้นถัดไป' : 'ใช้อีเมลและรหัสผ่านที่สมัครไว้'}</p>
-    <form id="fLogin" class="card stack" novalidate>
+  const up = loginMode === 'up', remembered = lsGet('flowcrm.user', '');
+  g.classList.add('login');
+  g.innerHTML = `<div class="wrap">
+    <div class="login-head"><img class="logo" src="${document.querySelector('header .logo').src}" alt="FLOW"><h1>${up ? 'สมัครใช้งานครั้งแรก' : 'Flow CRM ภาคสนาม'}</h1><p class="sub">${up ? 'ตั้งชื่อผู้ใช้และรหัสผ่านของคุณ แล้วกรอกข้อมูลพนักงานในขั้นถัดไป' : 'ระบบเช็คอิน รายงานเข้าพบลูกค้า และเบิกค่าเดินทาง'}</p></div>
+    <form id="fLogin" class="login-card stack" novalidate>
       ${up ? '<label class="f">ชื่อ-นามสกุล<input type="text" id="lgName" autocomplete="name"></label>' : ''}
-      <label class="f">ชื่อผู้ใช้<span class="hint">ชื่อผู้ใช้ที่ผู้ดูแลตั้งให้ เช่น somchai หรือจะใส่อีเมลก็ได้</span><input type="text" id="lgEmail" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
-      <label class="f">รหัสผ่าน<span class="hint">${up ? 'อย่างน้อย 6 ตัวอักษร' : ''}</span><input type="password" id="lgPass" autocomplete="${up ? 'new-password' : 'current-password'}" required></label>
-      <div class="notice" id="lgErr" hidden style="color:var(--bad)"></div>
+      <label class="f">ชื่อผู้ใช้<input type="text" id="lgEmail" value="${esc(remembered)}" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="เช่น somchai" required></label>
+      <label class="f pw">รหัสผ่าน<input type="password" id="lgPass" autocomplete="${up ? 'new-password' : 'current-password'}" placeholder="${up ? 'อย่างน้อย 6 ตัวอักษร' : ''}" required><button type="button" id="lgEye" aria-label="แสดงรหัสผ่าน">แสดง</button></label>
+      <div id="lgErr" hidden></div>
       <button class="btn primary block lg" type="submit" id="lgGo">${up ? 'สมัครใช้งาน' : 'เข้าสู่ระบบ'}</button>
-      ${SB.selfSignup === false && !up ? '<p class="sub" style="text-align:center">บัญชีผู้ใช้สร้างโดยผู้ดูแลระบบ ถ้ายังไม่มีให้ติดต่อผู้จัดการฝ่ายขาย</p>' : `<button class="btn ghost block" type="button" id="lgSwitch">${up ? 'มีบัญชีแล้ว เข้าสู่ระบบ' : 'ยังไม่มีบัญชี สมัครใช้งานครั้งแรก'}</button>`}
-      ${up ? '' : '<button class="btn ghost block sm" type="button" id="lgForgot">ลืมรหัสผ่าน</button>'}
-    </form></div>`;
+      ${SB.selfSignup === false && !up ? '' : `<button class="btn ghost block" type="button" id="lgSwitch">${up ? 'มีบัญชีแล้ว เข้าสู่ระบบ' : 'ยังไม่มีบัญชี สมัครใช้งานครั้งแรก'}</button>`}
+    </form>
+    <p class="login-foot">${SB.selfSignup === false && !up ? 'ยังไม่มีบัญชีหรือลืมรหัสผ่าน ติดต่อผู้จัดการฝ่ายขายเพื่อตั้งให้<br>' : ''}FLOW ENG · ข้อมูลเก็บในฐานข้อมูลของบริษัท</p></div>`;
+  (remembered ? $('#lgPass') : $('#lgEmail')).focus();
   const sw = $('#lgSwitch'); if (sw) sw.addEventListener('click', () => { loginMode = up ? 'in' : 'up'; renderLogin(g); });
-  const showErr = t => { $('#lgErr').hidden = !t; $('#lgErr').textContent = t || ''; };
-  const fg = $('#lgForgot'); if (fg) fg.addEventListener('click', async () => {
-    const email = toLoginEmail($('#lgEmail').value); if (!email) { showErr('ใส่ชื่อผู้ใช้ก่อน แล้วกดลืมรหัสผ่าน'); return; }
-    if (email.endsWith('@' + loginDomain())) { showErr('บัญชีแบบชื่อผู้ใช้ไม่มีอีเมลจริง ให้ผู้ดูแลตั้งรหัสผ่านใหม่ให้ในหน้า Supabase → Authentication → Users'); return; }
-    const { error } = await S.sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split('#')[0] }); showErr(error ? authMsg(error) : 'ส่งลิงก์ตั้งรหัสผ่านใหม่ไปที่อีเมลแล้ว');
-  });
+  $('#lgEye').addEventListener('click', () => { const i = $('#lgPass'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('#lgEye').textContent = show ? 'ซ่อน' : 'แสดง'; i.focus(); });
+  const showErr = (t, ok) => { const el = $('#lgErr'); el.hidden = !t; el.className = ok ? 'lg-ok' : 'lg-err'; el.textContent = t || ''; };
   $('#fLogin').addEventListener('submit', async e => {
     e.preventDefault(); showErr('');
-    const email = toLoginEmail($('#lgEmail').value), pass = $('#lgPass').value;
-    if (!email || !pass) { showErr('ใส่ชื่อผู้ใช้และรหัสผ่าน'); return; }
+    const raw = $('#lgEmail').value, email = toLoginEmail(raw), pass = $('#lgPass').value;
+    if (!email) { showErr('ใส่ชื่อผู้ใช้'); $('#lgEmail').focus(); return; }
+    if (!pass) { showErr('ใส่รหัสผ่าน'); $('#lgPass').focus(); return; }
     if (up && !$('#lgName').value.trim()) { showErr('ใส่ชื่อ-นามสกุล'); return; }
-    $('#lgGo').disabled = true;
+    const btn = $('#lgGo'), label = btn.textContent; btn.disabled = true; btn.textContent = up ? 'กำลังสมัคร…' : 'กำลังเข้าสู่ระบบ…';
     try {
-      if (up) { const name = $('#lgName').value.trim(); S.me.name = name; const { data, error } = await S.sb.auth.signUp({ email, password: pass, options: { data: { name } } }); if (error) throw error; if (data && !data.session) showErr('สมัครแล้ว กรุณายืนยันอีเมลจากลิงก์ที่ส่งไป แล้วกลับมาเข้าสู่ระบบ'); }
+      if (up) { const name = $('#lgName').value.trim(); S.me.name = name; const { data, error } = await S.sb.auth.signUp({ email, password: pass, options: { data: { name } } }); if (error) throw error; if (data && !data.session) showErr('สมัครแล้ว กรุณายืนยันอีเมลจากลิงก์ที่ส่งไป แล้วกลับมาเข้าสู่ระบบ', true); }
       else { const { error } = await S.sb.auth.signInWithPassword({ email, password: pass }); if (error) throw error; }
-    } catch (err) { showErr(authMsg(err)); }
-    finally { const b = $('#lgGo'); if (b) b.disabled = false; }
+      lsSet('flowcrm.user', raw.trim()); loginMode = 'in';
+    } catch (err) { showErr(authMsg(err)); $('#lgPass').select(); }
+    finally { const b = $('#lgGo'); if (b) { b.disabled = false; b.textContent = label; } }
+  });
+}
+function openChangePassword() {
+  openSheet(`${bar('เปลี่ยนรหัสผ่าน')}<p class="sub">บัญชี ${esc(showUser(S.email))}</p>
+    <form id="fPw" class="card stack" novalidate>
+      <label class="f pw">รหัสผ่านใหม่<span class="hint">อย่างน้อย 6 ตัวอักษร แนะนำ 10 ตัวขึ้นไป</span><input type="password" id="pw1" autocomplete="new-password" required><button type="button" id="pwEye">แสดง</button></label>
+      <label class="f">ยืนยันรหัสผ่านใหม่<input type="password" id="pw2" autocomplete="new-password" required></label>
+      <div id="pwErr" hidden></div>
+      <button class="btn primary block" type="submit" id="pwGo">บันทึกรหัสผ่านใหม่</button>
+    </form>`);
+  $('#pwEye').addEventListener('click', () => { const i = $('#pw1'), j = $('#pw2'), show = i.type === 'password'; i.type = j.type = show ? 'text' : 'password'; $('#pwEye').textContent = show ? 'ซ่อน' : 'แสดง'; });
+  const err = t => { const el = $('#pwErr'); el.hidden = !t; el.className = 'lg-err'; el.textContent = t || ''; };
+  $('#fPw').addEventListener('submit', async e => {
+    e.preventDefault(); err('');
+    const a = $('#pw1').value, b2 = $('#pw2').value;
+    if (a.length < 6) { err('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'); return; }
+    if (a !== b2) { err('รหัสผ่านสองช่องไม่ตรงกัน'); return; }
+    if (!(await confirmBox({ title: 'เปลี่ยนรหัสผ่าน?', body: 'ครั้งต่อไปต้องใช้รหัสผ่านใหม่นี้เข้าสู่ระบบ', ok: 'เปลี่ยนรหัสผ่าน' }))) return;
+    $('#pwGo').disabled = true;
+    try { const { error } = await S.sb.auth.updateUser({ password: a }); if (error) throw error; toast('เปลี่ยนรหัสผ่านแล้ว'); closeSheet(); }
+    catch (ex) { err(/same password|different from the old/i.test(ex.message || '') ? 'รหัสใหม่ต้องต่างจากรหัสเดิม' : authMsg(ex)); }
+    finally { const g = $('#pwGo'); if (g) g.disabled = false; }
   });
 }
 // ---------- registration gate ----------
 function renderGate() {
   const g = $('#gate');
   if (S.backend === 'supabase' && !S.myId) { g.hidden = false; renderLogin(g); return; }
-  if (S.backend === 'supabase' && !S.meLoaded) { g.hidden = false; g.innerHTML = `<div class="wrap"><p class="sub" style="text-align:center;margin-top:40px">กำลังเชื่อมต่อฐานข้อมูล…</p></div>`; return; }
+  g.classList.remove('login');
+  if (S.backend === 'supabase' && !S.meLoaded) { g.hidden = false; g.innerHTML = `<div class="wrap"><p class="sub" style="text-align:center;margin-top:40px">กำลังเชื่อมต่อฐานข้อมูล…</p><div class="row" style="justify-content:center;margin-top:16px"><button class="btn ghost sm" id="gateOut">ออกจากระบบ</button></div></div>`; const o = $('#gateOut'); if (o) o.addEventListener('click', () => S.sb.auth.signOut()); return; }
+  if (S.backend === 'supabase' && S.loadError) {
+    const m = String(S.loadError.message || ''), code = S.loadError.code || '';
+    const why = /relation .*profiles.* does not exist|42P01|schema cache|Could not find the table/i.test(m + code) ? 'ยังไม่ได้สร้างตารางในฐานข้อมูล ให้ผู้ดูแลเปิด Supabase → SQL Editor วางไฟล์ schema.sql แล้วกด Run จากนั้นกดลองใหม่'
+      : /JWT|token|expired|401/i.test(m + code) ? 'เซสชันหมดอายุ ให้ออกจากระบบแล้วเข้าใหม่'
+      : /Failed to fetch|NetworkError|network/i.test(m) ? 'ติดต่อเซิร์ฟเวอร์ฐานข้อมูลไม่ได้ ตรวจอินเทอร์เน็ต หรือโปรเจกต์ Supabase อาจถูกพัก (กด Restore ในหน้า Dashboard)'
+      : 'อ่านข้อมูลผู้ใช้ไม่ได้';
+    g.hidden = false; g.innerHTML = `<div class="wrap"><img class="logo" src="${document.querySelector('header .logo').src}" alt=""><h1>เชื่อมต่อฐานข้อมูลไม่สำเร็จ</h1><div class="card stack"><p>${esc(why)}</p><p class="sub">รายละเอียดสำหรับผู้ดูแล: ${esc(code ? code + ' · ' : '')}${esc(m || 'ไม่มีข้อความ')}</p><div class="row"><button class="btn primary grow" id="gateRetry">ลองใหม่</button><button class="btn ghost grow" id="gateOut">ออกจากระบบ</button></div></div></div>`;
+    $('#gateRetry').addEventListener('click', () => { S.loadError = null; S.meLoaded = false; renderGate(); sbLoadAll(); });
+    $('#gateOut').addEventListener('click', () => { S.loadError = null; S.sb.auth.signOut(); });
+    return;
+  }
   if (S.mode !== 'shared' || S.admin || !S.meLoaded) { g.hidden = true; return; }
   const st = S.meDoc ? S.meDoc.status || 'active' : null;
   if (st === 'active') { g.hidden = true; return; }
