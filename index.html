@@ -271,15 +271,15 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 .page .docbox{display:flex;justify-content:space-between;gap:10px;margin:10px 0 8px}
 .page .docbox .k{display:grid;grid-template-columns:auto auto;gap:2px 10px;font-size:10.5pt}
 .page .docbox .k span{color:#555}
-.page .docbox .no{border:1.5px solid #144CA5;border-radius:6px;padding:6px 12px;text-align:center;min-width:52mm}
+.page .docbox .no{border:1.5px solid #144CA5;border-radius:6px;padding:6px 12px;text-align:center;min-width:56mm;white-space:nowrap}
 .page .docbox .no small{display:block;font-size:8.5pt;color:#555}
-.page .docbox .no b{font-size:15pt;font-family:var(--f-num);letter-spacing:.04em;color:#144CA5}
+.page .docbox .no b{font-size:14pt;font-family:var(--f-num);letter-spacing:.03em;color:#144CA5;display:block}
 .page table.pt{width:100%;table-layout:fixed;border-collapse:collapse;font-size:9pt;margin-top:6px}
-.page table.pt th,.page table.pt td{border:1px solid #9aa0ab;padding:4px 4px;vertical-align:top;overflow-wrap:anywhere}
+.page table.pt th,.page table.pt td{border:1px solid #9aa0ab;padding:4px 3px;vertical-align:top;overflow-wrap:anywhere}
 .page table.pt th{background:#E8EEF8;font-weight:600;text-align:center;font-size:8.5pt;line-height:1.25;padding:4px 2px}
-.page table.pt td.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
-.page table.pt td.c{text-align:center;white-space:nowrap}
-.page table.pt td .r{font-family:var(--f-num);font-size:8.5pt;color:#555;white-space:nowrap}
+.page table.pt td.n{text-align:right;font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.page table.pt td.c{text-align:center}
+.page table.pt td .r{font-family:var(--f-num);font-size:7.5pt;color:#555;letter-spacing:-.02em;white-space:nowrap}
 .page table.pt td .s{font-size:8.5pt;color:#555}
 .page table.pt tfoot td{font-weight:600;background:#F5F5F7}
 .page .words{margin:6px 0 0;font-size:10.5pt;display:flex;justify-content:space-between;gap:10px}
@@ -494,6 +494,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 <section class="view wrap" id="v-admin" hidden>
   <div class="stack" style="gap:4px"><h1>หลังบ้าน</h1><p class="sub">สำหรับเจ้าของ CEO และผู้จัดการ ดูภาพรวมการทำงาน อนุมัติ และจัดการผู้ใช้งาน</p></div>
   <div class="tiles" id="adTiles"></div>
+  <div class="card stack" id="adDefaults"></div>
   <div class="stack" id="adPendingWrap" hidden><h2>คำขอลงทะเบียนใหม่ <span class="pill pending" id="adPendN">0</span></h2><div class="list" id="adPending"></div></div>
   <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite">+ เพิ่มพนักงาน</button></div>
   <div class="chips" id="adFilter"></div>
@@ -526,7 +527,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 
 <div class="gate" id="gate" hidden></div>
 <div class="sheet" id="sheet" hidden><div class="panel" id="sheetPanel"></div></div>
-<div class="pdoc" id="pdoc" hidden><div class="pbar"><button class="btn primary sm" id="pdPrint">พิมพ์ / บันทึก PDF</button><span class="sp" id="pdTitle"></span><button class="btn ghost sm" id="pdClose" style="color:#fff">ปิด</button></div><div class="pages" id="pdPages"></div></div>
+<div class="pdoc" id="pdoc" hidden><div class="pbar"><button class="btn primary sm" id="pdPrint">พิมพ์ / บันทึก PDF</button><span class="sp" id="pdTitle"></span><button type="button" id="pdClose" aria-label="ปิด" title="ปิด" style="width:40px;height:40px;border-radius:50%;border:0;background:#D7263D;color:#fff;font-size:22px;line-height:1;font-weight:600;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center">✕</button></div><div class="pages" id="pdPages"></div></div>
 <div class="confirm" id="confirm" hidden role="dialog" aria-modal="true"><div class="box"><h3 id="cfTitle"></h3><p id="cfBody"></p><div class="acts"><button class="btn ghost" id="cfNo">ยกเลิก</button><button class="btn primary" id="cfYes">ยืนยัน</button></div></div></div>
 <div class="toast" id="toast" hidden></div>
 
@@ -552,7 +553,7 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
-const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:6, rateEv:4, rateMoto:2.5, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
+const DEFAULT_SETTINGS = { officeName:'FLOW ENG Office/Workshop', officeLat:null, officeLng:null, rateCar:6, rateEv:4, rateMoto:2.5, defaultToll:0, defaultVehicle:'car', prefillKm:true, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
 const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
 // ---------- helpers ----------
@@ -690,7 +691,7 @@ async function connect() {
   db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
   renderAll();
 }
-function staffDoc() { return { name: S.me.name || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
 function isActive() { return S.mode !== 'shared' || S.admin || (S.meDoc && S.meDoc.status === 'active'); }
 function roleLabel() { return ROLES[S.me.role] || (S.admin ? ROLES.manager : ROLES.sales); }
 let cleaning = false;
@@ -705,7 +706,9 @@ function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); do
 const staffKey = v => v.createdBy || ('n:' + v.staffName);
 
 // ---------- derived ----------
-const statusOf = v => v.claimStatus === 'none' ? 'draft' : (S.approvals[v.id] && S.approvals[v.id].status) || 'pending';
+const statusOf = v => { if (v.claimStatus === 'none') return 'draft'; const a = S.approvals[v.id]; if (!a || !a.status) return 'pending'; if (a.status === 'rejected' && (v.claimedAt || 0) > (a.at || 0)) return 'pending'; return a.status; };
+const isLocked = v => statusOf(v) === 'approved';
+const canEditClaim = v => S.canWrite && !v.isExample && (S.admin || (isMine(v) && !isLocked(v)));
 const hasPhotos = v => (v.photos && v.photos.length) || (v.files && v.files.some(f => f.kind === 'image'));
 const isMine = v => S.myId ? v.createdBy === S.myId : (S.me.name && v.staffName === S.me.name);
 function custByName(name) { const k = String(name || '').trim().toLowerCase(); return S.customers.find(c => c.name.trim().toLowerCase() === k); }
@@ -945,7 +948,9 @@ function renderApprove() {
 }
 
 // ---------- check-in form ----------
-const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || 'car', gps: null, photos: [], files: [] };
+const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', gps: null, photos: [], files: [] };
+function applyExpenseDefaults() { if (!$('#ciToll').value && +S.settings.defaultToll > 0) $('#ciToll').value = S.settings.defaultToll; }
+function prefillKmFor(name) { if (S.settings.prefillKm === false || F.vehicle === 'company') return; const k = String(name || '').trim().toLowerCase(); if (!k) return; const last = S.visits.find(v => !v.isExample && v.customer.trim().toLowerCase() === k && v.vehicle !== 'company' && (v.kmOneWay > 0 || (v.draftClaim && v.draftClaim.kmOneWay > 0))); if (!last) return; const km = last.kmOneWay > 0 ? last.kmOneWay : last.draftClaim.kmOneWay; if (!$('#ciKm').value) { $('#ciKm').value = km; toast(`เติมระยะทาง ${fmtKm(km)} กม. จากครั้งก่อน แก้ได้ถ้าต่างจากจริง`); } }
 function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
 function renderFormChips() {
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
@@ -1027,7 +1032,7 @@ async function rememberCustomAction(name) {
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || 'car';
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
 }
 const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
@@ -1090,7 +1095,7 @@ $('#fCheckin').addEventListener('click', e => {
   else if (t.dataset.rmfile) { F.files = F.files.filter(f => f.id !== t.dataset.rmfile); renderPhotos(); updateCalc(); }
 });
 ['ciKm', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
-$('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } updateCalc(); });
+$('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } prefillKmFor($('#ciCustomer').value); applyExpenseDefaults(); updateCalc(); });
 $('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.files.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
 async function saveCheckin(claim) {
   if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนส่งรายงาน'); return; }
@@ -1158,11 +1163,15 @@ function openVisit(id) {
         : `<span>ไป-กลับ ${fmtKm(v.kmRoundTrip)} กม. × ${fmtB(v.rate)}</span><span class="num">${fmtB(v.fuelAmount)}</span>${v.kmEstimate ? `<span class="sub">ระบบประมาณไว้</span><span class="num sub">${fmtKm(v.kmEstimate)} กม.</span>` : ''}`}
         <span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(v.toll)}</span><span class="total">รวมเบิกสุทธิ</span><span class="total num">${fmtB(v.total)}</span></div>
       ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>`}
+    ${st === 'approved' ? `<div class="notice" style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:18px;line-height:1">🔒</span><span>รายการนี้อนุมัติแล้วและถูกล็อก ผู้ขอเบิกแก้ไขไม่ได้ ${S.admin ? 'ผู้จัดการแก้ไขได้ด้วยปุ่มด้านล่าง หรือกด "ตีกลับ" เพื่อให้พนักงานแก้ไขแล้วส่งใหม่' : 'หากต้องแก้ไข ให้แจ้งผู้จัดการตีกลับรายการนี้'}</span></div>` : ''}
+    ${st === 'rejected' && isMine(v) && !S.admin && S.canWrite ? `<button class="btn primary block" data-claim="${esc(v.id)}">แก้ไขค่าเดินทางและส่งขอเบิกใหม่</button>` : ''}
+    ${v.editedAt ? `<p class="sub">แก้ไขล่าสุดโดย ${esc(v.editedByName || 'ผู้จัดการ')} เมื่อ ${dt(v.editedAt)}</p>` : ''}
     <div class="card stack"><h2>จุดที่ควรตรวจ</h2><ul class="flags">${fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ไม่พบจุดผิดปกติ</li>'}</ul></div>
     ${ap && ap.status !== 'pending' ? `<p class="sub">${STATUS[ap.status]}โดย ${esc(ap.byName || '-')} เมื่อ ${dt(ap.at)}${ap.note ? '<br>หมายเหตุ: ' + esc(ap.note) : ''}</p>` : ''}
     ${S.admin && st !== 'draft' ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
       <div class="row"><button class="btn ok grow" data-approve="${esc(v.id)}">อนุมัติ</button><button class="btn bad grow" data-reject="${esc(v.id)}">ตีกลับ</button></div>
       ${st !== 'pending' ? `<button class="btn ghost sm" data-unset="${esc(v.id)}">ย้ายกลับไปรอตรวจ</button>` : ''}
+      ${!v.isExample ? `<button class="btn soft sm" data-claim="${esc(v.id)}">แก้ไขค่าเดินทาง (ผู้จัดการ)</button>` : ''}
       ${v.isExample ? `<button class="btn ghost sm" data-delvisit="${esc(v.id)}">ลบรายการตัวอย่างนี้</button>` : ''}</div>` : ''}`);
 }
 function attachmentsHtml(v) {
@@ -1188,13 +1197,16 @@ async function saveToDevice(f, data) {
 }
 function openClaim(id) {
   const v = S.visits.find(x => x.id === id); if (!v) return;
-  const s = S.settings, est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, dc = v.draftClaim || null;
-  const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '' } : { vehicle: S.me.vehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: '' };
+  if (!canEditClaim(v)) { toast(isLocked(v) ? 'รายการนี้อนุมัติแล้ว ถูกล็อก ให้ผู้จัดการตีกลับก่อนจึงแก้ไขได้' : 'ไม่มีสิทธิ์แก้ไขรายการนี้'); return; }
+  const s = S.settings, est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, dc = v.claimStatus !== 'none' ? v : (v.draftClaim || null);
+  const st0 = statusOf(v), mode = v.claimStatus === 'none' ? 'claim' : (isMine(v) && !S.admin) || st0 === 'rejected' ? 'resubmit' : 'adminEdit';
+  const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '' } : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '' };
   const render = () => {
     const rate = rateFor(C.vehicle, s);
-    openSheet(`${bar('ขอเบิกย้อนหลัง')}
-      <p class="sub">${esc(v.customer)} · เช็คอิน ${dt(v.createdAt)}</p>
-      ${dc ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม. ไป-กลับ'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
+    openSheet(`${bar(mode === 'claim' ? 'ขอเบิกย้อนหลัง' : mode === 'resubmit' ? 'แก้ไขและส่งขอเบิกใหม่' : 'แก้ไขค่าเดินทาง (ผู้จัดการ)')}
+      <p class="sub">${esc(v.customer)} · เช็คอิน ${dt(v.createdAt)}${mode !== 'claim' ? ' · ' + ref(v) : ''}</p>
+      ${mode === 'resubmit' && st0 === 'rejected' ? `<div class="notice">รายการนี้ถูกตีกลับ${S.approvals[v.id] && S.approvals[v.id].note ? ': ' + esc(S.approvals[v.id].note) : ''} แก้ไขแล้วกดส่ง จะกลับไปรอตรวจใหม่</div>` : mode === 'adminEdit' ? `<div class="notice">แก้ไขในฐานะผู้จัดการ สถานะ "${STATUS[st0]}" คงเดิม และบันทึกชื่อผู้แก้ไขไว้ในรายการ</div>` : ''}
+      ${dc && mode === 'claim' ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม. ไป-กลับ'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
       <form id="fClaim" class="stack" novalidate>
         <div class="chips">${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
         <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
@@ -1203,7 +1215,7 @@ function openClaim(id) {
         : `<label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="cmFuel" inputmode="decimal" min="0" step="0.01" value="${esc(C.fuel)}"></label><label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="cmReceipt" value="${esc(C.receipt)}"></label>`}
         <label class="f">ค่าทางด่วน / ที่จอดรถ (บาท)<input type="number" id="cmToll" inputmode="decimal" min="0" step="0.01" value="${esc(C.toll)}"></label>
         <div class="calc" id="cmCalc"></div>
-        <button class="btn primary block lg" type="submit">ส่งขอเบิก</button>
+        <button class="btn primary block lg" type="submit">${mode === 'adminEdit' ? 'บันทึกการแก้ไข' : mode === 'resubmit' ? 'ส่งขอเบิกใหม่' : 'ส่งขอเบิก'}</button>
       </form>`);
     const val = sel => { const el = $(sel); return el ? el.value : ''; };
     const calc = () => { const km1 = Math.max(0, +val('#cmKm') || 0), kmRT = Math.round(km1 * 2 * 10) / 10, toll = n2(Math.max(0, +val('#cmToll') || 0)), fuel = C.vehicle === 'company' ? n2(Math.max(0, +val('#cmFuel') || 0)) : n2(kmRT * rate), total = n2(fuel + toll);
@@ -1216,10 +1228,12 @@ function openClaim(id) {
     $('#fClaim').addEventListener('submit', async e => {
       e.preventDefault(); const c = calc(); keep();
       if (C.vehicle !== 'company' && !c.kmOne) { toast('ใส่ระยะทางก่อน'); return; }
-      if (!(await confirmBox({ title: 'ส่งขอเบิกรายการนี้?', body: `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(c.total)} ส่งแล้วแก้ไขเองไม่ได้`, ok: 'ส่งขอเบิก' }))) return;
-      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null };
-      try { await store.saveVisit(nv); S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); toast(`ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`); closeSheet(); }
-      catch { toast('ส่งไม่สำเร็จ ลองอีกครั้ง'); }
+      const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(c.total)}`;
+      if (!(await confirmBox(mode === 'adminEdit' ? { title: 'บันทึกการแก้ไขของผู้จัดการ?', body: sum, ok: 'บันทึก' } : mode === 'resubmit' ? { title: 'ส่งขอเบิกใหม่?', body: sum + ' จะกลับไปรอตรวจอีกครั้ง', ok: 'ส่งใหม่' } : { title: 'ส่งขอเบิกรายการนี้?', body: sum + ' เมื่ออนุมัติแล้วจะแก้ไขเองไม่ได้', ok: 'ส่งขอเบิก' }))) return;
+      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null };
+      if (mode === 'adminEdit') { nv.editedAt = Date.now(); nv.editedBy = S.myId; nv.editedByName = S.me.name || 'ผู้จัดการ'; }
+      try { await store.saveVisit(nv); if (isMine(v)) { S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); } toast(mode === 'adminEdit' ? 'บันทึกการแก้ไขแล้ว' : mode === 'resubmit' ? `ส่งขอเบิกใหม่แล้ว ${ref(nv)} รอหัวหน้าตรวจ` : `ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`); closeSheet(); }
+      catch (err) { toast(/row-level security|policy|invalid_argument/i.test((err && (err.message + err.code)) || '') ? 'บันทึกไม่ได้ รายการนี้ถูกล็อกเพราะอนุมัติแล้ว' : 'ส่งไม่สำเร็จ ลองอีกครั้ง'); }
     });
   };
   render();
@@ -1276,14 +1290,20 @@ function openSettings() {
   openSheet(`${bar('ตั้งค่า')}
     <form id="fSet" class="stack" novalidate>
       <div class="card stack"><h2>ข้อมูลพนักงาน · ${roleLabel()}</h2>
-        <label class="f">ชื่อ-นามสกุล<input type="text" id="seName" value="${esc(m.name)}" placeholder="ชื่อที่จะติดไปกับรายงาน"></label>
+<label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="seName" value="${esc(m.name || '')}" required></label>
+        <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="seNick" value="${esc(m.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="seNameEn" value="${esc(m.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
         <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="seCode" value="${esc(m.code)}"></label><label class="f grow">แผนก<input type="text" id="seDept" value="${esc(m.dept)}"></label></div>
-        <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label><label class="f grow">ทะเบียนรถส่วนตัว<input type="text" id="sePlate" value="${esc(m.plate)}"></label></div>
+        <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label></div>
+        <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="seVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (m.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="sePlate" value="${esc(m.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       </div>
       <div class="card stack"><h2>ค่าบริษัท ${S.admin ? '' : '(ผู้จัดการฝ่ายขายเท่านั้นที่แก้ได้)'}</h2>
         <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
         <label class="f">รถยนต์ไฟฟ้าส่วนตัว EV (บาท/กม.)<span class="hint">รวมค่าไฟและค่าสึกหรอ ไม่เบิกสลิปชาร์จซ้ำ</span><input type="number" id="seEv" step="0.01" min="0" value="${s.rateEv ?? 4}" ${dis}></label>
         <p class="sub">อัตราใหม่ใช้กับรายการที่ส่งหลังจากนี้ รายการเดิมคงอัตราตอนส่งไว้เพื่อการตรวจย้อนหลัง</p>
+        ${S.admin ? '<button type="button" class="btn ghost sm" id="seRegDefaults" style="align-self:flex-start">ใช้อัตราตามระเบียบ 01/2569 (6 / 4 / 2.5)</button>' : ''}
+        <h2 style="margin-top:6px">ค่าเริ่มต้นที่เติมให้พนักงาน</h2>
+        <div class="row"><label class="f grow">ทางด่วน / ที่จอดรถ เริ่มต้น (บาท)<span class="hint">0 = ให้กรอกเอง</span><input type="number" id="seToll" step="0.01" min="0" value="${s.defaultToll || 0}" ${dis}></label><label class="f grow">รถเริ่มต้นสำหรับคนใหม่<select id="seDefVeh" ${dis}>${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (s.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+        <label class="f"><span>เติมระยะทางจากการไปลูกค้ารายเดิมครั้งก่อน</span><select id="sePrefill" ${dis}><option value="1" ${s.prefillKm !== false ? 'selected' : ''}>เปิด (พนักงานแก้ได้)</option><option value="0" ${s.prefillKm === false ? 'selected' : ''}>ปิด</option></select></label>
         <label class="f">เป้าเข้าพบต่อคนต่อเดือน (ครั้ง)<span class="hint">ใช้ในหน้ารายงานของเซลส์และทีม</span><input type="number" id="seTarget" min="0" step="1" value="${s.visitTarget}" ${dis}></label>
         <label class="f">ชื่อจุดเริ่มต้น<input type="text" id="seOffice" value="${esc(s.officeName)}" ${dis}></label>
         <label class="f">พิกัดบริษัท<span class="hint">วางพิกัดตัวเลข Plus Code (เช่น RJP4+XC) หรือลิงก์ Google Maps ของออฟฟิศ/โรงงาน</span><input type="text" id="seGeo" value="${officeSet() ? s.officeLat + ', ' + s.officeLng : ''}" placeholder="13.xxxx, 100.xxxx หรือ RJP4+XC" ${dis}></label>
@@ -1300,20 +1320,21 @@ function openSettings() {
     </form>`);
   const cp = $('#btnChangePw'); if (cp) cp.addEventListener('click', openChangePassword);
   const so = $('#btnSignOut'); if (so) so.addEventListener('click', async () => { if (await confirmBox({ title: 'ออกจากระบบ?', body: 'ต้องใส่อีเมลและรหัสผ่านอีกครั้งเมื่อกลับมาใช้', ok: 'ออกจากระบบ' })) { closeSheet(); await S.sb.auth.signOut(); } });
+  const regBtn = $('#seRegDefaults'); if (regBtn) regBtn.addEventListener('click', () => { $('#seCar').value = 6; $('#seEv').value = 4; $('#seMoto').value = 2.5; toast('ใส่อัตราตามระเบียบแล้ว กดบันทึกเพื่อยืนยัน'); });
   const here = $('#seHere'); if (here) here.addEventListener('click', () => {
     if (!navigator.geolocation) { toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; }
     navigator.geolocation.getCurrentPosition(p => { $('#seGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); }, () => toast('จับตำแหน่งไม่ได้ วางพิกัดจาก Google Maps แทน'), { enableHighAccuracy: true, timeout: 15000 });
   });
   $('#fSet').addEventListener('submit', async e => {
     e.preventDefault();
-    S.me = { ...S.me, name: $('#seName').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
+    S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), vehicle: $('#seVeh').value, plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
     try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
     if (S.admin) {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? parseCoords(geoRaw) : null;
       if (geoRaw && !g) { toast('อ่านพิกัดบริษัทไม่ออก'); return; }
       const ns = { officeName: $('#seOffice').value.trim() || DEFAULT_SETTINGS.officeName, officeLat: g ? +g.lat.toFixed(6) : null, officeLng: g ? +g.lng.toFixed(6) : null,
-        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), updatedAt: Date.now(), updatedBy: S.myId };
-      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget'].some(k => ns[k] !== S.settings[k]);
+        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), defaultToll: n2(Math.max(0, +$('#seToll').value || 0)), defaultVehicle: $('#seDefVeh').value, prefillKm: $('#sePrefill').value === '1', updatedAt: Date.now(), updatedBy: S.myId };
+      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget', 'defaultToll', 'defaultVehicle', 'prefillKm'].some(k => ns[k] !== S.settings[k]);
       if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} · EV ${ns.rateEv} · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
       if (changed) { try { await store.saveSettings(ns); } catch { toast('บันทึกค่าบริษัทไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์'); return; } }
     }
@@ -1349,7 +1370,7 @@ document.addEventListener('click', e => {
   else if (d.reject) decide(d.reject, 'rejected');
   else if (d.unset) decide(d.unset, 'pending');
   else if (d.delvisit) { confirmBox({ title: 'ลบรายการนี้ถาวร?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteVisit(S.visits.find(x => x.id === d.delvisit)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้')); }); }
-  else if (d.checkinat) { const c = S.customers.find(x => x.id === d.checkinat); closeSheet(); resetForm(); $('#ciCustomer').value = c.name; $('#ciContact').value = c.contact || ''; F.stage = c.stage || ''; go('checkin'); }
+  else if (d.checkinat) { const c = S.customers.find(x => x.id === d.checkinat); closeSheet(); resetForm(); $('#ciCustomer').value = c.name; $('#ciContact').value = c.contact || ''; F.stage = c.stage || ''; prefillKmFor(c.name); updateCalc(); go('checkin'); }
   else if (d.editcust) editCustomer(d.editcust);
   else if (d.zoom !== undefined) { const img = t.getAttribute('src'); openSheet(`${bar('รูปหน้างาน')}<img src="${img}" alt="รูปหน้างาน" style="width:100%;border-radius:12px">`); }
 });
@@ -1379,7 +1400,7 @@ $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
 // ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
 const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
-const PROFILE_COLS = { name: 'name', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const PROFILE_COLS = { name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
 const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
 function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
@@ -1396,7 +1417,7 @@ const sb = {
   async registerStaff(doc) { const row = profileToRow(doc); delete row.role; delete row.status; const { error } = await S.sb.from('profiles').insert({ id: S.myId, email: S.email || null, ...row }); if (error) sbFail(error); await sbLoadAll(); },
   async setStaff(uid, patch) { const { error } = await S.sb.from('profiles').update(profileToRow(patch)).eq('id', uid); if (error) sbFail(error); sbRefresh(); },
   async deleteStaff(uid) { const { error } = await S.sb.rpc('admin_delete_user', { p_user: uid }); if (error) { if (!sbNoFn(error)) sbFail(error); const r = await S.sb.from('profiles').delete().eq('id', uid); if (r.error) sbFail(r.error); } sbRefresh(); },
-  async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales' }); if (error) sbFail(error); sbRefresh(); return data; },
+  async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales', p_nick: u.nick || '', p_name_en: u.nameEn || '', p_vehicle: u.vehicle || 'car', p_plate: u.plate || '' }); if (error) sbFail(error); sbRefresh(); return data; },
   async adminSetPassword(uid, password) { const { error } = await S.sb.rpc('admin_set_password', { p_user: uid, p_password: password }); if (error) sbFail(error); },
   async saveInvites(codes) { const { error } = await S.sb.from('settings').upsert({ key: 'invites', value: { codes }, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
   async saveCustomer(c) { const { error } = await S.sb.from('customers').upsert({ id: c.id, name: c.name || '', data: c, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
@@ -1572,7 +1593,8 @@ function renderGate() {
       <form id="fReg" class="card stack" novalidate>
         <label class="f">รหัสพนักงาน<span class="hint">ตามที่ผู้จัดการแจ้ง ถ้ายังไม่มีเว้นว่างได้</span><input type="text" id="rgCode" value="${esc(code)}" autocomplete="off"></label>
         <div class="notice" id="rgInv" ${inv ? '' : 'hidden'}>${inv ? `พบรหัสเชิญของ <b>${esc(inv.name)}</b> ${inv.dept ? '· ' + esc(inv.dept) : ''} ลงทะเบียนแล้วใช้งานได้ทันที` : ''}</div>
-        <label class="f">ชื่อ-นามสกุล<input type="text" id="rgName" value="${esc(S.me.name || (inv ? inv.name : ''))}" required></label>
+        <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="rgName" value="${esc(S.me.name || (inv ? inv.name : ''))}" required></label>
+        <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="rgNick" value="${esc(S.me.nick || '')}"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="rgNameEn" value="${esc(S.me.nameEn || '')}"></label></div>
         <div class="row"><label class="f grow">แผนก / ทีม<input type="text" id="rgDept" value="${esc(S.me.dept || (inv ? inv.dept : ''))}" placeholder="เช่น Sales ภาคกลาง"></label><label class="f grow">เบอร์โทร<input type="tel" id="rgPhone" value="${esc(S.me.phone || '')}"></label></div>
         <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="rgVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (S.me.vehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="rgPlate" value="${esc(S.me.plate || '')}"></label></div>
         <button class="btn primary block lg" type="submit">ส่งลงทะเบียน</button>
@@ -1585,7 +1607,7 @@ function renderGate() {
       const name = $('#rgName').value.trim(), code = $('#rgCode').value.trim(); if (!name) { $('#rgName').focus(); toast('ใส่ชื่อ-นามสกุล'); return; }
       const i = S.invites[code];
       if (!(await confirmBox({ title: 'ส่งลงทะเบียน?', body: `${name}${code ? ' · รหัส ' + code : ''} · ${i ? 'มีรหัสเชิญ ใช้งานได้ทันที' : 'รอผู้จัดการอนุมัติ'}`, ok: 'ลงทะเบียน' }))) return;
-      const doc = { name, code, dept: $('#rgDept').value.trim(), phone: $('#rgPhone').value.trim(), vehicle: $('#rgVeh').value, plate: $('#rgPlate').value.trim(), role: i ? (i.role || 'sales') : 'sales', status: i ? 'active' : 'pending', inviteCode: i ? code : '', registeredAt: Date.now(), updatedAt: Date.now(), customActions: [] };
+      const doc = { name, nick: $('#rgNick').value.trim(), nameEn: $('#rgNameEn').value.trim(), code, dept: $('#rgDept').value.trim(), phone: $('#rgPhone').value.trim(), vehicle: $('#rgVeh').value, plate: $('#rgPlate').value.trim(), role: i ? (i.role || 'sales') : 'sales', status: i ? 'active' : 'pending', inviteCode: i ? code : '', registeredAt: Date.now(), updatedAt: Date.now(), customActions: [] };
       S.me = { ...S.me, ...doc }; lsSet(LS_ME, S.me);
       try { await store.registerStaff(doc); toast(i ? 'ลงทะเบียนสำเร็จ เริ่มใช้งานได้เลย' : 'ส่งคำขอแล้ว รอผู้จัดการอนุมัติ'); }
       catch { toast('ส่งไม่สำเร็จ ลองอีกครั้ง'); }
@@ -1610,13 +1632,19 @@ function renderAdmin() {
   $('#adTiles').innerHTML = `<div class="tile"><small>รอตรวจเบิก</small><b>${pendClaims.length}</b></div><div class="tile"><small>รอลงทะเบียน</small><b>${pend.length}</b></div><div class="tile"><small>ผู้ใช้งานที่ใช้งานอยู่</small><b>${active.length}</b></div>
     <div class="tile"><small>เช็คอินวันนี้</small><b>${S.visits.filter(v => !v.isExample && dayKey(v.createdAt) === today).length}</b></div><div class="tile"><small>ยอดรอเบิก (บาท)</small><b class="money">${fmtB(pendClaims.reduce((s, v) => s + (v.total || 0), 0))}</b></div><div class="tile"><small>รหัสเชิญค้างใช้</small><b>${Object.keys(S.invites).length}</b></div>`;
   $('#adPendingWrap').hidden = !pend.length; $('#adPendN').textContent = pend.length;
+  const st = S.settings;
+  $('#adDefaults').innerHTML = `<div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ค่าเริ่มต้นค่าใช้จ่าย</h2><button class="btn soft sm" id="adEditDefaults">แก้ไข</button></div>
+    <div class="sub">ตามระเบียบฯ ฉบับ 01/2569 · พนักงานเห็นค่าเหล่านี้ถูกเติมให้ล่วงหน้า แก้ได้ถ้าต่างจากจริง</div>
+    <div class="tiles"><div class="tile"><small>รถยนต์ส่วนตัว</small><b>${fmtB(st.rateCar)} <small>บ./กม.</small></b></div><div class="tile"><small>รถยนต์ไฟฟ้า EV</small><b>${fmtB(st.rateEv ?? 4)} <small>บ./กม.</small></b></div><div class="tile"><small>มอเตอร์ไซค์</small><b>${fmtB(st.rateMoto)} <small>บ./กม.</small></b></div>
+    <div class="tile"><small>ทางด่วน/จอดรถ เริ่มต้น</small><b>${fmtB(st.defaultToll || 0)} <small>บาท</small></b></div><div class="tile"><small>รถเริ่มต้นสำหรับคนใหม่</small><b style="font-size:16px">${VEHICLES[st.defaultVehicle || 'car']}</b></div><div class="tile"><small>เติมระยะทางจากครั้งก่อน</small><b style="font-size:16px">${st.prefillKm === false ? 'ปิด' : 'เปิด'}</b></div></div>`;
+  $('#adEditDefaults').addEventListener('click', openSettings);
   $('#adPending').innerHTML = pend.map(u => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}</div><div class="m">${esc([u.code, u.dept, u.phone].filter(Boolean).join(' · ') || '-')}</div><div class="m">ส่งเมื่อ ${u.registeredAt ? dt(u.registeredAt) : '-'}</div></div>
     <div class="stack" style="gap:6px"><button class="btn primary sm" data-ureg="${esc(u.id)}" data-to="active">อนุมัติ</button><button class="btn ghost sm" data-ureg="${esc(u.id)}" data-to="rejected">ไม่อนุมัติ</button></div></div>`).join('');
   const f = S.userFilter || 'all', counts = { all: users.length, active: active.length, disabled: users.filter(u => u.status === 'disabled').length, manager: users.filter(u => u.role !== 'sales').length };
   $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'เข้าหลังบ้านได้']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
   const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
   $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
-    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
     : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
   const inv = Object.entries(S.invites);
   $('#adInvitesWrap').hidden = !inv.length;
@@ -1647,11 +1675,13 @@ function openUser(uid) {
     <div class="tiles"><div class="tile"><small>เข้าพบเดือนนี้</small><b>${m.length}</b></div><div class="tile"><small>รอตรวจ</small><b>${vs.filter(v => statusOf(v) === 'pending').length}</b></div><div class="tile"><small>เบิกเดือนนี้</small><b class="money">${fmtB(m.filter(v => statusOf(v) !== 'rejected').reduce((s, v) => s + (v.total || 0), 0))}</b></div></div>
     <form id="fUser" class="card stack" novalidate>
       <h2>ข้อมูลผู้ใช้งาน</h2>
-      <label class="f">ชื่อ-นามสกุล<input type="text" id="usName" value="${esc(u.name || '')}"></label>
+      <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="usName" value="${esc(u.name || '')}" required></label>
+        <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="usNick" value="${esc(u.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="usNameEn" value="${esc(u.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
       <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
       <div class="f"><span>สิทธิ์การเข้าใช้</span><div id="usAccess" class="sub" style="margin:4px 0 0">${esc(ACCESS[u.role])}</div></div>
       <p class="sub">${uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : S.backend === 'supabase' ? 'เลือกตำแหน่ง "พนักงานขาย" = เข้าได้เฉพาะระบบปกติ · "ผู้จัดการฝ่ายขาย" หรือ "เจ้าของ / CEO" = เข้าหลังบ้านได้ มีผลทันทีที่บันทึก' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
+      <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="usVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (u.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="usPlate" value="${esc(u.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">หมายเหตุภายใน<input type="text" id="usNote" value="${esc(u.note || '')}"></label>
       <button class="btn primary block" type="submit">บันทึกข้อมูล</button>
     </form>
@@ -1667,7 +1697,7 @@ function openUser(uid) {
   const pwMe = $('#usPwMe'); if (pwMe) pwMe.addEventListener('click', () => openChangePassword());
   $('#fUser').addEventListener('submit', async e => {
     e.preventDefault();
-    const patch = { name: $('#usName').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
+    const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
     if (!patch.name) { toast('ใส่ชื่อ'); return; }
     const accChanged = patch.role !== u.role;
     if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}${accChanged ? ' · ' + ACCESS[patch.role] : ''}`, ok: 'บันทึก' }))) return;
@@ -1708,9 +1738,11 @@ function openAddUser() {
   openSheet(`${bar('เพิ่มพนักงาน')}
     <p class="sub">ตั้งชื่อผู้ใช้และรหัสผ่านให้พนักงานได้เลย บัญชีใช้งานได้ทันที ไม่ต้องรออนุมัติ</p>
     <form id="fAdd" class="card stack" novalidate>
-      <label class="f">ชื่อ-นามสกุล<input type="text" id="auName" required></label>
+      <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="auName" required></label>
+      <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="auNick" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="auNameEn" placeholder="เช่น Somchai Jaidee"></label></div>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="auCode" placeholder="เช่น S012"></label><label class="f grow">แผนก / ทีม<input type="text" id="auDept"></label></div>
       <label class="f">เบอร์โทร<input type="tel" id="auPhone"></label>
+      <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="auVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === ({}.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="auPlate" value="${esc({}.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">ชื่อผู้ใช้สำหรับเข้าสู่ระบบ<span class="hint">ภาษาอังกฤษ/ตัวเลข ไม่มีช่องว่าง เช่น somchai</span><input type="text" id="auUser" required autocomplete="off" autocapitalize="off" spellcheck="false"></label>
       <label class="f">รหัสผ่านตั้งต้น<span class="hint">อย่างน้อย 6 ตัว พนักงานเปลี่ยนเองได้ภายหลัง</span><div class="row"><input type="text" id="auPw" class="grow" autocomplete="off" autocapitalize="off" spellcheck="false" value="${genPassword()}"><button class="btn soft sm" type="button" id="auGen">สุ่มใหม่</button></div></label>
       <label class="f">สิทธิ์การเข้าใช้<select id="auRole">${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner').map(([k, l]) => `<option value="${k}">${l} · ${ACCESS[k]}</option>`).join('')}</select></label>
@@ -1726,7 +1758,7 @@ function openAddUser() {
     if (pw.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
     if (code && userRows().some(u => (u.code || '').trim() === code)) { toast('รหัสพนักงานนี้มีอยู่แล้ว'); return; }
     if (!(await confirmBox({ title: 'สร้างบัญชี?', body: `${name} · ผู้ใช้ ${user} · ${ROLES[role]}`, ok: 'สร้าง' }))) return;
-    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
+    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, nick: $('#auNick').value.trim(), nameEn: $('#auNameEn').value.trim(), vehicle: $('#auVeh').value, plate: $('#auPlate').value.trim(), code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
     catch (err) { toast(sbNoFn(err) ? 'ต้องรันไฟล์ schema.sql เวอร์ชันล่าสุดใน Supabase ก่อน' : (err.message && /[ก-๙]/.test(err.message) ? err.message : 'สร้างบัญชีไม่ได้')); }
   });
 }
@@ -1787,17 +1819,17 @@ function claimPageHtml(rows, ym, key) {
     <td>${esc(v.purpose || '')}${v.vehicle === 'company' ? '<div class="s">รถส่วนกลาง' + (v.receiptNo ? ' · ใบเสร็จ ' + esc(v.receiptNo) : '') + '</div>' : ''}</td>
     <td class="n">${v.vehicle === 'company' ? '-' : fmtKm(v.kmRoundTrip)}</td><td class="n">${v.vehicle === 'company' ? 'ตามบิล' : fmtB(v.rate)}</td>
     <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td>
-    <td class="c">${statusOf(v) === 'approved' ? 'อนุมัติแล้ว' : 'รอตรวจ'}</td></tr>`).join('');
+    <td class="c" style="white-space:normal">${statusOf(v) === 'approved' ? 'อนุมัติแล้ว' : 'รอตรวจ'}</td></tr>`).join('');
   return `<div class="page">
     <div class="ph"><img src="${PRINT_LOGO}" alt=""><div class="co"><b>FLOW ENG</b><span>${esc(S.settings.officeName || 'FLOW ENG Office/Workshop')}</span><span>ระบบ Flow CRM ภาคสนาม</span></div>
       <div class="ttl"><b>ใบสรุปขอเบิกเงินชดเชยค่าเดินทางและค่าน้ำมัน</b><span>Mileage &amp; Expense Reimbursement Summary · แบบฟอร์มที่ 3</span></div></div>
     <div class="docbox"><div class="k">
-        <span>ผู้ขอเบิก</span><div><b>${esc(name)}</b>${code ? ' · รหัส ' + esc(code) : ''}</div>
+        <span>ผู้ขอเบิก</span><div><b>${esc(name)}</b>${p.nick ? ' (' + esc(p.nick) + ')' : ''}${p.nameEn ? ' · ' + esc(p.nameEn) : ''}${code ? ' · รหัส ' + esc(code) : ''}</div>
         <span>แผนก / ทีม</span><div>${esc(dept || '-')}</div>
         <span>ประจำเดือน</span><div>${thaiMonth(ym)}</div>
         <span>ยานพาหนะ</span><div>${esc(vehicles || '-')}${rates ? ' · อัตรา ' + rates + ' บาท/กม.' : ''}</div>
       </div><div><div class="no"><small>เลขที่ใบเบิก (RE No.)</small><b>${docNo}</b><small>วันที่ยื่นเบิก ${dFull(Date.now())}</small></div></div></div>
-    <table class="pt"><thead><tr><th style="width:9mm">ลำดับ</th><th style="width:20mm">วันที่ /<br>เลขอ้างอิง</th><th>ลูกค้า (เส้นทาง: บริษัท → ลูกค้า → บริษัท)</th><th style="width:24mm">วัตถุประสงค์</th><th style="width:15mm">ระยะทาง<br>(กม.)</th><th style="width:14mm">อัตรา<br>(บาท/กม.)</th><th style="width:18mm">ค่าน้ำมัน<br>(บาท)</th><th style="width:16mm">ทางด่วน /<br>จอดรถ</th><th style="width:19mm">รวม<br>(บาท)</th><th style="width:13mm">สถานะ</th></tr></thead>
+    <table class="pt"><thead><tr><th style="width:8mm">ที่</th><th style="width:24mm">วันที่ /<br>เลขอ้างอิง</th><th>ลูกค้า (เส้นทาง: บริษัท → ลูกค้า → บริษัท)</th><th style="width:20mm">วัตถุประสงค์</th><th style="width:15mm">ระยะทาง<br>(กม.)</th><th style="width:13mm">อัตรา<br>(บาท/กม.)</th><th style="width:18mm">ค่าน้ำมัน<br>(บาท)</th><th style="width:15mm">ทางด่วน /<br>จอดรถ</th><th style="width:19mm">รวม<br>(บาท)</th><th style="width:15mm">สถานะ</th></tr></thead>
       <tbody>${tr || '<tr><td colspan="10" class="c" style="padding:12px;color:#777">ไม่มีรายการขอเบิกในเดือนนี้</td></tr>'}</tbody>
       <tfoot><tr><td colspan="4" style="text-align:right">รวมสุทธิ (${live.length} รายการ)</td><td class="n">${fmtKm(sum('kmRoundTrip'))}</td><td></td><td class="n">${fmtB(sum('fuelAmount'))}</td><td class="n">${fmtB(sum('toll'))}</td><td class="n">${fmtB(sum('total'))}</td><td></td></tr></tfoot></table>
     <div class="words"><span>จำนวนเงินรวม (ตัวอักษร): <b style="font-family:inherit;font-size:inherit">${bahtText(sum('total'))}</b></span><span>ยอดขอเบิกสุทธิ <b>${fmtB(sum('total'))}</b> บาท</span></div>
