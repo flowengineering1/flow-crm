@@ -477,6 +477,7 @@ const NEXT_ACTIONS = [
 ];
 const NEXT_NEW = '__new';
 const ROLES = { owner: 'เจ้าของ / CEO', manager: 'ผู้จัดการฝ่ายขาย', sales: 'พนักงานขาย' };
+const ACCESS = { sales: 'ระบบปกติเท่านั้น (เช็คอิน / ขอเบิก)', manager: 'เข้าหลังบ้านได้ (ดูทีม อนุมัติ จัดการผู้ใช้)', owner: 'เข้าหลังบ้านได้ · เจ้าของ / CEO (ตั้งเจ้าของเพิ่มได้)' };
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
@@ -1306,6 +1307,7 @@ const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPA
 const PROFILE_COLS = { name: 'name', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
 const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
+function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
 function sbFail(e) { const err = new Error(e.message || 'db'); err.code = /row-level security|permission|policy/i.test(e.message || '') ? 'invalid_argument' : (e.code || 'db'); console.error(e); throw err; }
 function dataUrlToBlob(dataUrl, type) { const bin = atob(dataUrl.split(',')[1] || ''), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: type || 'application/octet-stream' }); }
 const blobToDataUrl = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
@@ -1318,13 +1320,15 @@ const sb = {
   async saveStaff(p) { lsSet(LS_ME, S.me); if (!S.myId) return; if (!S.meDoc) return this.registerStaff({ ...p, registeredAt: Date.now() }); const { error } = await S.sb.from('profiles').update(profileToRow(p)).eq('id', S.myId); if (error) sbFail(error); sbRefresh(); },
   async registerStaff(doc) { const row = profileToRow(doc); delete row.role; delete row.status; const { error } = await S.sb.from('profiles').insert({ id: S.myId, email: S.email || null, ...row }); if (error) sbFail(error); await sbLoadAll(); },
   async setStaff(uid, patch) { const { error } = await S.sb.from('profiles').update(profileToRow(patch)).eq('id', uid); if (error) sbFail(error); sbRefresh(); },
-  async deleteStaff(uid) { const { error } = await S.sb.from('profiles').delete().eq('id', uid); if (error) sbFail(error); sbRefresh(); },
+  async deleteStaff(uid) { const { error } = await S.sb.rpc('admin_delete_user', { p_user: uid }); if (error) { if (!sbNoFn(error)) sbFail(error); const r = await S.sb.from('profiles').delete().eq('id', uid); if (r.error) sbFail(r.error); } sbRefresh(); },
+  async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales' }); if (error) sbFail(error); sbRefresh(); return data; },
+  async adminSetPassword(uid, password) { const { error } = await S.sb.rpc('admin_set_password', { p_user: uid, p_password: password }); if (error) sbFail(error); },
   async saveInvites(codes) { const { error } = await S.sb.from('settings').upsert({ key: 'invites', value: { codes }, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
   async saveCustomer(c) { const { error } = await S.sb.from('customers').upsert({ id: c.id, name: c.name || '', data: c, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
   async setApproval(id, a) { const { error } = await S.sb.from('approvals').upsert({ visit_id: id, status: a.status, note: a.note || '', by_id: a.by || null, by_name: a.byName || '', at: a.at }); if (error) sbFail(error); sbRefresh(); },
   async saveSettings(st) { const { error } = await S.sb.from('settings').upsert({ key: 'settings', value: st, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
 };
-Object.keys(sb).forEach(k => { const orig = store[k]; store[k] = function (...a) { return S.sb ? sb[k](...a) : orig.apply(this, a); }; });
+Object.keys(sb).forEach(k => { const orig = store[k]; store[k] = function (...a) { return S.sb ? sb[k](...a) : (orig ? orig.apply(this, a) : Promise.reject(new Error('unsupported'))); }; });
 let sbTimer = null, sbLoading = null;
 function sbRefresh() { clearTimeout(sbTimer); sbTimer = setTimeout(() => sbLoadAll(), 200); }
 async function sbLoadMe() {
@@ -1528,20 +1532,20 @@ function renderAdmin() {
   $('#adPending').innerHTML = pend.map(u => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}</div><div class="m">${esc([u.code, u.dept, u.phone].filter(Boolean).join(' · ') || '-')}</div><div class="m">ส่งเมื่อ ${u.registeredAt ? dt(u.registeredAt) : '-'}</div></div>
     <div class="stack" style="gap:6px"><button class="btn primary sm" data-ureg="${esc(u.id)}" data-to="active">อนุมัติ</button><button class="btn ghost sm" data-ureg="${esc(u.id)}" data-to="rejected">ไม่อนุมัติ</button></div></div>`).join('');
   const f = S.userFilter || 'all', counts = { all: users.length, active: active.length, disabled: users.filter(u => u.status === 'disabled').length, manager: users.filter(u => u.role !== 'sales').length };
-  $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'ผู้จัดการ/เจ้าของ']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
+  $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'เข้าหลังบ้านได้']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
   const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
   $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
-    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
     : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
   const inv = Object.entries(S.invites);
   $('#adInvitesWrap').hidden = !inv.length;
-  $('#adInvites').innerHTML = inv.map(([code, i]) => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(i.name)} <span class="pill ex">${esc(code)}</span></div><div class="m">${esc([i.email ? 'ผู้ใช้ ' + showUser(i.email) : '', i.dept, ROLES[i.role || 'sales']].filter(Boolean).join(' · '))} · สร้าง ${i.createdAt ? dt(i.createdAt) : '-'}</div><div class="m">ส่งลิงก์แอปให้พนักงาน แล้วให้ใส่รหัสนี้ตอนลงทะเบียน</div></div><button class="btn ghost sm" data-rminvite="${esc(code)}">ยกเลิก</button></div>`).join('');
+  $('#adInvites').innerHTML = inv.map(([code, i]) => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(i.name)} <span class="pill ex">${esc(code)}</span></div><div class="m">${esc([i.email ? 'ผู้ใช้ ' + showUser(i.email) : '', i.dept, ROLES[i.role || 'sales']].filter(Boolean).join(' · '))} · สร้าง ${i.createdAt ? dt(i.createdAt) : '-'}</div><div class="m">${S.backend === 'supabase' ? 'รหัสเชิญแบบเก่า: จะเปิดใช้งานอัตโนมัติเมื่อผู้ใช้นี้ล็อกอินครั้งแรก' : 'ส่งลิงก์แอปให้พนักงาน แล้วให้ใส่รหัสนี้ตอนลงทะเบียน'}</div></div><button class="btn ghost sm" data-rminvite="${esc(code)}">ยกเลิก</button></div>`).join('');
   const acts = [];
   S.visits.filter(v => !v.isExample).slice(0, 20).forEach(v => acts.push({ at: v.createdAt, text: `${v.staffName} เช็คอิน ${v.customer}${v.claimStatus === 'none' ? ' (ยังไม่เบิก)' : ' · ขอเบิก ฿' + fmtB(v.total)}`, id: v.id }));
   Object.entries(S.approvals).forEach(([id, a]) => { const v = S.visits.find(x => x.id === id); if (v && !v.isExample && a.at) acts.push({ at: a.at, text: `${a.byName || 'ผู้ตรวจ'} ${a.status === 'approved' ? 'อนุมัติ' : a.status === 'rejected' ? 'ตีกลับ' : 'ย้ายกลับรอตรวจ'} ${v.customer} ของ ${v.staffName}`, id }); });
   users.forEach(u => { if (u.registeredAt) acts.push({ at: u.registeredAt, text: `${u.name} ลงทะเบียนเข้าใช้งาน${u.inviteCode ? ' ด้วยรหัสเชิญ' : ''}` }); if (u.approvedAt) acts.push({ at: u.approvedAt, text: `${u.approvedByName || 'ผู้จัดการ'} ${u.status === 'active' ? 'อนุมัติ' : u.status === 'disabled' ? 'ระงับ' : 'ปฏิเสธ'}ผู้ใช้ ${u.name}` }); });
   acts.sort((a, b) => b.at - a.at);
-  $('#adFoot').textContent = S.backend === 'supabase' ? 'สิทธิ์ผู้จัดการ / เจ้าของ กำหนดจากตำแหน่งของผู้ใช้งานในหน้านี้ ข้อมูลเก็บในฐานข้อมูล Supabase ของบริษัท' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
+  $('#adFoot').textContent = S.backend === 'supabase' ? 'กำหนดสิทธิ์ได้ต่อคนในหน้าผู้ใช้งาน: "ระบบปกติเท่านั้น" หรือ "เข้าหลังบ้านได้" สร้างบัญชี ตั้งรหัสผ่าน และลบบัญชีได้จากหน้านี้ทั้งหมด' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
   $('#adActivity').innerHTML = acts.length ? acts.slice(0, 25).map(a => `<${a.id ? 'button' : 'div'} class="item" ${a.id ? `data-visit="${esc(a.id)}"` : 'style="cursor:default"'}><div class="main"><div class="t" style="font-weight:400">${esc(a.text)}</div><div class="m">${dt(a.at)}</div></div></${a.id ? 'button' : 'div'}>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
 }
 async function decideUser(uid, to, note) {
@@ -1563,8 +1567,9 @@ function openUser(uid) {
       <h2>ข้อมูลผู้ใช้งาน</h2>
       <label class="f">ชื่อ-นามสกุล<input type="text" id="usName" value="${esc(u.name || '')}"></label>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
-      <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole">${Object.entries(ROLES).map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
-      <p class="sub">${S.backend === 'supabase' ? 'ตำแหน่ง "ผู้จัดการ" หรือ "เจ้าของ / CEO" จะได้สิทธิ์ดูทั้งทีม อนุมัติ และจัดการผู้ใช้งานทันที' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
+      <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+      <div class="f"><span>สิทธิ์การเข้าใช้</span><div id="usAccess" class="sub" style="margin:4px 0 0">${esc(ACCESS[u.role])}</div></div>
+      <p class="sub">${uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : S.backend === 'supabase' ? 'เลือกตำแหน่ง "พนักงานขาย" = เข้าได้เฉพาะระบบปกติ · "ผู้จัดการฝ่ายขาย" หรือ "เจ้าของ / CEO" = เข้าหลังบ้านได้ มีผลทันทีที่บันทึก' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
       <label class="f">หมายเหตุภายใน<input type="text" id="usNote" value="${esc(u.note || '')}"></label>
       <button class="btn primary block" type="submit">บันทึกข้อมูล</button>
     </form>
@@ -1573,20 +1578,78 @@ function openUser(uid) {
       : u.status === 'active' ? `<button class="btn soft grow" data-reportfor="${esc(uid)}">ดูรายงาน</button>${uid !== S.myId ? `<button class="btn ghost grow" data-ureg="${esc(uid)}" data-to="disabled">ระงับการใช้งาน</button>` : ''}`
       : `<button class="btn primary grow" data-ureg="${esc(uid)}" data-to="active">เปิดใช้งานอีกครั้ง</button>`}
     </div>
-    ${uid !== S.myId ? `<button class="btn ghost block" id="usDelete" style="color:var(--bad)">ลบผู้ใช้งานออกจากระบบ</button><p class="sub" style="text-align:center">รายการเข้าพบและการเบิกเดิมยังอยู่เพื่อการตรวจสอบย้อนหลัง</p>` : ''}`);
+    ${S.backend === 'supabase' && u.email ? `<div class="card stack"><h2>บัญชีเข้าสู่ระบบ</h2><div class="sub">ชื่อผู้ใช้ <b>${esc(showUser(u.email))}</b></div>${uid !== S.myId ? '<button class="btn soft block" type="button" id="usPw">ตั้งรหัสผ่านใหม่ให้ผู้ใช้นี้</button>' : '<button class="btn soft block" type="button" id="usPwMe">เปลี่ยนรหัสผ่านของฉัน</button>'}</div>` : ''}
+    ${uid !== S.myId ? `<button class="btn ghost block" id="usDelete" style="color:var(--bad)">${S.backend === 'supabase' ? 'ลบบัญชีผู้ใช้นี้' : 'ลบผู้ใช้งานออกจากระบบ'}</button><p class="sub" style="text-align:center">รายการเข้าพบและการเบิกเดิมยังอยู่เพื่อการตรวจสอบย้อนหลัง</p>` : ''}`);
+  const usRole = $('#usRole'); if (usRole) usRole.addEventListener('change', () => { $('#usAccess').textContent = ACCESS[usRole.value]; });
+  const pwBtn = $('#usPw'); if (pwBtn) pwBtn.addEventListener('click', () => openSetPassword(u));
+  const pwMe = $('#usPwMe'); if (pwMe) pwMe.addEventListener('click', () => openChangePassword());
   $('#fUser').addEventListener('submit', async e => {
     e.preventDefault();
     const patch = { name: $('#usName').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
     if (!patch.name) { toast('ใส่ชื่อ'); return; }
-    if (!(await confirmBox({ title: 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}`, ok: 'บันทึก' }))) return;
+    const accChanged = patch.role !== u.role;
+    if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}${accChanged ? ' · ' + ACCESS[patch.role] : ''}`, ok: 'บันทึก' }))) return;
     try { await store.setStaff(uid, patch); toast('บันทึกแล้ว'); closeSheet(); } catch { toast('บันทึกไม่ได้'); }
   });
   const del = $('#usDelete'); if (del) del.addEventListener('click', async () => {
-    if (!(await confirmBox({ title: `ลบ ${u.name} ออกจากระบบ?`, body: 'ถ้าคนนี้เปิดลิงก์อีกจะต้องลงทะเบียนใหม่และรออนุมัติ ถ้าต้องการแค่หยุดใช้งานชั่วคราว ให้ใช้ "ระงับ" แทน', ok: 'ลบผู้ใช้งาน', danger: true }))) return;
-    try { await store.deleteStaff(uid); toast('ลบแล้ว'); closeSheet(); } catch { toast('ลบไม่ได้'); }
+    if (!(await confirmBox({ title: `ลบ ${u.name} ออกจากระบบ?`, body: S.backend === 'supabase' ? 'บัญชีเข้าสู่ระบบของคนนี้จะถูกลบและล็อกอินไม่ได้อีก ถ้าต้องการแค่หยุดใช้งานชั่วคราว ให้ใช้ "ระงับ" แทน' : 'ถ้าคนนี้เปิดลิงก์อีกจะต้องลงทะเบียนใหม่และรออนุมัติ ถ้าต้องการแค่หยุดใช้งานชั่วคราว ให้ใช้ "ระงับ" แทน', ok: 'ลบผู้ใช้งาน', danger: true }))) return;
+    try { await store.deleteStaff(uid); toast('ลบแล้ว'); closeSheet(); } catch (e) { toast(e.message && /[ก-๙]/.test(e.message) ? e.message : 'ลบไม่ได้'); }
+  });
+}
+const genPassword = () => { const a = 'abcdefghjkmnpqrstuvwxyz23456789'; let p = ''; const r = new Uint32Array(8); crypto.getRandomValues(r); r.forEach(x => p += a[x % a.length]); return p; };
+function openSetPassword(u) {
+  openSheet(`${bar('ตั้งรหัสผ่านใหม่')}
+    <p class="sub">ผู้ใช้ <b>${esc(showUser(u.email))}</b> · ${esc(u.name || '')} รหัสเดิมจะใช้ไม่ได้ทันที แจ้งรหัสใหม่ให้พนักงานด้วยตัวเอง</p>
+    <form id="fSetPw" class="card stack" novalidate>
+      <label class="f">รหัสผ่านใหม่<span class="hint">อย่างน้อย 6 ตัว</span><div class="row"><input type="text" id="spPw" class="grow" autocomplete="off" autocapitalize="off" spellcheck="false" value="${genPassword()}"><button class="btn soft sm" type="button" id="spGen">สุ่มใหม่</button></div></label>
+      <button class="btn primary block" type="submit">บันทึกรหัสผ่านใหม่</button>
+    </form>`);
+  $('#spGen').addEventListener('click', () => { $('#spPw').value = genPassword(); });
+  $('#fSetPw').addEventListener('submit', async e => {
+    e.preventDefault(); const pw = $('#spPw').value;
+    if (pw.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
+    try { await store.adminSetPassword(u.id, pw); showCredentials({ title: 'ตั้งรหัสผ่านใหม่แล้ว', user: showUser(u.email), pw, name: u.name }); }
+    catch (err) { toast(sbNoFn(err) ? 'ต้องรันไฟล์ schema.sql เวอร์ชันล่าสุดใน Supabase ก่อน' : (err.message && /[ก-๙]/.test(err.message) ? err.message : 'ตั้งรหัสผ่านไม่ได้')); }
+  });
+}
+function showCredentials({ title, user, pw, name }) {
+  const text = `Flow CRM ภาคสนาม\nชื่อผู้ใช้: ${user}\nรหัสผ่าน: ${pw}\n${location.origin + location.pathname}`;
+  openSheet(`${bar(title)}
+    <div class="card stack"><p class="sub" style="margin:0">${esc(name || '')} จดหรือคัดลอกส่งให้พนักงาน หน้านี้จะไม่แสดงรหัสผ่านอีก</p>
+      <div class="tiles"><div class="tile"><small>ชื่อผู้ใช้</small><b style="font-size:18px">${esc(user)}</b></div><div class="tile"><small>รหัสผ่าน</small><b style="font-size:18px;font-family:ui-monospace,monospace">${esc(pw)}</b></div></div>
+      <button class="btn primary block" type="button" id="crCopy">คัดลอกข้อความส่งให้พนักงาน</button>
+      <button class="btn ghost block" type="button" id="crDone">เสร็จสิ้น</button></div>`);
+  $('#crCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว'); } catch { toast('คัดลอกไม่ได้ ให้จดจากหน้าจอ'); } });
+  $('#crDone').addEventListener('click', closeSheet);
+}
+function openAddUser() {
+  openSheet(`${bar('เพิ่มพนักงาน')}
+    <p class="sub">ตั้งชื่อผู้ใช้และรหัสผ่านให้พนักงานได้เลย บัญชีใช้งานได้ทันที ไม่ต้องรออนุมัติ</p>
+    <form id="fAdd" class="card stack" novalidate>
+      <label class="f">ชื่อ-นามสกุล<input type="text" id="auName" required></label>
+      <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="auCode" placeholder="เช่น S012"></label><label class="f grow">แผนก / ทีม<input type="text" id="auDept"></label></div>
+      <label class="f">เบอร์โทร<input type="tel" id="auPhone"></label>
+      <label class="f">ชื่อผู้ใช้สำหรับเข้าสู่ระบบ<span class="hint">ภาษาอังกฤษ/ตัวเลข ไม่มีช่องว่าง เช่น somchai</span><input type="text" id="auUser" required autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      <label class="f">รหัสผ่านตั้งต้น<span class="hint">อย่างน้อย 6 ตัว พนักงานเปลี่ยนเองได้ภายหลัง</span><div class="row"><input type="text" id="auPw" class="grow" autocomplete="off" autocapitalize="off" spellcheck="false" value="${genPassword()}"><button class="btn soft sm" type="button" id="auGen">สุ่มใหม่</button></div></label>
+      <label class="f">สิทธิ์การเข้าใช้<select id="auRole">${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner').map(([k, l]) => `<option value="${k}">${l} · ${ACCESS[k]}</option>`).join('')}</select></label>
+      <button class="btn primary block" type="submit">สร้างบัญชี</button>
+    </form>`);
+  $('#auRole').value = 'sales';
+  $('#auGen').addEventListener('click', () => { $('#auPw').value = genPassword(); });
+  $('#fAdd').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = $('#auName').value.trim(), user = $('#auUser').value.trim().toLowerCase(), pw = $('#auPw').value, code = $('#auCode').value.trim(), role = $('#auRole').value;
+    if (!name) { toast('ใส่ชื่อ-นามสกุล'); return; }
+    if (!/^[a-z0-9._-]+(@[a-z0-9.-]+)?$/.test(user)) { toast('ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 . _ -'); return; }
+    if (pw.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
+    if (code && userRows().some(u => (u.code || '').trim() === code)) { toast('รหัสพนักงานนี้มีอยู่แล้ว'); return; }
+    if (!(await confirmBox({ title: 'สร้างบัญชี?', body: `${name} · ผู้ใช้ ${user} · ${ROLES[role]}`, ok: 'สร้าง' }))) return;
+    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
+    catch (err) { toast(sbNoFn(err) ? 'ต้องรันไฟล์ schema.sql เวอร์ชันล่าสุดใน Supabase ก่อน' : (err.message && /[ก-๙]/.test(err.message) ? err.message : 'สร้างบัญชีไม่ได้')); }
   });
 }
 function openInvite() {
+  if (S.backend === 'supabase') return openAddUser();
   openSheet(`${bar('เพิ่มพนักงาน')}
     <p class="sub">สร้างรหัสเชิญล่วงหน้า เมื่อพนักงานเปิดลิงก์แอปและใส่รหัสนี้ตอนลงทะเบียน จะใช้งานได้ทันทีโดยไม่ต้องรออนุมัติ</p>
     <form id="fInv" class="card stack" novalidate>

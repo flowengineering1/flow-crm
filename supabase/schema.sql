@@ -69,6 +69,10 @@ create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.profiles where id = auth.uid() and role in ('manager','owner') and status = 'active');
 $$;
+create or replace function public.is_owner() returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.profiles where id = auth.uid() and role = 'owner' and status = 'active');
+$$;
 create or replace function public.is_active() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.profiles where id = auth.uid() and status = 'active');
@@ -84,6 +88,8 @@ declare inv jsonb; codes jsonb;
 begin
   if tg_op = 'INSERT' then
     new.email := coalesce(new.email, (select email from auth.users where id = new.id));
+    -- ผู้จัดการ/เจ้าของสร้างบัญชีให้จากหน้าหลังบ้าน (admin_create_user): ใช้สิทธิ์และสถานะที่กำหนดมาเลย
+    if public.is_admin() then return new; end if;
     if not exists (select 1 from public.profiles) then
       new.role := 'owner'; new.status := 'active';
     else
@@ -112,6 +118,9 @@ begin
       new.role := old.role; new.status := old.status; new.approved_at := old.approved_at;
       new.approved_by := old.approved_by; new.approved_by_name := old.approved_by_name; new.note := old.note;
     end if;
+    -- ตั้งใครเป็น "เจ้าของ / CEO" ได้เฉพาะเจ้าของด้วยกัน และห้ามลดสิทธิ์/ระงับตัวเอง
+    if new.role = 'owner' and old.role <> 'owner' and not public.is_owner() then new.role := old.role; end if;
+    if old.id = auth.uid() and (new.role <> old.role or new.status <> old.status) then new.role := old.role; new.status := old.status; end if;
     return new;
   end if;
   return new;
@@ -119,6 +128,61 @@ end $$;
 drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard before insert or update on public.profiles
   for each row execute function public.profiles_guard();
+
+-- ---------- จัดการบัญชีจากหน้าหลังบ้าน (ไม่ต้องเข้า Supabase) ----------
+-- ผู้จัดการ/เจ้าของที่ล็อกอินอยู่เรียกใช้จากแอป: สร้างบัญชีพร้อมรหัสผ่าน ตั้งรหัสผ่านใหม่ ลบบัญชี
+create or replace function public.admin_create_user(p_email text, p_password text, p_name text default '', p_code text default '',
+  p_dept text default '', p_phone text default '', p_role text default 'sales') returns uuid
+language plpgsql security definer set search_path = public, extensions, auth as $$
+declare uid uuid := gen_random_uuid(); em text := lower(trim(p_email)); now_ms bigint := (extract(epoch from now()) * 1000)::bigint;
+begin
+  if not public.is_admin() then raise exception 'ต้องเป็นผู้จัดการหรือเจ้าของ' using errcode = '42501'; end if;
+  if em !~ '^[^@\s]+@[^@\s]+$' then raise exception 'ชื่อผู้ใช้ไม่ถูกต้อง' using errcode = '22023'; end if;
+  if length(coalesce(p_password, '')) < 6 then raise exception 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัว' using errcode = '22023'; end if;
+  if p_role not in ('sales', 'manager', 'owner') then raise exception 'สิทธิ์ไม่ถูกต้อง' using errcode = '22023'; end if;
+  if p_role = 'owner' and not public.is_owner() then raise exception 'เฉพาะเจ้าของเท่านั้นที่ตั้งเจ้าของเพิ่มได้' using errcode = '42501'; end if;
+  if exists (select 1 from auth.users where lower(email) = em) then raise exception 'มีชื่อผู้ใช้นี้อยู่แล้ว' using errcode = '23505'; end if;
+  insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+    created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+  values ('00000000-0000-0000-0000-000000000000', uid, 'authenticated', 'authenticated', em, extensions.crypt(p_password, extensions.gen_salt('bf')), now(),
+    '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('name', coalesce(p_name, '')), now(), now(), '', '', '', '');
+  insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+  values (gen_random_uuid(), uid, uid::text, jsonb_build_object('sub', uid::text, 'email', em, 'email_verified', true, 'phone_verified', false), 'email', now(), now(), now());
+  insert into public.profiles (id, email, name, code, dept, phone, role, status, registered_at, approved_at, approved_by,
+    approved_by_name, updated_at)
+  values (uid, em, coalesce(p_name, ''), coalesce(p_code, ''), coalesce(p_dept, ''), coalesce(p_phone, ''), p_role, 'active', now_ms, now_ms, auth.uid(),
+    coalesce((select name from public.profiles where id = auth.uid()), ''), now_ms);
+  return uid;
+end $$;
+
+create or replace function public.admin_set_password(p_user uuid, p_password text) returns void
+language plpgsql security definer set search_path = public, extensions, auth as $$
+begin
+  if not public.is_admin() then raise exception 'ต้องเป็นผู้จัดการหรือเจ้าของ' using errcode = '42501'; end if;
+  if length(coalesce(p_password, '')) < 6 then raise exception 'รหัสผ่านต้องยาวอย่างน้อย 6 ตัว' using errcode = '22023'; end if;
+  if exists (select 1 from public.profiles where id = p_user and role = 'owner') and not public.is_owner() and p_user <> auth.uid() then
+    raise exception 'ตั้งรหัสผ่านของเจ้าของได้เฉพาะเจ้าของด้วยกัน' using errcode = '42501'; end if;
+  update auth.users set encrypted_password = extensions.crypt(p_password, extensions.gen_salt('bf')), updated_at = now() where id = p_user;
+  if not found then raise exception 'ไม่พบบัญชีนี้' using errcode = 'P0002'; end if;
+end $$;
+
+create or replace function public.admin_delete_user(p_user uuid) returns void
+language plpgsql security definer set search_path = public, extensions, auth as $$
+begin
+  if not public.is_admin() then raise exception 'ต้องเป็นผู้จัดการหรือเจ้าของ' using errcode = '42501'; end if;
+  if p_user = auth.uid() then raise exception 'ลบบัญชีตัวเองไม่ได้' using errcode = '22023'; end if;
+  if exists (select 1 from public.profiles where id = p_user and role = 'owner') and not public.is_owner() then
+    raise exception 'ลบบัญชีเจ้าของได้เฉพาะเจ้าของด้วยกัน' using errcode = '42501'; end if;
+  delete from public.profiles where id = p_user;
+  delete from auth.users where id = p_user;
+end $$;
+
+revoke all on function public.admin_create_user(text, text, text, text, text, text, text) from public, anon;
+revoke all on function public.admin_set_password(uuid, text) from public, anon;
+revoke all on function public.admin_delete_user(uuid) from public, anon;
+grant execute on function public.admin_create_user(text, text, text, text, text, text, text) to authenticated;
+grant execute on function public.admin_set_password(uuid, text) to authenticated;
+grant execute on function public.admin_delete_user(uuid) to authenticated;
 
 -- ---------- Row Level Security ----------
 alter table public.profiles enable row level security;
