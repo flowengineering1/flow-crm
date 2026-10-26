@@ -54,7 +54,7 @@ h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02
 .tile b.money{color:var(--accent)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:500}
 label.f > span.hint{font-weight:400;color:var(--muted);font-size:12px}
-input[type=text],input[type=email],input[type=password],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=search],textarea,select{
+input[type=text],input[type=datetime-local],input[type=email],input[type=password],input[type=number],input[type=tel],input[type=date],input[type=month],input[type=search],textarea,select{
   font:inherit;font-size:17px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:var(--rb);padding:12px;width:100%;min-width:0}
 textarea{min-height:96px;resize:vertical;line-height:1.47}
 input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.btn:focus-within{outline:2px solid var(--focus);outline-offset:1px}
@@ -136,7 +136,7 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .empty{text-align:center;color:var(--muted);padding:28px 12px;background:var(--elev);border:1px dashed var(--line);border-radius:var(--r);font-size:14px}
 .tablewrap{overflow-x:auto;border-radius:var(--r);background:var(--surface)}
 table{border-collapse:collapse;font-size:13px;min-width:640px;width:100%}
-th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th,td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
 th{font-weight:600;color:var(--muted);font-size:12px}
 td:nth-child(2),td:nth-child(3){min-width:120px}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -306,11 +306,43 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   .page{box-shadow:none;margin:0;transform:none;width:210mm;height:297mm;min-height:0;overflow:hidden;page-break-after:always}
   .page:last-child{page-break-after:auto}
 }
+.rowact .btn.sm{padding:2px 6px;min-height:0;line-height:1}
+/* sales log */
+.ver{font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 6px;margin-left:6px;vertical-align:2px;letter-spacing:0}
+.qlog{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:560px}
+#homeLog .tile{background:var(--bg)}
+.qlog button{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-height:72px;transition:transform .12s ease}
+.qlog button:active{transform:scale(.97)}
+.ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--surface);color:var(--ink)}
+.ic svg{width:18px;height:18px}
+.ic.call{background:var(--ok-soft);color:var(--ok)}
+.ic.line{background:color-mix(in srgb,#06C755 18%,transparent);color:#00A341}
+.ic.email{background:var(--warn-soft);color:var(--warn)}
+.ic.visit{background:var(--accent-soft);color:var(--accent)}
+.tl{display:flex;flex-direction:column}
+.tl .day{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);font-weight:600;padding:14px 0 6px;border-bottom:1px solid var(--line)}
+.tl .ev{display:flex;gap:10px;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;font:inherit;color:inherit;text-align:left;width:100%;cursor:pointer}
+.tl .ev:last-child{border-bottom:0}
+.tl .ev .tm{width:42px;flex:none;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:8px}
+.tl .ev .main{flex:1;min-width:0}
+.tl .ev .main>span{display:block}
+.tl .ev .main>span.h{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tl .ev .t{font-weight:600;letter-spacing:-.02em;overflow-wrap:anywhere}
+.tl .ev .m{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.tl .ev .d{font-size:14px;margin-top:2px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tl .ev .fu{font-size:13px;color:var(--warn);margin-top:2px}
+.pill.out{background:var(--accent-soft);color:var(--accent)}
+.pill.won{background:var(--ok-soft);color:var(--ok)}
+.pill.lost{background:var(--bad-soft);color:var(--bad)}
+.pill.neu{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.lbl{font-size:14px;font-weight:500}
+.hint{font-size:12px;color:var(--muted);font-weight:400}
+.vlog ul{margin:0;padding-left:20px;font-size:14px;line-height:1.55}
 </style>
 
 <header class="top"><div class="wrap">
   <img class="logo" alt="FLOW" src="data:image/png;base64,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">
-  <div class="brand"><b>Flow CRM ภาคสนาม</b><span id="whoLine">FLOW ENG · รายงานเข้าพบลูกค้าและเบิกค่าเดินทาง</span></div>
+  <div class="brand"><b>Flow CRM ภาคสนาม<span class="ver" id="appVer"></span></b><span id="whoLine">FLOW ENG · รายงานเข้าพบลูกค้าและเบิกค่าเดินทาง</span></div>
   <button class="iconbtn" id="btnSettings" aria-label="ตั้งค่า">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
   </button>
@@ -324,7 +356,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     <p class="sub" id="todayLine"></p>
   </div>
   <div class="tiles" id="homeTiles">
-    <div class="tile only-mgr"><small>รอตรวจทั้งทีม</small><b id="tPend">0</b></div>
+    <div class="tile" data-need="team"><small>รอตรวจทั้งทีม</small><b id="tPend">0</b></div>
     <div class="tile"><small id="tTodayL">เข้าพบวันนี้</small><b id="tToday">0</b></div>
     <div class="tile"><small id="tKmL">ระยะทางเดือนนี้</small><b id="tKm">0 กม.</b></div>
     <div class="tile"><small id="tAmtL">ยอดเบิกเดือนนี้</small><b class="money" id="tAmt">฿0</b></div>
@@ -335,13 +367,20 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   </button><button class="btn ghost block" data-go="report" style="margin-top:8px">ดูรายงานเดือนนี้</button></div>
   <div class="notice" id="setupNotice" hidden></div>
   <div class="notice" id="draftNotice" hidden></div>
+  <div class="card stack" id="homeLog" data-need="checkin">
+    <div class="row" style="align-items:center"><h2 class="grow" style="margin:0" id="logHomeH">งานขายวันนี้</h2><button class="btn ghost sm" data-go="log">บันทึกทั้งหมด</button></div>
+    <div class="tiles" id="logTiles"></div>
+    <div class="qlog" id="logQuick"></div>
+  </div>
+  <div class="stack" id="homeFuWrap" hidden><h2 id="homeFuH">ต้องติดตาม</h2><div class="list" id="homeFu"></div></div>
+  <div class="stack" id="homeTlWrap" data-need="checkin"><h2>ไทม์ไลน์วันนี้</h2><div class="tl" id="homeTl"></div></div>
   <h2 id="homeListH">รายการเข้าพบของฉันล่าสุด</h2>
   <div class="list" id="homeList"></div>
 </section>
 
 <!-- CUSTOMERS -->
 <section class="view wrap" id="v-customers" hidden>
-  <div class="row"><h1 class="grow">ลูกค้า</h1><button class="btn soft sm" id="btnNewCustomer">+ เพิ่มลูกค้า</button></div>
+  <div class="row"><h1 class="grow">ลูกค้า</h1><button class="btn soft sm" id="btnNewCustomer" data-need="customers:2">+ เพิ่มลูกค้า</button></div>
   <input type="search" id="custSearch" placeholder="ค้นหาชื่อบริษัท ผู้ติดต่อ หรือเบอร์โทร">
   <div class="chips" id="stageFilter"></div>
   <div class="list" id="custList"></div>
@@ -450,7 +489,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     <div class="tile"><small>รวมเบิกสุทธิ</small><b class="money" id="clTotal">0</b></div>
   </div>
   <div class="tablewrap"><table>
-    <thead><tr><th>วัน/เวลา</th><th>พนักงาน</th><th>ลูกค้า</th><th class="n">ไป-กลับ กม.</th><th class="n">อัตรา</th><th class="n">ค่าน้ำมัน</th><th class="n">ทางด่วน/จอด</th><th class="n">รวม</th><th>สถานะ</th></tr></thead>
+    <thead><tr><th>วัน/เวลา</th><th>พนักงาน</th><th>ลูกค้า</th><th class="n">ไป-กลับ กม.</th><th class="n">อัตรา</th><th class="n">ค่าน้ำมัน</th><th class="n">ทางด่วน/จอด</th><th class="n">รวม</th><th>สถานะ</th><th style="width:1%"></th></tr></thead>
     <tbody id="clBody"></tbody>
     <tfoot id="clFoot"></tfoot>
   </table></div>
@@ -491,16 +530,32 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <textarea id="repFallback" hidden readonly></textarea>
 </section>
 
+<!-- SALES LOG -->
+<section class="view wrap" id="v-log" hidden>
+  <div class="row" style="align-items:center"><h1 class="grow">บันทึกงานขาย</h1><button class="btn primary sm" data-newact="call" data-need="checkin:2">+ บันทึกการติดต่อ</button></div>
+  <p class="sub">รวมการเข้าพบจากการเช็คอิน และการโทร LINE อีเมล ประชุม ที่บันทึกไว้</p>
+  <div class="notice" id="slNote" hidden></div>
+  <div class="row"><input type="search" id="slSearch" placeholder="ค้นหาลูกค้า ผู้ติดต่อ หรือข้อความ" style="flex:2;min-width:0"><select id="slWho" style="width:auto;flex:1;min-width:0" hidden aria-label="พนักงาน"></select></div>
+  <div class="chips" id="slPeriod"></div>
+  <div class="chips" id="slType"></div>
+  <div class="tiles" id="slTiles"></div>
+  <div class="tl" id="slList"></div>
+  <div class="row"><button class="btn soft" id="btnSlCsv">บันทึกไฟล์ CSV (เปิดใน Excel)</button></div>
+  <textarea id="slFallback" hidden readonly></textarea>
+</section>
+
 <!-- ADMIN / BACK OFFICE -->
 <section class="view wrap" id="v-admin" hidden>
   <div class="stack" style="gap:4px"><h1>หลังบ้าน</h1><p class="sub">สำหรับเจ้าของ CEO และผู้จัดการ ดูภาพรวมการทำงาน อนุมัติ และจัดการผู้ใช้งาน</p></div>
   <div class="tiles" id="adTiles"></div>
   <div class="card stack" id="adDefaults"></div>
   <div class="stack" id="adPendingWrap" hidden><h2>คำขอลงทะเบียนใหม่ <span class="pill pending" id="adPendN">0</span></h2><div class="list" id="adPending"></div></div>
-  <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite">+ เพิ่มพนักงาน</button></div>
+  <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite" data-need="admin:2">+ เพิ่มพนักงาน</button></div>
   <div class="chips" id="adFilter"></div>
   <div class="list" id="adUsers"></div>
+  <div class="stack" id="adTrashWrap" hidden><h2>รายการเบิกที่ถูกลบ (ซ่อนไว้) <span class="pill ex" id="adTrashN">0</span></h2><p class="sub">รายการที่พนักงานหรือผู้จัดการกดลบ ยังเก็บไว้ครบ กู้คืนได้ หรือลบถาวรเมื่อแน่ใจ</p><div class="list" id="adTrash"></div></div>
   <div class="stack" id="adInvitesWrap" hidden><h2>รหัสเชิญที่ยังไม่ได้ใช้</h2><div class="list" id="adInvites"></div></div>
+  <div class="card stack vlog" id="adVersions"></div>
   <h2>กิจกรรมล่าสุด</h2>
   <div class="act" id="adActivity"></div>
   <p class="sub" id="adFoot"></p>
@@ -517,13 +572,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 
 <nav class="tabs" aria-label="เมนูหลัก"><div class="wrap">
   <button data-go="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>หน้าแรก</button>
-  <button data-go="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M8 8h3M8 12h3M8 16h3M2 21h20"/></svg>ลูกค้า</button>
-  <button data-go="checkin" class="fab"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>เช็คอิน</button>
-  <button data-go="team" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.2 3.2 0 0 1 0 6.3M18 14.2c1.8.8 3 2.6 3 4.8"/></svg>ทีมขาย</button>
-  <button data-go="claims" class="desk-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>เบิก</button>
-  <button data-go="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
-  <button data-go="approve" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>อนุมัติ<span class="badge" id="apBadge" hidden>0</span></button>
-  <button data-go="admin" class="only-mgr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 20V10"/></svg>หลังบ้าน<span class="badge" id="adBadge" hidden>0</span></button>
+  <button data-go="customers" data-need="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M8 8h3M8 12h3M8 16h3M2 21h20"/></svg>ลูกค้า</button>
+  <button data-go="checkin" class="fab" data-need="checkin"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>เช็คอิน</button>
+  <button data-go="log" data-need="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>บันทึกงาน</button>
+  <button data-go="team" data-need="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.2 3.2 0 0 1 0 6.3M18 14.2c1.8.8 3 2.6 3 4.8"/></svg>ทีมขาย</button>
+  <button data-go="claims" class="desk-only" data-need="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>เบิก</button>
+  <button data-go="report" data-need="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
+  <button data-go="approve" data-need="approve"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>อนุมัติ<span class="badge" id="apBadge" hidden>0</span></button>
+  <button data-go="admin" data-need="admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 20V10"/></svg>หลังบ้าน<span class="badge" id="adBadge" hidden>0</span></button>
 </div></nav>
 
 <div class="gate" id="gate" hidden></div>
@@ -550,11 +606,41 @@ const NEXT_ACTIONS = [
 ];
 const NEXT_NEW = '__new';
 const ROLES = { owner: 'เจ้าของ / CEO', manager: 'ผู้จัดการฝ่ายขาย', sales: 'พนักงานขาย' };
+// สิทธิ์รายส่วน: 0 ไม่เห็น · 1 ดูอย่างเดียว · 2 ดูและแก้ไข · 3 ลบได้ (เฉพาะลูกค้า)
+const PERM_FEATURES = [
+  ['checkin', 'เช็คอิน / รายงาน / ขอเบิกของตนเอง', { 0: 'ไม่เห็น', 1: 'ดูอย่างเดียว', 2: 'ดูและแก้ไข (เช็คอิน ขอเบิก)' }],
+  ['customers', 'ลูกค้า', { 0: 'ไม่เห็น', 1: 'ดูอย่างเดียว', 2: 'ดูและแก้ไข (เพิ่ม/แก้)', 3: 'ดู แก้ไข และลบได้' }],
+  ['team', 'ทีมขาย (งานและรายการเบิกของคนอื่น)', { 0: 'ไม่เห็น', 1: 'ดูอย่างเดียว', 2: 'ดูและแก้ไขรายการเบิกของทีม' }],
+  ['reports', 'รายงานสรุป', { 0: 'ไม่เห็น', 1: 'ดูของตนเอง', 2: 'ดูทั้งทีม' }],
+  ['approve', 'อนุมัติค่าเดินทาง', { 0: 'ไม่เห็น', 1: 'ดูอย่างเดียว', 2: 'อนุมัติ / ตีกลับได้' }],
+  ['admin', 'หลังบ้าน (ผู้ใช้ สิทธิ์ ตั้งค่าบริษัท)', { 0: 'ไม่เห็น', 1: 'ดูอย่างเดียว', 2: 'ดูและแก้ไข' }],
+];
+const PERM_MAX = { checkin: 2, customers: 3, team: 2, reports: 2, approve: 2, admin: 2 };
+const ROLE_PERMS = {
+  owner: { checkin: 2, customers: 3, team: 2, reports: 2, approve: 2, admin: 2 },
+  manager: { checkin: 2, customers: 3, team: 2, reports: 2, approve: 2, admin: 2 },
+  sales: { checkin: 2, customers: 2, team: 0, reports: 1, approve: 0, admin: 0 },
+};
+const PERM_NONE = { checkin: 0, customers: 0, team: 0, reports: 0, approve: 0, admin: 0 };
+function permsOf(p) { const role = (p && p.role) || 'sales', base = { ...(ROLE_PERMS[role] || ROLE_PERMS.sales) }; if (role === 'owner') return base; const o = (p && p.perms) || {}; Object.keys(base).forEach(k => { if (o[k] != null && o[k] !== '') base[k] = Math.max(0, Math.min(+o[k] || 0, PERM_MAX[k])); }); return base; }
+function permIsCustom(p) { const d = ROLE_PERMS[(p && p.role) || 'sales'] || ROLE_PERMS.sales, c = permsOf(p); return Object.keys(d).some(k => d[k] !== c[k]); }
+function permSummary(p) { const c = permsOf(p); return PERM_FEATURES.map(([k, l, lv]) => `${l.split(' ')[0]}: ${lv[c[k]]}`).join(' · '); }
+const can = (f, l = 1) => ((S.perm || PERM_NONE)[f] || 0) >= l;
+const reportsAll = () => can('reports', 2) || (can('reports', 1) && S.settings.reportScope === 'all');
+const NAV_NEED = { customers: 'customers', checkin: 'checkin', log: 'checkin', claims: 'checkin', team: 'team', report: 'reports', approve: 'approve', admin: 'admin' };
 const ACCESS = { sales: 'ระบบปกติเท่านั้น (เช็คอิน / ขอเบิก)', manager: 'เข้าหลังบ้านได้ (ดูทีม อนุมัติ จัดการผู้ใช้)', owner: 'เข้าหลังบ้านได้ · เจ้าของ / CEO (ตั้งเจ้าของเพิ่มได้)' };
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
+// เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
+const APP_VERSION = '1.1';
+const APP_VERSIONS = [
+  ['1.1', '25 ต.ค. 2569', ['เพิ่มเมนู "บันทึกงาน" บันทึกการโทร LINE อีเมล และประชุมกับลูกค้า พร้อมผลการติดต่อ มูลค่าโอกาสขาย และนัดติดตาม', 'หน้าแรกแสดงงานขายวันนี้ รายการที่ต้องติดตาม และไทม์ไลน์ของวันนี้', 'การเช็คอินเข้าพบแสดงในไทม์ไลน์อัตโนมัติ การเบิกค่าเดินทางทำงานเหมือนเดิม', 'หน้าลูกค้าแสดงประวัติการติดต่อ ส่งออกบันทึกงานเป็น CSV ได้', 'พนักงานแก้บันทึกของตนเองได้ภายใน 7 วัน ผู้ดูแลทีมแก้และลบได้', 'แสดงเลขเวอร์ชันที่มุมบน และประวัติเวอร์ชันในหลังบ้าน', 'ฐานข้อมูล: เพิ่มตาราง activities ต้องรัน supabase/schema.sql อีกครั้ง']],
+  ['1.0', '25 ต.ค. 2569', ['จัดการบัญชีผู้ใช้ในแอป (เพิ่มพนักงาน ตั้งรหัสผ่าน ลบ) ไม่ต้องเข้า Supabase และกำหนดระดับเข้าถึง ระบบปกติ/หลังบ้าน', 'แก้อาการค้าง "กำลังเชื่อมต่อฐานข้อมูล" ตอนเปิดแอป', 'ใบเบิกค่าเดินทาง A4 พิมพ์/บันทึก PDF มีเลขที่เอกสาร RE-ปีเดือน-รหัสพนักงาน โลโก้บริษัท ตารางไม่ทับเส้น ปุ่มปิด ✕ แดง', '"บันทึกไว้ก่อน" เก็บค่าเบิกทุกช่อง แล้วเติมให้ตอนขอเบิกย้อนหลัง', 'หน้าลงทะเบียนแสดงผู้ที่ล็อกอินอยู่และปุ่มออกจากระบบ', 'กิจกรรมล่าสุดในหลังบ้านแบ่งตามพนักงานเป็นบรรทัดเล็ก', 'เพิ่มรถยนต์ไฟฟ้าส่วนบุคคล (EV) 4 บ./กม.', 'ล็อกเอกสารที่อนุมัติแล้ว ผู้ขอแก้ไขไม่ได้ ต้องตีกลับ หรือผู้จัดการแก้', 'ข้อมูลผู้ใช้เพิ่มชื่อเล่น ชื่อไทย ชื่ออังกฤษ รถประจำ และทะเบียน', 'หลังบ้านแก้ค่าเริ่มต้นค่าใช้จ่ายตามระเบียบฯ 01/2569 (อัตราต่อกม. ทางด่วน รถเริ่มต้น)', 'คำนวณระยะทางถนนอัตโนมัติจากจุดเริ่มต้นถึงตำแหน่งเช็คอิน (สำรองเส้นตรง × 1.3) แก้ตัวเลขเองได้ เปิด/ปิดในตั้งค่า', 'ถอด Plus Code แบบสั้นโดยอิงตำบล/อำเภอ/จังหวัดที่ติดมา และตั้งจุดเริ่มต้นค่าเริ่มต้นเป็นสำนักงานขายมาบตาพุด', 'ลบลูกค้าได้เฉพาะผู้มีสิทธิ์ ประวัติการเข้าพบยังอยู่', 'สิทธิ์รายส่วน 6 ส่วนต่อผู้ใช้ (ไม่เห็น/ดู/แก้/ลบ) บังคับทั้งในแอปและฐานข้อมูล', 'ลบรายการเบิกแบบซ่อนไว้ (อนุมัติแล้วลบได้เฉพาะผู้มีอำนาจ) กู้คืนได้ในหลังบ้าน', 'ไอคอนพิมพ์ท้ายบรรทัดในสรุปการเบิก พิมพ์รายการเดียว', 'ตั้งค่ารายงานการขาย: เห็นเฉพาะของตัวเอง หรือเห็นด้วยกันหมด']],
+];
+const ACT_TYPES = { call: 'โทร', line: 'LINE', email: 'อีเมล', meeting: 'ประชุม', other: 'อื่นๆ' };
+const ACT_OUTCOMES = ['สนใจ', 'ขอใบเสนอราคา', 'ปิดการขายได้', 'ยังไม่สนใจ', 'ติดต่อไม่ได้', 'ให้ข้อมูล'];
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
-const DEFAULT_SETTINGS = { officeName:'FLOW ENGINEERING & SERVICE (MAPTAPUT) SALES OFFICE', officeLat:12.713666, officeLng:101.160576, rateCar:6, rateEv:4, rateMoto:2.5, defaultToll:0, defaultVehicle:'car', prefillKm:true, autoKm:true, roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
+const DEFAULT_SETTINGS = { officeName:'FLOW ENGINEERING & SERVICE (MAPTAPUT) SALES OFFICE', officeLat:12.713666, officeLng:101.160576, rateCar:6, rateEv:4, rateMoto:2.5, defaultToll:0, defaultVehicle:'car', prefillKm:true, autoKm:true, reportScope:'own', roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
 const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
 // ---------- helpers ----------
@@ -650,10 +736,12 @@ let toastT; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.
 
 // ---------- state ----------
 const S = { mode: 'local', db: null, user: null, myId: null, admin: true, canWrite: true,
-  staff: {}, visitsBy: {}, visits: [], customers: [], approvals: {}, settings: { ...DEFAULT_SETTINGS }, view: 'home', meDoc: null, meLoaded: false, invites: {},
+  staff: {}, visitsBy: {}, visits: [], actsBy: {}, acts: [], customers: [], approvals: {}, settings: { ...DEFAULT_SETTINGS }, view: 'home', meDoc: null, meLoaded: false, invites: {},
   me: lsGet(LS_ME, { name: '', code: '', dept: '', vehicle: 'car', plate: '' }) };
 let local = lsGet(LS_KEY, { visits: [], customers: [], approvals: {}, settings: null });
-function loadLocal() { S.visits = [...local.visits].sort((a,b) => b.createdAt - a.createdAt); S.customers = [...local.customers]; S.approvals = { ...local.approvals }; S.settings = { ...DEFAULT_SETTINGS, ...(local.settings || {}) }; }
+function setVisits(arr) { const all = [...arr].sort((a, b) => b.createdAt - a.createdAt); S.trash = all.filter(v => v.deleted); S.visits = all.filter(v => !v.deleted); }
+function setActs(arr) { S.acts = [...arr].sort((a, b) => b.occurredAt - a.occurredAt); }
+function loadLocal() { setVisits(local.visits); setActs(local.acts || []); S.customers = [...local.customers]; S.approvals = { ...local.approvals }; S.settings = { ...DEFAULT_SETTINGS, ...(local.settings || {}) }; }
 loadLocal();
 
 // ---------- store ----------
@@ -682,7 +770,10 @@ const store = {
   async setStaff(uid, patch) { if (S.db) return S.db.doc('staff/' + uid).update(patch); },
   async deleteStaff(uid) { if (S.db) return S.db.doc('staff/' + uid).delete(); },
   async saveInvites(codes) { if (S.db) return S.db.doc('config/invites').set({ codes, updatedAt: Date.now() }); S.invites = codes; renderAll(); },
+  async saveActivity(a) { if (S.db) return S.db.collection('activities/' + a.createdBy + '/items').doc(a.id).set(a); local.acts = (local.acts || []).filter(x => x.id !== a.id).concat(a); persist(); },
+  async deleteActivity(a) { if (S.db) return S.db.collection('activities/' + a.createdBy + '/items').doc(a.id).delete(); local.acts = (local.acts || []).filter(x => x.id !== a.id); persist(); },
   async saveCustomer(c) { if (S.db) return S.db.collection('customers').doc(c.id).set(c); local.customers = local.customers.filter(x => x.id !== c.id).concat(c); persist(); },
+  async deleteCustomer(id) { if (S.db) return S.db.collection('customers').doc(id).delete(); local.customers = local.customers.filter(x => x.id !== id); S.customers = S.customers.filter(x => x.id !== id); persist(); renderAll(); },
   async setApproval(id, a) { if (S.db) return S.db.collection('approvals').doc(id).set(a); local.approvals[id] = a; persist(); },
   async saveSettings(s) { if (S.db) return S.db.doc('config/settings').set(s); local.settings = s; persist(); },
 };
@@ -702,14 +793,18 @@ async function connect() {
   applyRole();
   if (!db || !S.myId) { renderAll(); return; }
   S.db = db; S.mode = 'shared';
-  S.visits = []; S.customers = []; S.approvals = {};
+  S.visits = []; S.acts = []; S.customers = []; S.approvals = {};
   const err = e => { if (e && e.code === 'revoked') toast('สิทธิ์เข้าถึงข้อมูลกลางถูกเปลี่ยน'); };
   const subs = {};
   const watchVisits = id => {
     if (subs[id] || Object.keys(subs).length >= MAX_STAFF_SUBS) return;
     subs[id] = db.collection('visits/' + id + '/items').orderBy('createdAt', 'desc').limit(1000).onSnapshot(sn => {
       S.visitsBy[id] = sn.docs.map(d => ({ ...d.data(), id: d.id }));
-      S.visits = Object.values(S.visitsBy).flat().sort((a, b) => b.createdAt - a.createdAt); renderAll();
+      setVisits(Object.values(S.visitsBy).flat()); renderAll();
+    }, err);
+    db.collection('activities/' + id + '/items').orderBy('occurredAt', 'desc').limit(1000).onSnapshot(sn => {
+      S.actsBy[id] = sn.docs.map(d => ({ ...d.data(), id: d.id }));
+      setActs(Object.values(S.actsBy).flat()); renderAll();
     }, err);
   };
   watchVisits(S.myId);
@@ -737,13 +832,22 @@ async function cleanupInvites() {
   cleaning = true; const codes = { ...S.invites }; used.forEach(c => delete codes[c]);
   try { await store.saveInvites(codes); } catch {} finally { cleaning = false; }
 }
-function applyRole() { document.body.classList.toggle('role-mgr', !!S.admin); document.body.classList.toggle('role-sales', !S.admin); }
+function computePerm() {
+  if (S.meDoc) S.perm = (S.mode !== 'shared' || (S.meDoc.status || 'active') === 'active') ? permsOf(S.meDoc) : { ...PERM_NONE };
+  else S.perm = S.mode === 'shared' && S.backend === 'supabase' ? { ...PERM_NONE } : { ...ROLE_PERMS[S.admin ? 'manager' : 'sales'] };
+}
+function applyRole() {
+  computePerm();
+  document.body.classList.toggle('role-mgr', !!S.admin); document.body.classList.toggle('role-sales', !S.admin);
+  document.querySelectorAll('[data-need]').forEach(el => { const [f, l] = el.dataset.need.split(':'); el.hidden = !can(f, +l || 1); });
+  if (NAV_NEED[S.view] && !can(NAV_NEED[S.view])) go('home');
+}
 const staffKey = v => v.createdBy || ('n:' + v.staffName);
 
 // ---------- derived ----------
 const statusOf = v => { if (v.claimStatus === 'none') return 'draft'; const a = S.approvals[v.id]; if (!a || !a.status) return 'pending'; if (a.status === 'rejected' && (v.claimedAt || 0) > (a.at || 0)) return 'pending'; return a.status; };
 const isLocked = v => statusOf(v) === 'approved';
-const canEditClaim = v => S.canWrite && !v.isExample && (S.admin || (isMine(v) && !isLocked(v)));
+const canEditClaim = v => S.canWrite && !v.isExample && (can('team', 2) || (isMine(v) && !isLocked(v) && can('checkin', 2)));
 const hasPhotos = v => (v.photos && v.photos.length) || (v.files && v.files.some(f => f.kind === 'image'));
 const isMine = v => S.myId ? v.createdBy === S.myId : (S.me.name && v.staffName === S.me.name);
 function custByName(name) { const k = String(name || '').trim().toLowerCase(); return S.customers.find(c => c.name.trim().toLowerCase() === k); }
@@ -796,6 +900,7 @@ function auditFlags(v) {
 
 // ---------- navigation ----------
 function go(view) {
+  if (NAV_NEED[view] && !can(NAV_NEED[view])) { toast('บัญชีนี้ไม่มีสิทธิ์เข้าส่วนนี้ ติดต่อผู้ดูแลระบบ'); view = 'home'; }
   S.view = view;
   document.querySelectorAll('section.view').forEach(s => s.hidden = s.id !== 'v-' + view);
   document.querySelectorAll('nav.tabs button').forEach(b => b.dataset.go === view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
@@ -805,9 +910,10 @@ function go(view) {
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) { e.preventDefault(); go(b.dataset.go); } });
 
 // ---------- render ----------
-function renderAll() { renderHeader(); renderHome(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); if (typeof renderNextOptions === 'function') renderNextOptions(); if (typeof renderAdmin === 'function') renderAdmin(); }
+function renderAll() { renderHeader(); renderHome(); renderLog(); renderCustomers(); renderClaims(); renderTeam(); renderReport(); renderApprove(); renderDatalist(); if (typeof renderNextOptions === 'function') renderNextOptions(); if (typeof renderAdmin === 'function') renderAdmin(); }
 function renderHeader() {
   const nm = S.me.name || 'ยังไม่ได้ตั้งชื่อ';
+  $('#appVer').textContent = 'v' + APP_VERSION;
   $('#whoLine').textContent = `${nm} · ${roleLabel()} · ${S.mode === 'shared' ? 'ข้อมูลกลางของทีม' : 'บันทึกในเครื่องนี้'}`;
   $('#hello').textContent = S.me.name ? `สวัสดี ${S.me.name}` : 'สวัสดี';
   const d = new Date(); $('#todayLine').textContent = d.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -826,7 +932,7 @@ function visitItem(v, opts = {}) {
   </div><div class="stack" style="gap:6px;align-items:flex-end">${st === 'draft' ? '<span class="amt" style="color:var(--muted)">—</span>' : `<span class="amt">฿${fmtB(v.total)}</span>`}<span class="pill ${st}">${STATUS[st]}</span></div></button>`;
 }
 function renderHome() {
-  const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = S.admin;
+  const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = can('team');
   const scope = mgr ? S.visits.filter(v => !v.isExample) : S.visits.filter(isMine);
   const month = scope.filter(v => ymOf(v.createdAt) === ym && statusOf(v) !== 'rejected');
   $('#tPend').textContent = S.visits.filter(v => statusOf(v) === 'pending').length;
@@ -841,6 +947,7 @@ function renderHome() {
   $('#homeListH').textContent = mgr ? 'รายการเข้าพบล่าสุดของทีม' : 'รายการเข้าพบของฉันล่าสุด';
   const list = (scope.length ? scope : S.visits.filter(v => v.isExample)).slice(0, 8);
   $('#homeList').innerHTML = list.length ? list.map(v => visitItem(v, { staff: mgr })).join('') + (scope.length ? '' : '<p class="sub">ยังไม่มีรายการจริง ด้านบนเป็นรายการตัวอย่างจากแบบฟอร์ม</p>') : '<div class="empty">ยังไม่มีรายการเข้าพบ<br>กดปุ่มเช็คอินเมื่อถึงหน้างานลูกค้า</div>';
+  renderLogHome();
 }
 function teamRows(ym) {
   const by = {};
@@ -876,6 +983,180 @@ function openStaff(id) {
     <div class="row"><button class="btn soft grow" data-reportfor="${esc(r.id)}">ดูรายงานของคนนี้</button><button class="btn ghost grow" data-claimsfor="${esc(r.id)}">สรุปเบิกและ CSV</button></div>
     <h2>รายการเข้าพบเดือนนี้</h2><div class="list" style="display:flex">${vs.length ? vs.map(v => visitItem(v, { flags: true })).join('') : '<div class="empty">ไม่มีรายการในเดือนนี้</div>'}</div>`);
 }
+// ---------- sales log (บันทึกงานขาย) ----------
+// การโทร / LINE / อีเมล / ประชุม เก็บใน activities ส่วนการเข้าพบมาจาก visits (เช็คอิน) แล้วรวมเป็นไทม์ไลน์เดียว
+const ACT_ICON = { call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>', line: '<path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-.8 0-1.6-.1-2.3-.2L5 20l1-3.6C4.2 15.1 3 13.2 3 11c0-3.9 4-7 9-7z"/>', email: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', meeting: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 8h5M18.5 5.5v5"/>', other: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>', visit: '<path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>' };
+const actIc = t => `<span class="ic ${t}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ACT_ICON[t] || ACT_ICON.other}</svg></span>`;
+const OUT_CLS = { 'ปิดการขายได้': 'won', 'ปิดการขาย': 'won', 'ยังไม่สนใจ': 'lost', 'ไม่ได้งาน': 'lost', 'ติดต่อไม่ได้': 'lost', 'ให้ข้อมูล': 'neu' };
+const outPill = o => o ? `<span class="pill ${OUT_CLS[o] || 'out'}">${esc(o)}</span>` : '';
+const typeLabel = t => t === 'visit' ? 'เข้าพบ' : ACT_TYPES[t] || 'อื่นๆ';
+const hm = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const thDate = s => { const [y, m, d] = String(s || '').split('-'); return y && m && d ? `${+d}/${m}/${String(+y + 543).slice(-2)}` : String(s || ''); };
+const today0 = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+const actMine = a => S.myId ? a.createdBy === S.myId : !!(S.me.name && a.staffName === S.me.name);
+const actKey = a => a.createdBy || ('n:' + a.staffName);
+const actEditable = a => S.canWrite && (can('team', 2) || (actMine(a) && can('checkin', 2) && Date.now() - a.createdAt < 7 * 864e5));
+const visitEv = v => ({ kind: 'visit', id: v.id, at: v.createdAt, type: 'visit', who: staffKey(v), staffName: v.staffName, customer: v.customer, contact: v.contact, outcome: v.stage || '', note: v.report || '', next: v.nextStep || '', nextDate: v.nextDate || '', v });
+const actEv = a => ({ kind: 'act', id: a.id, at: a.occurredAt, type: a.type, who: actKey(a), staffName: a.staffName, customer: a.customer, contact: a.contact, outcome: a.outcome, note: a.note, next: a.nextStep || '', nextDate: a.nextDate || '', a });
+function logEvents() {
+  const team = can('team');
+  return [...S.visits.filter(v => !v.isExample && (team || isMine(v))).map(visitEv), ...S.acts.filter(a => team || actMine(a)).map(actEv)].sort((x, y) => y.at - x.at);
+}
+function evItem(e, staff) {
+  const meta = [typeLabel(e.type), staff ? e.staffName : '', e.contact].filter(Boolean).map(esc).join(' · ');
+  const extra = e.kind === 'visit' ? (statusOf(e.v) === 'draft' ? 'เช็คอิน · ยังไม่ขอเบิก' : `เช็คอิน ${e.v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(e.v.kmRoundTrip) + ' กม.'} · เบิก ฿${fmtB(e.v.total)}`) : '';
+  return `<button class="ev" ${e.kind === 'visit' ? `data-visit="${esc(e.id)}"` : `data-act="${esc(e.id)}"`}><span class="tm">${hm(e.at)}</span>${actIc(e.type)}<span class="main"><span class="h"><span class="t">${esc(e.customer || '-')}</span>${outPill(e.outcome)}</span><span class="m">${meta}</span>${e.note ? `<span class="d">${esc(e.note)}</span>` : ''}${extra ? `<span class="m">${extra}</span>` : ''}${e.next ? `<span class="fu">ติดตาม: ${esc(e.next)}${e.nextDate ? ' · ' + esc(thDate(e.nextDate)) : ''}</span>` : ''}</span></button>`;
+}
+function dayTitle(ms) {
+  const t0 = today0(), d0 = new Date(new Date(ms).setHours(0, 0, 0, 0)).getTime(), s = new Date(ms).toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' });
+  return d0 === t0 ? 'วันนี้ · ' + s : d0 === t0 - 864e5 ? 'เมื่อวาน · ' + s : s;
+}
+function tlHtml(evs, staff) {
+  let out = '', cur = null, buf = [];
+  const flush = () => { if (cur) out += `<div class="day"><span>${dayTitle(buf[0].at)}</span><span>${buf.length} รายการ</span></div>` + buf.map(e => evItem(e, staff)).join(''); };
+  evs.forEach(e => { const k = dayKey(e.at); if (k !== cur) { flush(); cur = k; buf = []; } buf.push(e); });
+  flush();
+  return out;
+}
+// งานที่ต้องติดตาม มาจาก "สิ่งที่ต้องทำต่อ" ของลูกค้า (ตั้งได้ทั้งตอนเช็คอินและตอนบันทึกการติดต่อ)
+function followUps() {
+  const team = can('team'), mine = new Set([...S.visits.filter(isMine).map(v => ckey(v.customer)), ...S.acts.filter(actMine).map(a => ckey(a.customer))]);
+  return S.customers.filter(c => !c.isExample && (c.followUp || c.followDate) && (team || mine.has(ckey(c.name)) || (S.myId && c.createdBy === S.myId)))
+    .map(c => ({ c, t: c.followDate ? new Date(c.followDate + 'T00:00:00').getTime() : null })).sort((a, b) => (a.t ?? 9e15) - (b.t ?? 9e15));
+}
+function dueLabel(t) { const t0 = today0(); return t == null ? ['ไม่ระบุวัน', 'neu'] : t < t0 ? [`เลยกำหนด ${Math.round((t0 - t) / 864e5)} วัน`, 'pending'] : t === t0 ? ['วันนี้', 'stage'] : t === t0 + 864e5 ? ['พรุ่งนี้', 'neu'] : [thDate(dayKey(t)), 'neu']; }
+function renderLogHome() {
+  if (!$('#logTiles')) return;
+  const team = can('team'), dk = dayKey(Date.now()), t0 = today0();
+  const today = logEvents().filter(e => dayKey(e.at) === dk);
+  const fu = followUps(), due = fu.filter(x => x.t != null && x.t <= t0);
+  $('#logHomeH').textContent = team ? 'งานขายของทีมวันนี้' : 'งานขายของฉันวันนี้';
+  $('#logTiles').innerHTML = tile('ลูกค้าที่ติดต่อ', new Set(today.map(e => ckey(e.customer))).size) + tile('เข้าพบ', today.filter(e => e.type === 'visit').length) + tile('โทร LINE อีเมล', today.filter(e => e.type !== 'visit').length);
+  $('#logQuick').hidden = !(S.canWrite && can('checkin', 2));
+  $('#logQuick').innerHTML = [['call', 'โทร'], ['line', 'LINE'], ['email', 'อีเมล']].map(([k, l]) => `<button type="button" data-newact="${k}">${actIc(k)}${l}</button>`).join('') + `<button type="button" data-go="checkin">${actIc('visit')}เข้าพบ</button>`;
+  const show = fu.filter(x => x.t == null || x.t <= t0 + 7 * 864e5).slice(0, 6);
+  $('#homeFuWrap').hidden = !show.length || !can('checkin');
+  $('#homeFuH').textContent = `ต้องติดตาม${due.length ? ` (ถึงกำหนด ${due.length})` : ''}`;
+  $('#homeFu').innerHTML = show.map(x => { const [lb, cls] = dueLabel(x.t); return `<button class="item" data-fu="${esc(x.c.id)}"><div class="main"><div class="t">${esc(x.c.name)}</div><div class="m">${esc(x.c.followUp || 'ติดตามงาน')}${x.c.contact ? ' · ' + esc(x.c.contact) : ''}</div></div><span class="pill ${cls}">${esc(lb)}</span></button>`; }).join('')
+    + (fu.length > show.length ? `<p class="sub">และอีก ${fu.length - show.length} รายการ ดูได้ในหน้ารายงาน</p>` : '');
+  $('#homeTl').innerHTML = today.length ? today.slice(0, 8).map(e => evItem(e, team)).join('') + (today.length > 8 ? `<button class="btn ghost sm" data-go="log" style="margin-top:8px">ดูอีก ${today.length - 8} รายการ</button>` : '')
+    : '<div class="empty">ยังไม่มีบันทึกวันนี้<br>กดปุ่มด้านบนเมื่อโทร ส่ง LINE หรืออีเมลถึงลูกค้า</div>';
+}
+let slType = 'all', slPeriod = 'week';
+function renderLog() {
+  if (!$('#slList')) return;
+  const team = can('team'), sel = $('#slWho');
+  sel.hidden = !team;
+  if (team) {
+    const ppl = new Map(peopleOptions()); S.acts.forEach(a => { const k = actKey(a); if (!ppl.has(k)) ppl.set(k, a.staffName || 'ไม่ระบุชื่อ'); });
+    const cur = sel.value || '__team';
+    sel.innerHTML = '<option value="__team">ทุกคน</option><option value="__me">ของฉัน</option>' + [...ppl].sort((a, b) => String(a[1]).localeCompare(String(b[1]), 'th')).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('');
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__team';
+  }
+  const who = team ? sel.value : '__me', q = $('#slSearch').value.trim().toLowerCase(), now = new Date(), t0 = today0();
+  const from = slPeriod === 'today' ? t0 : slPeriod === 'week' ? t0 - 6 * 864e5 : slPeriod === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1).getTime() : 0;
+  let base = logEvents().filter(e => e.at >= from);
+  if (who === '__me') base = base.filter(e => e.kind === 'visit' ? isMine(e.v) : actMine(e.a)); else if (who !== '__team') base = base.filter(e => e.who === who);
+  if (q) base = base.filter(e => [e.customer, e.contact, e.note, e.outcome, e.staffName, e.next].join(' ').toLowerCase().includes(q));
+  const ev = slType === 'all' ? base : base.filter(e => e.type === slType);
+  $('#slPeriod').innerHTML = [['today', 'วันนี้'], ['week', '7 วันล่าสุด'], ['month', 'เดือนนี้'], ['all', 'ทั้งหมด']].map(([k, l]) => `<button class="chip" data-slp="${k}" aria-pressed="${slPeriod === k}">${l}</button>`).join('');
+  $('#slType').innerHTML = [['all', 'ทุกช่องทาง'], ['visit', 'เข้าพบ'], ...Object.entries(ACT_TYPES)].map(([k, l]) => { const n = k === 'all' ? base.length : base.filter(e => e.type === k).length; return (n || k === 'all' || k === slType) ? `<button class="chip" data-slt="${k}" aria-pressed="${slType === k}">${l} ${n}</button>` : ''; }).join('');
+  $('#slTiles').innerHTML = tile('รายการ', ev.length) + tile('ลูกค้า', new Set(ev.map(e => ckey(e.customer))).size) + tile('ปิดการขายได้', ev.filter(e => OUT_CLS[e.outcome] === 'won').length, '', 'ok-text');
+  $('#slList').innerHTML = ev.length ? tlHtml(ev.slice(0, 300), team && who !== '__me') + (ev.length > 300 ? `<p class="sub">แสดง 300 รายการล่าสุด จากทั้งหมด ${ev.length} รายการ ส่งออก CSV เพื่อดูครบ</p>` : '') : '<div class="empty">ไม่มีบันทึกในช่วงที่เลือก</div>';
+  $('#slNote').hidden = !S.actsMissing;
+  $('#slNote').innerHTML = can('admin', 2) ? '<b>ฐานข้อมูลยังไม่มีตารางบันทึกงานขาย</b> เปิด Supabase SQL Editor แล้วรันไฟล์ supabase/schema.sql ล่าสุดอีกครั้ง ระหว่างนี้ไทม์ไลน์แสดงเฉพาะการเข้าพบ' : '<b>ระบบบันทึกการโทร / LINE / อีเมล ยังไม่พร้อม</b> แจ้งผู้ดูแลระบบให้อัปเดตฐานข้อมูล ระหว่างนี้แสดงเฉพาะการเข้าพบ';
+  S.slRows = ev;
+}
+$('#slSearch').addEventListener('input', renderLog);
+$('#slWho').addEventListener('change', renderLog);
+$('#slPeriod').addEventListener('click', e => { const c = e.target.closest('[data-slp]'); if (c) { slPeriod = c.dataset.slp; renderLog(); } });
+$('#slType').addEventListener('click', e => { const c = e.target.closest('[data-slt]'); if (c) { slType = c.dataset.slt; renderLog(); } });
+function logCsv() {
+  const q = x => `"${String(x ?? '').replace(/"/g, '""')}"`;
+  const head = ['วัน/เวลา', 'พนักงาน', 'ช่องทาง', 'ลูกค้า', 'ผู้ติดต่อ', 'ผลการติดต่อ', 'รายละเอียด', 'สิ่งที่ต้องทำต่อ', 'กำหนด', 'มูลค่าโอกาสขาย (บาท)', 'ระยะทางไป-กลับ (กม.)', 'ยอดเบิก (บาท)'];
+  const body = (S.slRows || []).map(e => [dt(e.at), e.staffName, typeLabel(e.type), e.customer, e.contact, e.outcome, e.note, e.next, e.nextDate ? thDate(e.nextDate) : '', (e.kind === 'act' ? e.a.dealValue : e.v.dealValue) || '', e.kind === 'visit' && e.v.claimStatus !== 'none' ? e.v.kmRoundTrip : '', e.kind === 'visit' && e.v.claimStatus !== 'none' ? e.v.total : '']);
+  return '﻿' + [head, ...body].map(r => r.map(q).join(',')).join('\r\n');
+}
+$('#btnSlCsv').addEventListener('click', async () => {
+  const data = logCsv(), name = `sales-log-${dayKey(Date.now())}.csv`, blob = new Blob([data], { type: 'text/csv;charset=utf-8' });
+  const dl = window.claude && claude.use ? await claude.use('downloads').catch(() => null) : null;
+  if (dl) { try { await dl.save({ filename: name, data: blob }); } catch (e) { if (e && e.code !== 'cancelled' && e.code !== 'declined') { const ta = $('#slFallback'); ta.value = data.replace(/^﻿/, ''); ta.hidden = false; ta.select(); toast('บันทึกไฟล์ไม่สำเร็จ คัดลอกข้อความด้านล่างแทน'); } } return; }
+  const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+});
+function openAct(id) {
+  const a = S.acts.find(x => x.id === id); if (!a) return;
+  const c = S.customers.find(x => x.id === a.customerId) || custByName(a.customer);
+  openSheet(`${bar(esc(typeLabel(a.type)) + ' · ' + esc(a.customer))}
+    <div class="row" style="align-items:center">${outPill(a.outcome)}<span class="sub">${dt(a.occurredAt)} · ${esc(a.staffName || '')}</span></div>
+    <dl class="kv card"><dt>ช่องทาง</dt><dd>${esc(typeLabel(a.type))}</dd><dt>ผู้ติดต่อ</dt><dd>${esc(a.contact || '-')}</dd>${a.note ? `<dt>รายละเอียด</dt><dd style="white-space:pre-wrap">${esc(a.note)}</dd>` : ''}${a.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(a.dealValue)}</dd>` : ''}${a.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(a.nextStep)}${a.nextDate ? ' ภายใน ' + esc(thDate(a.nextDate)) : ''}</dd>` : ''}<dt>บันทึกเมื่อ</dt><dd>${dt(a.createdAt)}${a.editedByName ? ' · แก้ไขโดย ' + esc(a.editedByName) : ''}</dd></dl>
+    <div class="row">${c && can('customers') ? `<button class="btn soft grow" data-cust="${esc(c.id)}">ดูข้อมูลลูกค้า</button>` : ''}${actEditable(a) ? `<button class="btn ghost" data-editact="${esc(a.id)}">แก้ไข</button>` : ''}${can('team', 2) && S.canWrite ? `<button class="btn ghost danger" data-delact="${esc(a.id)}">ลบ</button>` : ''}</div>
+    ${actMine(a) && !actEditable(a) ? '<p class="sub">บันทึกเกิน 7 วันแล้ว แก้ไขเองไม่ได้ แจ้งหัวหน้าหากต้องแก้</p>' : ''}`);
+}
+function openActForm(o = {}) {
+  if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนบันทึก'); return; }
+  if (!S.canWrite || !can('checkin', 2)) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว บันทึกไม่ได้'); return; }
+  if (!isActive()) { toast('บัญชียังไม่ได้รับอนุมัติให้ใช้งาน'); renderGate(); return; }
+  const a = o.act || null, c0 = o.cust || null;
+  if (a && !actEditable(a)) { toast('แก้ไขบันทึกนี้ไม่ได้'); return; }
+  let type = a ? a.type : (ACT_TYPES[o.type] ? o.type : 'call'), out = a ? a.outcome || '' : '';
+  const lt = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  openSheet(`${bar(a ? 'แก้ไขบันทึก' : 'บันทึกการติดต่อ')}
+    <form id="fAct" class="stack" novalidate>
+      <div class="stack" style="gap:6px"><span class="lbl">ช่องทาง</span><div class="chips">${Object.entries(ACT_TYPES).map(([k, l]) => `<button type="button" class="chip" data-at="${k}" aria-pressed="${k === type}">${l}</button>`).join('')}</div><span class="hint">ถ้าไปพบลูกค้าที่หน้างาน ใช้ปุ่มเช็คอิน เพื่อเก็บพิกัดและเบิกค่าเดินทาง</span></div>
+      <label class="f">ลูกค้า<input type="text" id="acCust" list="dlCustomers" autocomplete="off" value="${esc(a ? a.customer : c0 ? c0.name : '')}" placeholder="พิมพ์ชื่อหรือเลือกจากรายชื่อลูกค้า" required></label>
+      <label class="f">ผู้ติดต่อ<input type="text" id="acContact" value="${esc(a ? a.contact || '' : c0 ? c0.contact || '' : '')}" placeholder="เช่น คุณวิชัย ฝ่ายซ่อมบำรุง"></label>
+      <label class="f">วันและเวลาที่ติดต่อ<input type="datetime-local" id="acAt" value="${lt(a ? a.occurredAt : Date.now())}"></label>
+      <div class="stack" style="gap:6px"><span class="lbl">ผลการติดต่อ</span><div class="chips">${ACT_OUTCOMES.map(x => `<button type="button" class="chip" data-ao="${esc(x)}" aria-pressed="${x === out}">${esc(x)}</button>`).join('')}</div></div>
+      <label class="f">รายละเอียด<textarea id="acNote" placeholder="คุยเรื่องอะไร ลูกค้าต้องการอะไร">${esc(a ? a.note || '' : '')}</textarea></label>
+      <label class="f">มูลค่าโอกาสขาย (บาท)<span class="hint">ไม่บังคับ</span><input type="number" id="acValue" min="0" step="1" inputmode="numeric" value="${a && a.dealValue ? a.dealValue : ''}"></label>
+      <div class="card stack"><label class="f">สิ่งที่ต้องทำต่อ<span class="hint">จะขึ้นในหัวข้อ "ต้องติดตาม" ที่หน้าแรก</span><input type="text" id="acNext" value="${esc(a ? a.nextStep || '' : '')}" placeholder="เช่น ส่งใบเสนอราคา"></label>
+        <label class="f">ภายในวันที่<input type="date" id="acNextDate" value="${esc(a ? a.nextDate || '' : '')}"></label>
+        <div class="chips">${[[1, 'พรุ่งนี้'], [3, 'อีก 3 วัน'], [7, 'อีก 1 สัปดาห์']].map(([n, l]) => `<button type="button" class="chip" data-and="${dayKey(Date.now() + n * 864e5)}">${l}</button>`).join('')}</div>
+        <label class="row" id="acCloseWrap" style="gap:8px;align-items:center;font-size:14px" hidden><input type="checkbox" id="acClose" style="width:20px;height:20px;flex:none"><span id="acCloseT"></span></label>
+      </div>
+      <button class="btn primary block lg" type="submit" id="acGo">${a ? 'บันทึกการแก้ไข' : 'บันทึก'}</button>
+    </form>`);
+  const f = $('#fAct');
+  const syncClose = () => { const c = custByName($('#acCust').value), show = !!(c && c.followUp && !a); $('#acCloseWrap').hidden = !show; if (show) { $('#acCloseT').textContent = `งานติดตามเดิม "${c.followUp}" เสร็จแล้ว`; $('#acClose').checked = true; } };
+  syncClose();
+  $('#acCust').addEventListener('change', () => { const c = custByName($('#acCust').value); if (c && !$('#acContact').value) $('#acContact').value = c.contact || ''; syncClose(); });
+  f.addEventListener('click', e => {
+    const t = e.target.closest('button[type="button"]'); if (!t) return; const d = t.dataset;
+    if (d.at) { type = d.at; f.querySelectorAll('[data-at]').forEach(b => b.setAttribute('aria-pressed', b.dataset.at === type)); }
+    else if (d.ao) { out = out === d.ao ? '' : d.ao; f.querySelectorAll('[data-ao]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ao === out)); }
+    else if (d.and) $('#acNextDate').value = d.and;
+  });
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = $('#acCust').value.trim(); if (!name) { $('#acCust').focus(); toast('ใส่ชื่อลูกค้า'); return; }
+    const note = $('#acNote').value.trim(); if (!note && !out) { $('#acNote').focus(); toast('เลือกผลการติดต่อ หรือพิมพ์รายละเอียดสั้น ๆ'); return; }
+    const at = $('#acAt').value ? new Date($('#acAt').value).getTime() : Date.now();
+    if (!(at > 0)) { toast('วันเวลาไม่ถูกต้อง'); return; }
+    if (at > Date.now() + 10 * 6e4) { toast('วันเวลาที่ติดต่อต้องไม่เกินเวลาปัจจุบัน'); return; }
+    const nextStep = $('#acNext').value.trim(), nextDate = $('#acNextDate').value;
+    if (nextDate && !nextStep) { $('#acNext').focus(); toast('ใส่สิ่งที่ต้องทำต่อ'); return; }
+    const value = n2(Math.max(0, +$('#acValue').value || 0)), btn = $('#acGo'), label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'กำลังบันทึก…';
+    try {
+      let cu = custByName(name);
+      if (!cu && can('customers', 2)) cu = { id: uid('c'), name, contact: $('#acContact').value.trim(), phone: '', address: '', lat: null, lng: null, stage: 'ติดต่อใหม่', dealValue: 0, followUp: '', followDate: '', note: '', createdBy: S.myId, updatedAt: Date.now(), isNew: true };
+      const rec = { ...(a || {}), id: a ? a.id : uid('a'), createdBy: a ? a.createdBy : S.myId, staffName: a ? a.staffName : S.me.name, staffCode: a ? a.staffCode || '' : S.me.code || '', createdAt: a ? a.createdAt : Date.now(), occurredAt: at, type, customer: cu ? cu.name : name, customerId: cu ? cu.id : '', contact: $('#acContact').value.trim(), outcome: out, note, dealValue: value, nextStep, nextDate, updatedAt: Date.now() };
+      if (a && a.createdBy !== S.myId) { rec.editedBy = S.myId; rec.editedByName = S.me.name; }
+      await store.saveActivity(rec);
+      if (cu && can('customers', 2) && !cu.isExample) {
+        const stage = out === 'ปิดการขายได้' ? 'ปิดการขาย' : out === 'ขอใบเสนอราคา' ? 'เสนอราคา' : '';
+        const nextStage = stage && (stage === 'ปิดการขาย' || STAGES.indexOf(stage) > STAGES.indexOf(cu.stage || STAGES[0])) ? stage : cu.stage || 'ติดต่อใหม่';
+        const closeOld = !$('#acCloseWrap').hidden && $('#acClose').checked;
+        const { isNew, ...base } = cu;
+        await store.saveCustomer({ ...base, contact: base.contact || rec.contact, stage: nextStage, dealValue: value || base.dealValue || 0, followUp: nextStep || (closeOld ? '' : base.followUp || ''), followDate: nextStep ? nextDate : (closeOld ? '' : base.followDate || ''), updatedAt: Date.now() }).catch(() => toast('บันทึกแล้ว แต่อัปเดตข้อมูลลูกค้าไม่สำเร็จ'));
+      }
+      toast(a ? 'แก้ไขบันทึกแล้ว' : `บันทึกการติดต่อ ${rec.customer} แล้ว`); closeSheet();
+    } catch (err) {
+      toast(err && err.code === 'no_table' ? 'ฐานข้อมูลยังไม่มีตารางบันทึกงานขาย แจ้งผู้ดูแลให้รัน schema.sql ล่าสุด' : err && err.code === 'invalid_argument' ? 'บันทึกไม่ได้ อาจไม่มีสิทธิ์ หรือบันทึกเกิน 7 วันแล้ว' : 'บันทึกไม่สำเร็จ ลองอีกครั้ง');
+      btn.disabled = false; btn.textContent = label;
+    }
+  });
+}
 // ---------- reports ----------
 const ckey = n => String(n || '').trim().toLowerCase();
 const sumBy = (arr, k) => arr.reduce((s, v) => s + (+v[k] || 0), 0);
@@ -886,7 +1167,7 @@ function peopleOptions() {
   return Object.entries(people).sort((a, b) => a[1].localeCompare(b[1], 'th'));
 }
 function reportScope(ym) {
-  const who = S.admin ? ($('#rpWho').value || '__team') : '__me';
+  const who = reportsAll() ? ($('#rpWho').value || '__team') : '__me';
   const real = S.visits.filter(v => !v.isExample), base = real.length ? real : S.visits;
   const all = who === '__team' ? base : who === '__me' ? base.filter(isMine) : base.filter(v => staffKey(v) === who);
   const keys = new Set(all.map(v => ckey(v.customer)));
@@ -898,8 +1179,8 @@ function tile(label, value, detail, cls = '') { return `<div class="tile"><small
 function renderReport() {
   if (!$('#rpMonth').value) $('#rpMonth').value = ymOf(Date.now());
   const ym = $('#rpMonth').value, sel = $('#rpWho');
-  sel.hidden = !S.admin;
-  if (S.admin) { const cur = sel.value || '__team'; sel.innerHTML = '<option value="__team">ทั้งทีม</option><option value="__me">ของฉัน</option>' + peopleOptions().map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join(''); sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__team'; }
+  sel.hidden = !reportsAll();
+  if (reportsAll()) { const cur = sel.value || '__team'; sel.innerHTML = '<option value="__team">ทั้งทีม</option><option value="__me">ของฉัน</option>' + peopleOptions().map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join(''); sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__team'; }
   const R = reportScope(ym), team = R.who === '__team', { month, custs, lastBy, firstBy } = R;
   const [yy, mm] = ym.split('-').map(Number), days = new Date(yy, mm, 0).getDate(), today = new Date(), isCur = ymOf(today.getTime()) === ym;
   const live = month.filter(v => statusOf(v) !== 'rejected'), n = month.length;
@@ -990,23 +1271,24 @@ function renderClaims() {
   if (!$('#clMonth').value) $('#clMonth').value = ymOf(Date.now());
   const sel = $('#clWho'), cur = sel.value || '__me';
   const people = {}; Object.entries(S.staff).forEach(([id, p]) => people[id] = p.name || 'ไม่ระบุชื่อ'); S.visits.forEach(v => { const k = staffKey(v); if (!people[k]) people[k] = v.staffName + (v.isExample ? ' (ตัวอย่าง)' : ''); });
-  sel.innerHTML = `<option value="__me">ของฉัน</option>${S.admin ? '<option value="__all">ทุกคน</option>' + Object.entries(people).sort((a, b) => a[1].localeCompare(b[1], 'th')).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('') : ''}`;
+  sel.innerHTML = `<option value="__me">ของฉัน</option>${can('team') ? '<option value="__all">ทุกคน</option>' + Object.entries(people).sort((a, b) => a[1].localeCompare(b[1], 'th')).map(([k, n]) => `<option value="${esc(k)}">${esc(n)}</option>`).join('') : ''}`;
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : '__me';
   const rows = claimsRows(), live = rows.filter(v => statusOf(v) !== 'rejected');
   const sum = k => live.reduce((s, v) => s + (+v[k] || 0), 0);
   $('#clKm').textContent = fmtKm(sum('kmRoundTrip')); $('#clFuel').textContent = fmtB(sum('fuelAmount')); $('#clTotal').textContent = fmtB(sum('total'));
   $('#clBody').innerHTML = rows.length ? rows.map(v => { const st = statusOf(v); return `<tr data-visit="${esc(v.id)}" style="cursor:pointer${st === 'rejected' ? ';opacity:.55' : ''}">
-    <td class="num" style="white-space:nowrap">${dt(v.createdAt)}</td><td>${esc(v.staffName)}</td><td>${esc(v.customer)}</td>
+    <td class="num" style="white-space:nowrap">${dt(v.createdAt).replace(' ', '<br>')}</td><td>${esc(v.staffName)}</td><td>${esc(v.customer)}</td>
     <td class="n">${v.vehicle === 'company' ? '-' : fmtKm(v.kmRoundTrip)}</td><td class="n">${v.vehicle === 'company' ? 'ตามบิล' : fmtB(v.rate)}</td>
-    <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td><td><span class="pill ${st}">${STATUS[st]}</span></td></tr>`; }).join('')
-    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">ไม่มีรายการในเดือนนี้</td></tr>';
-  $('#clFoot').innerHTML = rows.length ? `<tr><td colspan="3">รวม</td><td class="n">${fmtKm(sum('kmRoundTrip'))}</td><td></td><td class="n">${fmtB(sum('fuelAmount'))}</td><td class="n">${fmtB(sum('toll'))}</td><td class="n">${fmtB(sum('total'))}</td><td></td></tr>` : '';
+    <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td><td><span class="pill ${st}">${STATUS[st]}</span></td>
+    <td class="rowact" style="white-space:nowrap"><button class="btn ghost sm" data-printrow="${esc(v.id)}" title="ดูตัวอย่าง / พิมพ์รายการนี้" aria-label="พิมพ์"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-3px"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg></button>${canEditClaim(v) ? `<button class="btn ghost sm" data-delclaim="${esc(v.id)}" title="ลบรายการ (ซ่อนไว้ กู้คืนได้ที่หลังบ้าน)" style="color:var(--bad)">✕</button>` : ''}</td></tr>`; }).join('')
+    : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">ไม่มีรายการในเดือนนี้</td></tr>';
+  $('#clFoot').innerHTML = rows.length ? `<tr><td colspan="3">รวม</td><td class="n">${fmtKm(sum('kmRoundTrip'))}</td><td></td><td class="n">${fmtB(sum('fuelAmount'))}</td><td class="n">${fmtB(sum('toll'))}</td><td class="n">${fmtB(sum('total'))}</td><td></td><td></td></tr>` : '';
 }
 let apSel = 'pending';
 function renderApprove() {
   const pend = S.visits.filter(v => statusOf(v) === 'pending');
-  $('#apBadge').hidden = !(S.admin && pend.length); $('#apBadge').textContent = pend.length;
-  $('#apNote').textContent = S.admin ? 'แตะรายการเพื่อดูพิกัด รูป และจุดที่ระบบแนะนำให้ตรวจ ก่อนกดอนุมัติ' : 'หน้านี้สำหรับผู้จัดการฝ่ายขาย';
+  $('#apBadge').hidden = !(can('approve', 2) && pend.length); $('#apBadge').textContent = pend.length;
+  $('#apNote').textContent = can('approve', 2) ? 'แตะรายการเพื่อดูพิกัด รูป และจุดที่ระบบแนะนำให้ตรวจ ก่อนกดอนุมัติ' : 'หน้านี้สำหรับผู้จัดการฝ่ายขาย';
   const counts = { pending: pend.length, approved: S.visits.filter(v => statusOf(v) === 'approved').length, rejected: S.visits.filter(v => statusOf(v) === 'rejected').length };
   $('#apFilter').innerHTML = Object.keys(STATUS).map(k => `<button class="chip" data-ap="${k}" aria-pressed="${k === apSel}">${STATUS[k]} ${counts[k]}</button>`).join('');
   const rows = S.visits.filter(v => statusOf(v) === apSel);
@@ -1099,7 +1381,7 @@ $('#ciNextDate').addEventListener('input', () => { F.dateTouched = !!$('#ciNextD
 renderNextOptions('');
 async function rememberCustomAction(name) {
   if (!name || NEXT_ACTIONS.some(([, , items]) => items.includes(name)) || customActions().includes(name)) return;
-  if (S.admin) { const st = { ...S.settings, customActions: [...(S.settings.customActions || []), name] }; S.settings = st; try { await store.saveSettings(st); } catch {} }
+  if (can('admin', 2)) { const st = { ...S.settings, customActions: [...(S.settings.customActions || []), name] }; S.settings = st; try { await store.saveSettings(st); } catch {} }
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
 function resetForm() {
@@ -1174,7 +1456,7 @@ async function saveCheckin(claim) {
   if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนส่งรายงาน'); return; }
   if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
   if (!F.gps) { toast('บันทึกตำแหน่งในข้อ 2 ก่อน'); $('#btnGps').scrollIntoView({ block: 'center' }); return; }
-  if (!S.canWrite) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
+  if (!S.canWrite || !can('checkin', 2)) { toast('บัญชีนี้มีสิทธิ์ดูอย่างเดียว ส่งรายงานไม่ได้'); return; }
   if (!isActive()) { toast('บัญชียังไม่ได้รับอนุมัติให้ใช้งาน'); renderGate(); return; }
   if ($('#ciNext').value === NEXT_NEW && !$('#ciNextNew').value.trim()) { $('#ciNextNew').focus(); toast('พิมพ์ชื่อตัวเลือกใหม่ หรือเลือกจากรายการ'); return; }
   const v = buildVisit(false), btn = claim ? $('#btnSubmit') : $('#btnSave'), label = btn.textContent;
@@ -1212,6 +1494,21 @@ $('#sheet').addEventListener('click', e => { if (e.target.id === 'sheet' || e.ta
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
 const bar = t => `<div class="bar"><h1>${t}</h1><button class="iconbtn" data-close aria-label="ปิด">✕</button></div>`;
 
+async function softDeleteVisit(id) {
+  const v = S.visits.find(x => x.id === id); if (!v) return;
+  if (!canEditClaim(v)) { toast(isLocked(v) ? 'รายการที่อนุมัติแล้ว ลบได้เฉพาะผู้มีอำนาจ (ผู้จัดการ/เจ้าของ)' : 'ไม่มีสิทธิ์ลบรายการนี้'); return; }
+  const st = statusOf(v);
+  if (!(await confirmBox({ title: `ลบรายการ ${ref(v)}?`, body: `${v.customer} · ${dt(v.createdAt)} · ${STATUS[st]}${st === 'approved' ? ' (อนุมัติแล้ว)' : ''}\nรายการจะถูกซ่อนจากทุกหน้าจอและยอดรวม ผู้ดูแลกู้คืนได้ที่หลังบ้าน`, ok: 'ลบ (ซ่อนไว้)', danger: true }))) return;
+  try { await store.saveVisit({ ...v, deleted: true, deletedAt: Date.now(), deletedBy: S.myId, deletedByName: S.me.name || '' }); toast(`ซ่อนรายการ ${ref(v)} แล้ว กู้คืนได้ที่หลังบ้าน`); closeSheet(); if (S.backend !== 'supabase') { setVisits([...S.visits.filter(x => x.id !== id), { ...v, deleted: true }, ...S.trash]); renderAll(); } }
+  catch (err) { toast(/row-level security|policy/i.test((err && err.message) || '') ? 'ลบไม่ได้ รายการนี้อนุมัติแล้ว ต้องให้ผู้มีอำนาจเป็นผู้ลบ' : 'ลบไม่สำเร็จ ลองอีกครั้ง'); }
+}
+async function restoreVisit(id, purge) {
+  const v = (S.trash || []).find(x => x.id === id); if (!v) return;
+  if (!can('team', 2)) { toast('เฉพาะผู้มีอำนาจเท่านั้น'); return; }
+  if (purge) { if (!(await confirmBox({ title: `ลบ ${ref(v)} ถาวร?`, body: 'ลบแล้วกู้คืนไม่ได้ รวมถึงรูปและไฟล์แนบ', ok: 'ลบถาวร', danger: true }))) return; try { await store.deleteVisit(v); toast('ลบถาวรแล้ว'); } catch { toast('ลบไม่ได้'); } }
+  else { try { const nv = { ...v }; delete nv.deleted; delete nv.deletedAt; delete nv.deletedBy; delete nv.deletedByName; nv.restoredAt = Date.now(); await store.saveVisit(nv); toast(`กู้คืน ${ref(v)} แล้ว`); } catch { toast('กู้คืนไม่ได้'); } }
+  if (S.backend !== 'supabase') { const rest = S.trash.filter(x => x.id !== id); setVisits(purge ? [...S.visits, ...rest] : [...S.visits, ...rest, Object.assign({}, v, { deleted: false })]); renderAll(); }
+}
 function openVisit(id) {
   const v = S.visits.find(x => x.id === id); if (!v) return;
   const st = statusOf(v), ap = S.approvals[v.id], fl = auditFlags(v), s = S.settings;
@@ -1237,14 +1534,15 @@ function openVisit(id) {
         <span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(v.toll)}</span><span class="total">รวมเบิกสุทธิ</span><span class="total num">${fmtB(v.total)}</span></div>
       ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>`}
     ${st === 'approved' ? `<div class="notice" style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:18px;line-height:1">🔒</span><span>รายการนี้อนุมัติแล้วและถูกล็อก ผู้ขอเบิกแก้ไขไม่ได้ ${S.admin ? 'ผู้จัดการแก้ไขได้ด้วยปุ่มด้านล่าง หรือกด "ตีกลับ" เพื่อให้พนักงานแก้ไขแล้วส่งใหม่' : 'หากต้องแก้ไข ให้แจ้งผู้จัดการตีกลับรายการนี้'}</span></div>` : ''}
-    ${st === 'rejected' && isMine(v) && !S.admin && S.canWrite ? `<button class="btn primary block" data-claim="${esc(v.id)}">แก้ไขค่าเดินทางและส่งขอเบิกใหม่</button>` : ''}
+    ${st === 'rejected' && isMine(v) && !can('team', 2) && can('checkin', 2) && S.canWrite ? `<button class="btn primary block" data-claim="${esc(v.id)}">แก้ไขค่าเดินทางและส่งขอเบิกใหม่</button>` : ''}
     ${v.editedAt ? `<p class="sub">แก้ไขล่าสุดโดย ${esc(v.editedByName || 'ผู้จัดการ')} เมื่อ ${dt(v.editedAt)}</p>` : ''}
+    ${canEditClaim(v) ? `<button class="btn ghost sm" data-delclaim="${esc(v.id)}" style="color:var(--bad);align-self:flex-start">ลบรายการนี้ (ซ่อนไว้ กู้คืนได้)</button>` : st === 'approved' && isMine(v) ? '<p class="sub">รายการที่อนุมัติแล้วลบได้เฉพาะผู้มีอำนาจ</p>' : ''}
     <div class="card stack"><h2>จุดที่ควรตรวจ</h2><ul class="flags">${fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ไม่พบจุดผิดปกติ</li>'}</ul></div>
     ${ap && ap.status !== 'pending' ? `<p class="sub">${STATUS[ap.status]}โดย ${esc(ap.byName || '-')} เมื่อ ${dt(ap.at)}${ap.note ? '<br>หมายเหตุ: ' + esc(ap.note) : ''}</p>` : ''}
-    ${S.admin && st !== 'draft' ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
+    ${can('approve', 2) && st !== 'draft' ? `<div class="stack"><label class="f">หมายเหตุผู้ตรวจ<input type="text" id="apNoteIn" value="${esc(ap && ap.note || '')}" placeholder="เช่น ระยะทางเกิน ปรับเป็น 40 กม."></label>
       <div class="row"><button class="btn ok grow" data-approve="${esc(v.id)}">อนุมัติ</button><button class="btn bad grow" data-reject="${esc(v.id)}">ตีกลับ</button></div>
       ${st !== 'pending' ? `<button class="btn ghost sm" data-unset="${esc(v.id)}">ย้ายกลับไปรอตรวจ</button>` : ''}
-      ${!v.isExample ? `<button class="btn soft sm" data-claim="${esc(v.id)}">แก้ไขค่าเดินทาง (ผู้จัดการ)</button>` : ''}
+      ${!v.isExample && can('team', 2) ? `<button class="btn soft sm" data-claim="${esc(v.id)}">แก้ไขค่าเดินทาง (ผู้จัดการ)</button>` : ''}
       ${v.isExample ? `<button class="btn ghost sm" data-delvisit="${esc(v.id)}">ลบรายการตัวอย่างนี้</button>` : ''}</div>` : ''}`);
 }
 function attachmentsHtml(v) {
@@ -1273,7 +1571,7 @@ function openClaim(id) {
   if (!canEditClaim(v)) { toast(isLocked(v) ? 'รายการนี้อนุมัติแล้ว ถูกล็อก ให้ผู้จัดการตีกลับก่อนจึงแก้ไขได้' : 'ไม่มีสิทธิ์แก้ไขรายการนี้'); return; }
   const s = S.settings, dc = v.claimStatus !== 'none' ? v : (v.draftClaim || null); let est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, auto = v.gps ? routeCached(v.gps.lat, v.gps.lng) : null, autoFilled = false;
   if (auto && !dc) autoFilled = true;
-  const st0 = statusOf(v), mode = v.claimStatus === 'none' ? 'claim' : (isMine(v) && !S.admin) || st0 === 'rejected' ? 'resubmit' : 'adminEdit';
+  const st0 = statusOf(v), mode = v.claimStatus === 'none' ? 'claim' : (isMine(v) && !can('team', 2)) || st0 === 'rejected' ? 'resubmit' : 'adminEdit';
   const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '' } : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: auto ? auto.km : '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '' };
   const kmSrcOf = km1 => C.vehicle === 'company' ? null : auto && km1 === auto.km ? auto.src : dc && dc.kmOneWay === km1 && dc.kmSource ? dc.kmSource : 'manual';
   const render = () => {
@@ -1324,6 +1622,7 @@ function openDrafts() {
   openSheet(`${bar('รายการที่ยังไม่ได้ขอเบิก')}<p class="sub">แตะรายการแล้วกด "ขอเบิกค่าเดินทางย้อนหลัง"</p><div class="list" style="display:flex">${ds.length ? ds.map(v => visitItem(v)).join('') : '<div class="empty">ไม่มีรายการค้าง</div>'}</div>`);
 }
 async function decide(id, status) {
+  if (!can('approve', 2)) { toast('บัญชีนี้ไม่มีสิทธิ์อนุมัติ'); return; }
   const v = S.visits.find(x => x.id === id), who = v ? `${v.customer} · ${v.staffName} · ฿${fmtB(v.total)}` : '';
   const q = status === 'approved' ? { title: 'อนุมัติรายการนี้?', body: who, ok: 'อนุมัติ' } : status === 'rejected' ? { title: 'ตีกลับรายการนี้?', body: who + (($('#apNoteIn') || {}).value ? '' : ' ยังไม่ได้ใส่หมายเหตุให้พนักงาน'), ok: 'ตีกลับ', danger: true } : { title: 'ย้ายกลับไปรอตรวจ?', body: who, ok: 'ย้ายกลับ' };
   if (!(await confirmBox(q))) return;
@@ -1331,9 +1630,18 @@ async function decide(id, status) {
   try { await store.setApproval(id, a); toast(status === 'approved' ? 'อนุมัติแล้ว' : status === 'rejected' ? 'ตีกลับแล้ว' : 'ย้ายกลับไปรอตรวจแล้ว'); closeSheet(); }
   catch { toast('บันทึกผลตรวจไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์อนุมัติ'); }
 }
+async function deleteCustomerUI(id) {
+  const c = S.customers.find(x => x.id === id); if (!c) return;
+  if (!can('customers', 3)) { toast('บัญชีนี้ไม่มีสิทธิ์ลบลูกค้า ให้ผู้ที่มีสิทธิ์ลบเป็นผู้ลบ'); return; }
+  const n = S.visits.filter(v => v.customerId === c.id || v.customer.trim().toLowerCase() === c.name.trim().toLowerCase()).length;
+  if (!(await confirmBox({ title: `ลบลูกค้า "${c.name}"?`, body: n ? `ประวัติการเข้าพบและรายการเบิก ${n} รายการของลูกค้านี้ยังอยู่ครบ จะหายเฉพาะข้อมูลลูกค้า (ผู้ติดต่อ เบอร์ ที่ตั้ง ขั้นตอนการขาย) และเลิกแสดงในหน้าลูกค้า ย้อนกลับไม่ได้` : 'ย้อนกลับไม่ได้', ok: 'ลบลูกค้า', danger: true }))) return;
+  try { await store.deleteCustomer(id); toast(`ลบลูกค้า "${c.name}" แล้ว`); closeSheet(); }
+  catch (e) { toast(e && e.message && /[ก-๙]/.test(e.message) ? e.message : 'ลบไม่สำเร็จ เฉพาะผู้จัดการ/เจ้าของเท่านั้นที่ลบลูกค้าได้'); }
+}
 function openCustomer(id) {
   const c = S.customers.find(x => x.id === id); if (!c) return;
   const vs = S.visits.filter(v => v.customerId === c.id || v.customer.trim().toLowerCase() === c.name.trim().toLowerCase());
+  const as = S.acts.filter(a => a.customerId === c.id || String(a.customer || '').trim().toLowerCase() === c.name.trim().toLowerCase());
   openSheet(`${bar(esc(c.name))}
     <div class="row">${c.stage ? `<span class="pill stage">${esc(c.stage)}</span>` : ''}<span class="sub">เข้าพบ ${vs.length} ครั้ง</span></div>
     <dl class="kv card"><dt>ผู้ติดต่อ</dt><dd>${esc(c.contact || '-')}</dd><dt>โทร</dt><dd class="num">${esc(c.phone || '-')}</dd><dt>ที่อยู่</dt><dd>${esc(c.address || '-')}</dd>
@@ -1341,10 +1649,14 @@ function openCustomer(id) {
       ${c.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(c.dealValue)}</dd>` : ''}
       ${c.followUp ? `<dt>ทำต่อ</dt><dd>${esc(c.followUp)}${c.followDate ? ' ภายใน ' + esc(c.followDate) : ''}</dd>` : ''}
       ${c.note ? `<dt>บันทึก</dt><dd style="white-space:pre-wrap">${esc(c.note)}</dd>` : ''}</dl>
-    <div class="row"><button class="btn primary grow" data-checkinat="${esc(c.id)}">เช็คอินที่ลูกค้านี้</button><button class="btn ghost" data-editcust="${esc(c.id)}">แก้ไข</button></div>
+    <div class="row">${can('checkin', 2) ? `<button class="btn primary grow" data-checkinat="${esc(c.id)}">เช็คอินที่ลูกค้านี้</button>` : ''}${can('customers', 2) ? `<button class="btn ghost" data-editcust="${esc(c.id)}">แก้ไข</button>` : ''}${can('customers', 3) && S.canWrite && !c.isExample ? `<button class="btn ghost danger" data-delcust="${esc(c.id)}" title="ลบลูกค้า">ลบ</button>` : ''}</div>
+    ${can('customers', 3) ? '' : '<p class="sub">การลบลูกค้าทำได้เฉพาะผู้ที่ได้รับสิทธิ์ หากข้อมูลซ้ำหรือผิด แจ้งหัวหน้าให้ลบ</p>'}
+    ${can('checkin', 2) ? `<button class="btn soft block" data-newact="call" data-custid="${esc(c.id)}">บันทึกการติดต่อ (โทร / LINE / อีเมล)</button>` : ''}
+    ${as.length ? `<h2>ประวัติการติดต่อ</h2><div class="tl">${as.map(a => evItem(actEv(a), true)).join('')}</div>` : ''}
     <h2>ประวัติการเข้าพบ</h2><div class="list">${vs.length ? vs.map(v => visitItem(v, { staff: true })).join('') : '<div class="empty">ยังไม่เคยเข้าพบ</div>'}</div>`);
 }
 function editCustomer(id) {
+  if (!can('customers', 2)) { toast('บัญชีนี้ดูข้อมูลลูกค้าได้อย่างเดียว'); return; }
   const c = id ? S.customers.find(x => x.id === id) : { id: '', name: '', contact: '', phone: '', address: '', stage: 'ติดต่อใหม่', note: '', lat: null, lng: null };
   openSheet(`${bar(id ? 'แก้ไขลูกค้า' : 'เพิ่มลูกค้า')}
     <form id="fCust" class="stack" novalidate>
@@ -1367,7 +1679,7 @@ function editCustomer(id) {
   });
 }
 function openSettings() {
-  const s = S.settings, m = S.me, dis = S.admin ? '' : 'disabled';
+  const s = S.settings, m = S.me, dis = can('admin', 2) ? '' : 'disabled';
   openSheet(`${bar('ตั้งค่า')}
     <form id="fSet" class="stack" novalidate>
       <div class="card stack"><h2>ข้อมูลพนักงาน · ${roleLabel()}</h2>
@@ -1377,19 +1689,20 @@ function openSettings() {
         <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label></div>
         <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="seVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (m.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="sePlate" value="${esc(m.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       </div>
-      <div class="card stack"><h2>ค่าบริษัท ${S.admin ? '' : '(ผู้จัดการฝ่ายขายเท่านั้นที่แก้ได้)'}</h2>
+      <div class="card stack"><h2>ค่าบริษัท ${can('admin', 2) ? '' : '(เฉพาะผู้มีสิทธิ์แก้ไขหลังบ้าน)'}</h2>
         <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
         <label class="f">รถยนต์ไฟฟ้าส่วนตัว EV (บาท/กม.)<span class="hint">รวมค่าไฟและค่าสึกหรอ ไม่เบิกสลิปชาร์จซ้ำ</span><input type="number" id="seEv" step="0.01" min="0" value="${s.rateEv ?? 4}" ${dis}></label>
         <p class="sub">อัตราใหม่ใช้กับรายการที่ส่งหลังจากนี้ รายการเดิมคงอัตราตอนส่งไว้เพื่อการตรวจย้อนหลัง</p>
-        ${S.admin ? '<button type="button" class="btn ghost sm" id="seRegDefaults" style="align-self:flex-start">ใช้อัตราตามระเบียบ 01/2569 (6 / 4 / 2.5)</button>' : ''}
+        ${can('admin', 2) ? '<button type="button" class="btn ghost sm" id="seRegDefaults" style="align-self:flex-start">ใช้อัตราตามระเบียบ 01/2569 (6 / 4 / 2.5)</button>' : ''}
         <h2 style="margin-top:6px">ค่าเริ่มต้นที่เติมให้พนักงาน</h2>
         <div class="row"><label class="f grow">ทางด่วน / ที่จอดรถ เริ่มต้น (บาท)<span class="hint">0 = ให้กรอกเอง</span><input type="number" id="seToll" step="0.01" min="0" value="${s.defaultToll || 0}" ${dis}></label><label class="f grow">รถเริ่มต้นสำหรับคนใหม่<select id="seDefVeh" ${dis}>${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (s.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
         <label class="f"><span>คำนวณระยะทางอัตโนมัติจากจุดเริ่มต้นถึงตำแหน่งเช็คอิน</span><span class="hint">ใช้เส้นทางถนนจากบริการแผนที่ฟรี (OpenStreetMap) ถ้าติดต่อไม่ได้จะประมาณจากเส้นตรง × ตัวคูณ พนักงานแก้ตัวเลขได้เสมอ</span><select id="seAutoKm" ${dis}><option value="1" ${s.autoKm !== false ? 'selected' : ''}>เปิด (เติมให้ พนักงานแก้ได้)</option><option value="0" ${s.autoKm === false ? 'selected' : ''}>ปิด (แสดงค่าประมาณอย่างเดียว)</option></select></label>
         <label class="f"><span>เติมระยะทางจากการไปลูกค้ารายเดิมครั้งก่อน</span><span class="hint">เมื่อพนักงานเลือกลูกค้าที่เคยไปแล้ว ระบบเติม "ระยะทางขาไป" ที่เคยบันทึก/เบิกครั้งล่าสุดของลูกค้ารายนั้นให้ทันที พนักงานแก้ได้ ถ้าคำนวณเส้นทางถนนอัตโนมัติสำเร็จ ระบบจะใช้ค่าจากเส้นทางแทน จึงมีผลหลักเมื่อไม่มีพิกัด ไม่มีสัญญาณ หรือปิดคำนวณอัตโนมัติ · ปิด = ปล่อยช่องว่างให้กรอกเอง</span><select id="sePrefill" ${dis}><option value="1" ${s.prefillKm !== false ? 'selected' : ''}>เปิด (พนักงานแก้ได้)</option><option value="0" ${s.prefillKm === false ? 'selected' : ''}>ปิด</option></select></label>
+        <label class="f"><span>รายงานการขาย: ใครเห็นของใคร</span><span class="hint">"เฉพาะของตัวเอง" = พนักงานขายเห็นรายงานและสถิติของตนเองเท่านั้น · "เห็นด้วยกันหมด" = ทุกคนเลือกดูของคนอื่นและทั้งทีมได้ · หัวหน้า/CEO/ผู้มีสิทธิ์ "รายงานสรุป: ดูทั้งทีม" เห็นทุกคนเสมอ</span><select id="seReport" ${dis}><option value="own" ${(s.reportScope || 'own') === 'own' ? 'selected' : ''}>เฉพาะของตัวเอง (ค่าเริ่มต้น)</option><option value="all" ${s.reportScope === 'all' ? 'selected' : ''}>เห็นด้วยกันหมดทั้งทีม</option></select></label>
         <label class="f">เป้าเข้าพบต่อคนต่อเดือน (ครั้ง)<span class="hint">ใช้ในหน้ารายงานของเซลส์และทีม</span><input type="number" id="seTarget" min="0" step="1" value="${s.visitTarget}" ${dis}></label>
         <label class="f">ชื่อจุดเริ่มต้น<span class="hint">จุดตั้งต้นที่ใช้คำนวณระยะทางไป-กลับของทุกคน ค่าเริ่มต้นคือสำนักงานขายมาบตาพุด เปลี่ยนได้</span><input type="text" id="seOffice" value="${esc(s.officeName)}" ${dis}></label>
         <label class="f">พิกัดจุดเริ่มต้น<span class="hint">วางพิกัดตัวเลขจาก Google Maps (เช่น 12.713666, 101.160576) หรือลิงก์แชร์ตำแหน่ง แม่นที่สุด · Plus Code แบบสั้น (เช่น P576+F6 ตำบล… อำเภอ… จังหวัด) ก็ใช้ได้ ระบบจะอิงชื่ออำเภอ/จังหวัดที่ติดมา</span><input type="text" id="seGeo" value="${officeSet() ? s.officeLat + ', ' + s.officeLng : ''}" placeholder="13.xxxx, 100.xxxx หรือ RJP4+XC" ${dis}></label>
-        ${S.admin ? '<button type="button" class="btn ghost sm" id="seHere" style="align-self:flex-start">ใช้ตำแหน่งที่ยืนอยู่ตอนนี้</button>' : ''}
+        ${can('admin', 2) ? '<button type="button" class="btn ghost sm" id="seHere" style="align-self:flex-start">ใช้ตำแหน่งที่ยืนอยู่ตอนนี้</button>' : ''}
         <details><summary>ค่าการตรวจสอบ</summary><div class="stack" style="margin-top:10px">
           <label class="f">ตัวคูณถนนจากระยะเส้นตรง<input type="number" id="seFactor" step="0.05" min="1" value="${s.roadFactor}" ${dis}></label>
           <label class="f">เตือนเมื่อระยะเบิกเกินประมาณการ (%)<input type="number" id="seFlag" step="1" min="0" value="${s.flagPct}" ${dis}></label>
@@ -1411,12 +1724,12 @@ function openSettings() {
     e.preventDefault();
     S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), vehicle: $('#seVeh').value, plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
     try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
-    if (S.admin) {
+    if (can('admin', 2)) {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? await resolveCoords(geoRaw) : null;
       if (geoRaw && !g) { toast('อ่านพิกัดบริษัทไม่ออก'); return; } if (g && g.short) toast('ถอด Plus Code เป็น ' + g.lat.toFixed(6) + ', ' + g.lng.toFixed(6) + coordNote(g));
       const ns = { officeName: $('#seOffice').value.trim() || DEFAULT_SETTINGS.officeName, officeLat: g ? +g.lat.toFixed(6) : DEFAULT_SETTINGS.officeLat, officeLng: g ? +g.lng.toFixed(6) : DEFAULT_SETTINGS.officeLng,
-        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), defaultToll: n2(Math.max(0, +$('#seToll').value || 0)), defaultVehicle: $('#seDefVeh').value, prefillKm: $('#sePrefill').value === '1', autoKm: $('#seAutoKm').value === '1', updatedAt: Date.now(), updatedBy: S.myId };
-      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget', 'defaultToll', 'defaultVehicle', 'prefillKm'].some(k => ns[k] !== S.settings[k]);
+        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), defaultToll: n2(Math.max(0, +$('#seToll').value || 0)), defaultVehicle: $('#seDefVeh').value, prefillKm: $('#sePrefill').value === '1', autoKm: $('#seAutoKm').value === '1', reportScope: $('#seReport').value === 'all' ? 'all' : 'own', updatedAt: Date.now(), updatedBy: S.myId };
+      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget', 'defaultToll', 'defaultVehicle', 'prefillKm', 'autoKm', 'reportScope'].some(k => ns[k] !== S.settings[k]);
       if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} · EV ${ns.rateEv} · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
       if (changed) { try { await store.saveSettings(ns); } catch { toast('บันทึกค่าบริษัทไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์'); return; } }
     }
@@ -1431,9 +1744,14 @@ $('#custSearch').addEventListener('input', renderCustomers);
 $('#tmMonth').addEventListener('change', renderTeam); $('#rpMonth').addEventListener('change', renderReport); $('#rpWho').addEventListener('change', renderReport); $('#clMonth').addEventListener('change', renderClaims); $('#clWho').addEventListener('change', renderClaims);
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-user],[data-ureg],[data-rminvite],[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
+  const t = e.target.closest('[data-act],[data-editact],[data-delact],[data-newact],[data-fu],[data-printrow],[data-delclaim],[data-restore],[data-purge],[data-delcust],[data-user],[data-ureg],[data-rminvite],[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
   if (!t) return; const d = t.dataset;
-  if (d.user) openUser(d.user);
+  if (d.act) openAct(d.act);
+  else if (d.editact) openActForm({ act: S.acts.find(x => x.id === d.editact) });
+  else if (d.delact) confirmBox({ title: 'ลบบันทึกนี้?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteActivity(S.acts.find(x => x.id === d.delact)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้ เฉพาะผู้ดูแลทีม')); });
+  else if (d.newact) openActForm({ type: d.newact, cust: d.custid ? S.customers.find(x => x.id === d.custid) : null });
+  else if (d.fu) { const c = S.customers.find(x => x.id === d.fu); if (c && can('checkin', 2)) openActForm({ cust: c }); else if (c) openCustomer(c.id); }
+  else if (d.user) openUser(d.user);
   else if (d.ureg) decideUser(d.ureg, t.dataset.to);
   else if (d.rminvite) removeInvite(d.rminvite);
   else if (d.claim) openClaim(d.claim);
@@ -1454,6 +1772,11 @@ document.addEventListener('click', e => {
   else if (d.delvisit) { confirmBox({ title: 'ลบรายการนี้ถาวร?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteVisit(S.visits.find(x => x.id === d.delvisit)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้')); }); }
   else if (d.checkinat) { const c = S.customers.find(x => x.id === d.checkinat); closeSheet(); resetForm(); $('#ciCustomer').value = c.name; $('#ciContact').value = c.contact || ''; F.stage = c.stage || ''; prefillKmFor(c.name); updateCalc(); go('checkin'); }
   else if (d.editcust) editCustomer(d.editcust);
+  else if (d.delcust) deleteCustomerUI(d.delcust);
+  else if (d.delclaim) softDeleteVisit(d.delclaim);
+  else if (d.printrow) openPrintDoc(d.printrow);
+  else if (d.restore) restoreVisit(d.restore, false);
+  else if (d.purge) restoreVisit(d.purge, true);
   else if (d.zoom !== undefined) { const img = t.getAttribute('src'); openSheet(`${bar('รูปหน้างาน')}<img src="${img}" alt="รูปหน้างาน" style="width:100%;border-radius:12px">`); }
 });
 
@@ -1482,8 +1805,8 @@ $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
 // ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
 const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
-const PROFILE_COLS = { name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
-const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
+const PROFILE_COLS = { perms: 'perms', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k === 'perms' ? {} : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
 function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
 function sbFail(e) { const err = new Error(e.message || 'db'); err.code = /row-level security|permission|policy/i.test(e.message || '') ? 'invalid_argument' : (e.code || 'db'); console.error(e); throw err; }
@@ -1502,7 +1825,10 @@ const sb = {
   async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales', p_nick: u.nick || '', p_name_en: u.nameEn || '', p_vehicle: u.vehicle || 'car', p_plate: u.plate || '' }); if (error) sbFail(error); sbRefresh(); return data; },
   async adminSetPassword(uid, password) { const { error } = await S.sb.rpc('admin_set_password', { p_user: uid, p_password: password }); if (error) sbFail(error); },
   async saveInvites(codes) { const { error } = await S.sb.from('settings').upsert({ key: 'invites', value: { codes }, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async saveActivity(a) { const { error } = await S.sb.from('activities').upsert({ id: a.id, created_by: a.createdBy, created_at: a.createdAt, occurred_at: a.occurredAt, staff_name: a.staffName, type: a.type, customer: a.customer, customer_id: a.customerId || null, outcome: a.outcome || '', follow_up_at: a.nextDate ? new Date(a.nextDate + 'T00:00:00').getTime() : null, data: a, updated_at: Date.now() }); if (error) { if (/activities/.test(error.message || '') && /exist|schema cache/i.test(error.message || '')) { const e = new Error('no_table'); e.code = 'no_table'; throw e; } sbFail(error); } sbRefresh(); },
+  async deleteActivity(a) { const { error, count } = await S.sb.from('activities').delete({ count: 'exact' }).eq('id', a.id); if (error) sbFail(error); if (count === 0) { const e = new Error('denied'); e.code = 'invalid_argument'; throw e; } sbRefresh(); },
   async saveCustomer(c) { const { error } = await S.sb.from('customers').upsert({ id: c.id, name: c.name || '', data: c, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async deleteCustomer(id) { const { error, count } = await S.sb.from('customers').delete({ count: 'exact' }).eq('id', id); if (error) sbFail(error); if (count === 0) throw new Error('ลบไม่ได้ เฉพาะผู้จัดการ/เจ้าของเท่านั้นที่ลบลูกค้าได้'); sbRefresh(); },
   async setApproval(id, a) { const { error } = await S.sb.from('approvals').upsert({ visit_id: id, status: a.status, note: a.note || '', by_id: a.by || null, by_name: a.byName || '', at: a.at }); if (error) sbFail(error); sbRefresh(); },
   async saveSettings(st) { const { error } = await S.sb.from('settings').upsert({ key: 'settings', value: st, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
 };
@@ -1523,15 +1849,17 @@ async function sbLoadAll() {
   sbLoading = (async () => {
     try {
       await sbLoadMe();
-      const [vs, cs, aps, st, pf] = await Promise.all([
+      const [vs, cs, aps, st, pf, ac] = await Promise.all([
         S.sb.from('visits').select('data').order('created_at', { ascending: false }).limit(3000),
         S.sb.from('customers').select('data').limit(3000),
         S.sb.from('approvals').select('*').limit(5000),
         S.sb.from('settings').select('*'),
-        S.admin ? S.sb.from('profiles').select('*').limit(500) : Promise.resolve({ data: [] }),
+        (can('admin') || can('team') || can('approve') || reportsAll()) ? S.sb.from('profiles').select('*').limit(500) : Promise.resolve({ data: [] }),
+        S.sb.from('activities').select('data').order('occurred_at', { ascending: false }).limit(3000),
       ]);
+      S.actsMissing = !!(ac && ac.error); setActs(((ac && ac.data) || []).map(r => r.data));
       const by = {}; (vs.data || []).forEach(r => { const v = r.data; (by[v.createdBy] = by[v.createdBy] || []).push(v); });
-      S.visitsBy = by; S.visits = (vs.data || []).map(r => r.data);
+      S.visitsBy = by; setVisits((vs.data || []).map(r => r.data));
       S.customers = (cs.data || []).map(r => r.data);
       const m = {}; (aps.data || []).forEach(a => m[a.visit_id] = { status: a.status, note: a.note, by: a.by_id, byName: a.by_name, at: a.at }); S.approvals = m;
       (st.data || []).forEach(r => { if (r.key === 'settings') S.settings = { ...DEFAULT_SETTINGS, ...(r.value || {}) }; if (r.key === 'invites') S.invites = (r.value && r.value.codes) || {}; });
@@ -1544,13 +1872,13 @@ async function sbLoadAll() {
 function sbSubscribe() {
   if (S.sbChan) return;
   S.sbChan = S.sb.channel('flow-crm');
-  ['visits', 'approvals', 'profiles', 'customers', 'settings'].forEach(t => S.sbChan.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => sbRefresh()));
+  ['visits', 'activities', 'approvals', 'profiles', 'customers', 'settings'].forEach(t => S.sbChan.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => sbRefresh()));
   S.sbChan.subscribe();
 }
 async function connectSupabase() {
   S.sb = window.supabase.createClient(SB.url, SB.anonKey);
   S.mode = 'shared'; S.backend = 'supabase'; S.admin = false; S.canWrite = true;
-  S.visits = []; S.customers = []; S.approvals = {}; S.visitsBy = {}; S.staff = {};
+  S.visits = []; S.acts = []; S.customers = []; S.approvals = {}; S.visitsBy = {}; S.staff = {};
   applyRole(); renderAll();
   S.sb.auth.onAuthStateChange(async (ev, session) => {
     const u = session && session.user;
@@ -1603,7 +1931,7 @@ function renderLogin(g) {
       <button class="btn primary block lg" type="submit" id="lgGo">${up ? 'สมัครใช้งาน' : 'เข้าสู่ระบบ'}</button>
       ${SB.selfSignup === false && !up ? '' : `<button class="btn ghost block" type="button" id="lgSwitch">${up ? 'มีบัญชีแล้ว เข้าสู่ระบบ' : 'ยังไม่มีบัญชี สมัครใช้งานครั้งแรก'}</button>`}
     </form>
-    <p class="login-foot">${SB.selfSignup === false && !up ? 'ยังไม่มีบัญชีหรือลืมรหัสผ่าน ติดต่อผู้จัดการฝ่ายขายเพื่อตั้งให้<br>' : ''}FLOW ENG · ข้อมูลเก็บในฐานข้อมูลของบริษัท</p></div>`;
+    <p class="login-foot">${SB.selfSignup === false && !up ? 'ยังไม่มีบัญชีหรือลืมรหัสผ่าน ติดต่อผู้จัดการฝ่ายขายเพื่อตั้งให้<br>' : ''}FLOW ENG · ข้อมูลเก็บในฐานข้อมูลของบริษัท · เวอร์ชัน ${APP_VERSION}</p></div>`;
   (remembered ? $('#lgPass') : $('#lgEmail')).focus();
   const sw = $('#lgSwitch'); if (sw) sw.addEventListener('click', () => { loginMode = up ? 'in' : 'up'; renderLogin(g); });
   $('#lgEye').addEventListener('click', () => { const i = $('#lgPass'), show = i.type === 'password'; i.type = show ? 'text' : 'password'; $('#lgEye').textContent = show ? 'ซ่อน' : 'แสดง'; i.focus(); });
@@ -1710,7 +2038,7 @@ function renderAdmin() {
   if (!$('#adTiles')) return;
   const users = userRows(), pend = users.filter(u => u.status === 'pending'), active = users.filter(u => u.status === 'active');
   const today = dayKey(Date.now()), pendClaims = S.visits.filter(v => !v.isExample && statusOf(v) === 'pending');
-  $('#adBadge').hidden = !(S.admin && pend.length); $('#adBadge').textContent = pend.length;
+  $('#adBadge').hidden = !(can('admin', 2) && pend.length); $('#adBadge').textContent = pend.length;
   $('#adTiles').innerHTML = `<div class="tile"><small>รอตรวจเบิก</small><b>${pendClaims.length}</b></div><div class="tile"><small>รอลงทะเบียน</small><b>${pend.length}</b></div><div class="tile"><small>ผู้ใช้งานที่ใช้งานอยู่</small><b>${active.length}</b></div>
     <div class="tile"><small>เช็คอินวันนี้</small><b>${S.visits.filter(v => !v.isExample && dayKey(v.createdAt) === today).length}</b></div><div class="tile"><small>ยอดรอเบิก (บาท)</small><b class="money">${fmtB(pendClaims.reduce((s, v) => s + (v.total || 0), 0))}</b></div><div class="tile"><small>รหัสเชิญค้างใช้</small><b>${Object.keys(S.invites).length}</b></div>`;
   $('#adPendingWrap').hidden = !pend.length; $('#adPendN').textContent = pend.length;
@@ -1726,21 +2054,28 @@ function renderAdmin() {
   $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'เข้าหลังบ้านได้']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
   const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
   $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
-    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${permIsCustom(u) ? ' <span class="pill ex" title="สิทธิ์กำหนดเอง">สิทธิ์เฉพาะ</span>' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
     : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
+  const tr = S.trash || [];
+  $('#adTrashWrap').hidden = !tr.length || !can('team', 2); $('#adTrashN').textContent = tr.length;
+  $('#adTrash').innerHTML = tr.map(v => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(v.customer)} · ${esc(v.staffName || '')} <span class="pill ${esc(statusOf(v))}">${STATUS[statusOf(v)]}</span></div><div class="m">${ref(v)} · ${dt(v.createdAt)} · ฿${fmtB(v.total)} · ลบโดย ${esc(v.deletedByName || '-')} เมื่อ ${dt(v.deletedAt)}</div></div>
+    <div class="stack" style="gap:6px"><button class="btn primary sm" data-restore="${esc(v.id)}">กู้คืน</button>${can('admin', 2) ? `<button class="btn ghost sm" data-purge="${esc(v.id)}" style="color:var(--bad)">ลบถาวร</button>` : ''}</div></div>`).join('');
   const inv = Object.entries(S.invites);
   $('#adInvitesWrap').hidden = !inv.length;
   $('#adInvites').innerHTML = inv.map(([code, i]) => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(i.name)} <span class="pill ex">${esc(code)}</span></div><div class="m">${esc([i.email ? 'ผู้ใช้ ' + showUser(i.email) : '', i.dept, ROLES[i.role || 'sales']].filter(Boolean).join(' · '))} · สร้าง ${i.createdAt ? dt(i.createdAt) : '-'}</div><div class="m">${S.backend === 'supabase' ? 'รหัสเชิญแบบเก่า: จะเปิดใช้งานอัตโนมัติเมื่อผู้ใช้นี้ล็อกอินครั้งแรก' : 'ส่งลิงก์แอปให้พนักงาน แล้วให้ใส่รหัสนี้ตอนลงทะเบียน'}</div></div><button class="btn ghost sm" data-rminvite="${esc(code)}">ยกเลิก</button></div>`).join('');
+  $('#adVersions').innerHTML = `<div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ประวัติเวอร์ชัน</h2><span class="pill stage">ใช้อยู่ v${APP_VERSION}</span></div>${APP_VERSIONS.map(([v, d, items]) => `<div class="stack" style="gap:4px"><b>v${esc(v)} <span class="sub" style="font-weight:400">· ${esc(d)}</span></b><ul>${items.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}<p class="sub">ทุกการแก้ไขจะบันทึกไว้ที่นี่ เลขหลังจุด (minor) ขยับเมื่อเพิ่มหรือแก้ฟีเจอร์ เลขหน้าจุด (major) ขยับเมื่อต้องรัน schema.sql ใหม่แบบเปลี่ยนโครงสร้าง พนักงานทั่วไปเห็นเฉพาะเลขเวอร์ชันที่มุมบน</p>`;
   // กิจกรรมล่าสุด: แยกกลุ่มตามพนักงาน บรรทัดละรายการ
   const grp = {}; const push = (k, name, a) => { (grp[k] = grp[k] || { name, items: [] }).items.push(a); };
   S.visits.filter(v => !v.isExample).slice(0, 60).forEach(v => push(staffKey(v), v.staffName, { at: v.createdAt, text: `เช็คอิน ${v.customer}${v.claimStatus === 'none' ? ' (ยังไม่เบิก)' : ' · เบิก ฿' + fmtB(v.total)}`, id: v.id }));
+  S.acts.slice(0, 60).forEach(a => push(actKey(a), a.staffName, { at: a.occurredAt, text: `${ACT_TYPES[a.type] || 'บันทึก'} ${a.customer}${a.outcome ? ' · ' + a.outcome : ''}`, act: a.id }));
   Object.entries(S.approvals).forEach(([id, a]) => { const v = S.visits.find(x => x.id === id); if (v && !v.isExample && a.at) push(staffKey(v), v.staffName, { at: a.at, text: `${a.status === 'approved' ? 'อนุมัติ' : a.status === 'rejected' ? 'ตีกลับ' : 'ย้ายกลับรอตรวจ'} ${v.customer}${a.byName ? ' โดย ' + a.byName : ''}`, id, k: true }); });
   users.forEach(u => { if (u.registeredAt) push(u.id, u.name, { at: u.registeredAt, text: `ลงทะเบียนเข้าใช้งาน${u.inviteCode ? ' ด้วยรหัสเชิญ' : ''}`, k: true }); if (u.approvedAt) push(u.id, u.name, { at: u.approvedAt, text: `${u.status === 'active' ? 'เปิดใช้งาน' : u.status === 'disabled' ? 'ระงับการใช้งาน' : 'ไม่อนุมัติ'}${u.approvedByName ? ' โดย ' + u.approvedByName : ''}`, k: true }); });
   const groups = Object.values(grp).map(g => { g.items.sort((a, b) => b.at - a.at); g.last = g.items[0].at; return g; }).sort((a, b) => b.last - a.last);
   $('#adFoot').textContent = S.backend === 'supabase' ? 'กำหนดสิทธิ์ได้ต่อคนในหน้าผู้ใช้งาน: "ระบบปกติเท่านั้น" หรือ "เข้าหลังบ้านได้" สร้างบัญชี ตั้งรหัสผ่าน และลบบัญชีได้จากหน้านี้ทั้งหมด' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
-  $('#adActivity').innerHTML = groups.length ? groups.slice(0, 12).map(g => `<div class="grp"><div class="who">${esc(g.name || 'ไม่ระบุชื่อ')}<span>${g.items.length} รายการ</span></div>${g.items.slice(0, 6).map(a => `<${a.id ? 'button' : 'div'} class="ln" ${a.id ? `data-visit="${esc(a.id)}"` : ''}><span class="tm">${dt(a.at)}</span><span class="tx${a.k ? ' k' : ''}">${esc(a.text)}</span></${a.id ? 'button' : 'div'}>`).join('')}${g.items.length > 6 ? `<div class="ln"><span class="tm"></span><span class="tx k">และอีก ${g.items.length - 6} รายการ</span></div>` : ''}</div>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
+  $('#adActivity').innerHTML = groups.length ? groups.slice(0, 12).map(g => `<div class="grp"><div class="who">${esc(g.name || 'ไม่ระบุชื่อ')}<span>${g.items.length} รายการ</span></div>${g.items.slice(0, 6).map(a => `<${a.id || a.act ? 'button' : 'div'} class="ln" ${a.id ? `data-visit="${esc(a.id)}"` : a.act ? `data-act="${esc(a.act)}"` : ''}><span class="tm">${dt(a.at)}</span><span class="tx${a.k ? ' k' : ''}">${esc(a.text)}</span></${a.id || a.act ? 'button' : 'div'}>`).join('')}${g.items.length > 6 ? `<div class="ln"><span class="tm"></span><span class="tx k">และอีก ${g.items.length - 6} รายการ</span></div>` : ''}</div>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
 }
 async function decideUser(uid, to, note) {
+  if (!can('admin', 2)) { toast('บัญชีนี้ไม่มีสิทธิ์แก้ไขผู้ใช้'); return; }
   const u = userRows().find(x => x.id === uid); if (!u) return;
   const q = to === 'active' ? { title: `อนุมัติให้ ${u.name} ใช้งาน?`, body: `${[u.code, u.dept].filter(Boolean).join(' · ')} จะเริ่มเช็คอินและขอเบิกได้ทันที`, ok: 'อนุมัติ' }
     : to === 'disabled' ? { title: `ระงับการใช้งานของ ${u.name}?`, body: 'จะเช็คอินและขอเบิกไม่ได้จนกว่าจะเปิดใช้งานอีกครั้ง ข้อมูลเดิมยังอยู่', ok: 'ระงับ', danger: true }
@@ -1762,6 +2097,10 @@ function openUser(uid) {
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
       <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
       <div class="f"><span>สิทธิ์การเข้าใช้</span><div id="usAccess" class="sub" style="margin:4px 0 0">${esc(ACCESS[u.role])}</div></div>
+      <div class="stack" id="permBox" style="gap:6px;border-top:1px solid var(--line);padding-top:8px"><div class="row" style="align-items:center"><b class="grow">สิทธิ์รายส่วน${permIsCustom(u) ? ' <span class="pill ex">กำหนดเอง</span>' : ''}</b>${uid !== S.myId && u.role !== 'owner' && can('admin', 2) ? '<button type="button" class="btn ghost sm" id="usPermReset">ใช้ค่าเริ่มต้นของตำแหน่ง</button>' : ''}</div>
+        <p class="sub" style="margin:0">${u.role === 'owner' ? 'เจ้าของ / CEO มีสิทธิ์ทุกส่วนเสมอ' : uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : can('admin', 2) ? 'เริ่มจากค่าเริ่มต้นของตำแหน่ง แล้วปรับรายคนได้ มีผลทันทีที่บันทึก ทั้งเมนูในแอปและสิทธิ์ที่ฐานข้อมูล' : 'ดูได้อย่างเดียว'}</p>
+        ${PERM_FEATURES.map(([k, l, lv]) => `<label class="f"><span>${l}</span><select data-perm="${k}" ${u.role === 'owner' || uid === S.myId || !can('admin', 2) ? 'disabled' : ''}>${Object.entries(lv).map(([n, t]) => `<option value="${n}" ${+n === permsOf(u)[k] ? 'selected' : ''}>${t}</option>`).join('')}</select></label>`).join('')}
+      </div>
       <p class="sub">${uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : S.backend === 'supabase' ? 'เลือกตำแหน่ง "พนักงานขาย" = เข้าได้เฉพาะระบบปกติ · "ผู้จัดการฝ่ายขาย" หรือ "เจ้าของ / CEO" = เข้าหลังบ้านได้ มีผลทันทีที่บันทึก' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
       <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="usVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (u.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="usPlate" value="${esc(u.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">หมายเหตุภายใน<input type="text" id="usNote" value="${esc(u.note || '')}"></label>
@@ -1774,15 +2113,19 @@ function openUser(uid) {
     </div>
     ${S.backend === 'supabase' && u.email ? `<div class="card stack"><h2>บัญชีเข้าสู่ระบบ</h2><div class="sub">ชื่อผู้ใช้ <b>${esc(showUser(u.email))}</b></div>${uid !== S.myId ? '<button class="btn soft block" type="button" id="usPw">ตั้งรหัสผ่านใหม่ให้ผู้ใช้นี้</button>' : '<button class="btn soft block" type="button" id="usPwMe">เปลี่ยนรหัสผ่านของฉัน</button>'}</div>` : ''}
     ${uid !== S.myId ? `<button class="btn ghost block" id="usDelete" style="color:var(--bad)">${S.backend === 'supabase' ? 'ลบบัญชีผู้ใช้นี้' : 'ลบผู้ใช้งานออกจากระบบ'}</button><p class="sub" style="text-align:center">รายการเข้าพบและการเบิกเดิมยังอยู่เพื่อการตรวจสอบย้อนหลัง</p>` : ''}`);
-  const usRole = $('#usRole'); if (usRole) usRole.addEventListener('change', () => { $('#usAccess').textContent = ACCESS[usRole.value]; });
+  const setPermSelects = role => { const d = ROLE_PERMS[role] || ROLE_PERMS.sales; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => { sel.value = String(d[sel.dataset.perm]); sel.disabled = role === 'owner' || uid === S.myId || !can('admin', 2); }); };
+  const usRole = $('#usRole'); if (usRole) usRole.addEventListener('change', () => { $('#usAccess').textContent = ACCESS[usRole.value]; setPermSelects(usRole.value); });
+  const pr = $('#usPermReset'); if (pr) pr.addEventListener('click', () => setPermSelects($('#usRole').value));
+  if (!can('admin', 2)) { document.querySelectorAll('#fUser input, #fUser select').forEach(el => el.disabled = true); const sb = document.querySelector('#fUser button[type=submit]'); if (sb) sb.hidden = true; document.querySelectorAll('[data-ureg], #usPw, #usDelete').forEach(el => { if (el.id !== 'usPwMe') el.hidden = true; }); }
   const pwBtn = $('#usPw'); if (pwBtn) pwBtn.addEventListener('click', () => openSetPassword(u));
   const pwMe = $('#usPwMe'); if (pwMe) pwMe.addEventListener('click', () => openChangePassword());
   $('#fUser').addEventListener('submit', async e => {
     e.preventDefault();
     const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
     if (!patch.name) { toast('ใส่ชื่อ'); return; }
-    const accChanged = patch.role !== u.role;
-    if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}${accChanged ? ' · ' + ACCESS[patch.role] : ''}`, ok: 'บันทึก' }))) return;
+    if (patch.role !== 'owner' && uid !== S.myId && can('admin', 2)) { const pm = {}; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => pm[sel.dataset.perm] = +sel.value); patch.perms = pm; }
+    const accChanged = patch.role !== u.role || (patch.perms && JSON.stringify(permsOf({ role: patch.role, perms: patch.perms })) !== JSON.stringify(permsOf(u)));
+    if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}${accChanged ? '\n' + permSummary({ role: patch.role, perms: patch.perms }) : ''}`, ok: 'บันทึก' }))) return;
     try { await store.setStaff(uid, patch); toast('บันทึกแล้ว'); closeSheet(); } catch { toast('บันทึกไม่ได้'); }
   });
   const del = $('#usDelete'); if (del) del.addEventListener('click', async () => {
@@ -1930,13 +2273,13 @@ function claimPageHtml(rows, ym, key) {
     <div class="pf"><span>${docNo} · พิมพ์จาก Flow CRM ภาคสนาม ${dt(Date.now())}</span><span>อ้างอิงเลขเช็คอิน (V-…) ตรวจย้อนหลังได้ในระบบ</span></div>
   </div>`;
 }
-function openPrintDoc() {
-  const rows = claimsRows(), ym = $('#clMonth').value;
-  if (!rows.length) { toast('ไม่มีรายการขอเบิกในเดือนนี้'); return; }
+function openPrintDoc(onlyId) {
+  const all = claimsRows(), ym = $('#clMonth').value, rows = onlyId ? all.filter(v => v.id === onlyId) : all;
+  if (!rows.length) { toast(onlyId ? 'ไม่พบรายการนี้ในเดือนที่เลือก' : 'ไม่มีรายการขอเบิกในเดือนนี้'); return; }
   const groups = {}; rows.forEach(v => { const k = staffKey(v); (groups[k] = groups[k] || []).push(v); });
   const keys = Object.keys(groups).sort((a, b) => (groups[a][0].staffName || '').localeCompare(groups[b][0].staffName || '', 'th'));
   $('#pdPages').innerHTML = keys.map(k => claimPageHtml(groups[k], ym, k)).join('');
-  $('#pdTitle').textContent = keys.length === 1 ? claimDocNo(keys[0], ym, S.staff[keys[0]] || { code: groups[keys[0]][0].staffCode }) + ' · ' + thaiMonth(ym) : `${keys.length} ใบเบิก · ${thaiMonth(ym)}`;
+  $('#pdTitle').textContent = (keys.length === 1 ? claimDocNo(keys[0], ym, S.staff[keys[0]] || { code: groups[keys[0]][0].staffCode }) + ' · ' + thaiMonth(ym) : `${keys.length} ใบเบิก · ${thaiMonth(ym)}`) + (onlyId ? ' · เฉพาะ ' + ref(rows[0]) : '');
   $('#pdoc').hidden = false; document.body.style.overflow = 'hidden'; fitPrintDoc();
 }
 function fitPrintDoc() { if ($('#pdoc').hidden) return; const w = $('#pdoc').clientWidth - 16; $('#pdPages').style.zoom = Math.min(1, w / 800); }
