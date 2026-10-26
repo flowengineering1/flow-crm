@@ -337,6 +337,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 .pill.neu{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
 .lbl{font-size:14px;font-weight:500}
 .hint{font-size:12px;color:var(--muted);font-weight:400}
+#adPositions .item{background:var(--bg)}
 .vlog ul{margin:0;padding-left:20px;font-size:14px;line-height:1.55}
 </style>
 
@@ -549,6 +550,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <div class="stack" style="gap:4px"><h1>หลังบ้าน</h1><p class="sub">สำหรับเจ้าของ CEO และผู้จัดการ ดูภาพรวมการทำงาน อนุมัติ และจัดการผู้ใช้งาน</p></div>
   <div class="tiles" id="adTiles"></div>
   <div class="card stack" id="adDefaults"></div>
+  <div class="card stack" id="adPositions"></div>
   <div class="stack" id="adPendingWrap" hidden><h2>คำขอลงทะเบียนใหม่ <span class="pill pending" id="adPendN">0</span></h2><div class="list" id="adPending"></div></div>
   <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite" data-need="admin:2">+ เพิ่มพนักงาน</button></div>
   <div class="chips" id="adFilter"></div>
@@ -632,8 +634,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 const APP_VERSIONS = [
+  ['1.3', '26 ต.ค. 2569', ['หลังบ้านมีหัวข้อ "ตำแหน่ง" เพิ่ม แก้ชื่อ และลบตำแหน่งได้เอง แต่ละตำแหน่งกำหนดระดับการเข้าใช้และสิทธิ์ตั้งต้นของ 6 ส่วน', 'หน้าผู้ใช้งานและหน้าเพิ่มพนักงานเลือกจากรายการตำแหน่ง ระบบเติมสิทธิ์ตามตำแหน่งให้ แล้วปรับรายคนต่อได้', 'แก้สิทธิ์ของตำแหน่งแล้วเลือกใช้กับทุกคนในตำแหน่งนั้นได้ในครั้งเดียว · ตำแหน่งพื้นฐาน 3 ตำแหน่งเปลี่ยนชื่อได้แต่ลบไม่ได้', 'ฐานข้อมูล: เพิ่มคอลัมน์ position ในตาราง profiles ต้องรัน supabase/schema.sql อีกครั้ง']],
   ['1.2', '26 ต.ค. 2569', ['แก้ปัญหาผู้จัดการ/Admin ลบ (ซ่อน) แก้ไขค่าเดินทาง หรือแก้บันทึกงานของพนักงานคนอื่นไม่ได้ (ฐานข้อมูลปฏิเสธ) ตอนนี้ทำได้ตามสิทธิ์ "ทีมขาย: ดูและแก้ไข"', 'ข้อความแจ้งเมื่อลบไม่ได้บอกสาเหตุให้ตรงขึ้น']],
   ['1.1', '25 ต.ค. 2569', ['เพิ่มเมนู "บันทึกงาน" บันทึกการโทร LINE อีเมล และประชุมกับลูกค้า พร้อมผลการติดต่อ มูลค่าโอกาสขาย และนัดติดตาม', 'หน้าแรกแสดงงานขายวันนี้ รายการที่ต้องติดตาม และไทม์ไลน์ของวันนี้', 'การเช็คอินเข้าพบแสดงในไทม์ไลน์อัตโนมัติ การเบิกค่าเดินทางทำงานเหมือนเดิม', 'หน้าลูกค้าแสดงประวัติการติดต่อ ส่งออกบันทึกงานเป็น CSV ได้', 'พนักงานแก้บันทึกของตนเองได้ภายใน 7 วัน ผู้ดูแลทีมแก้และลบได้', 'แสดงเลขเวอร์ชันที่มุมบน และประวัติเวอร์ชันในหลังบ้าน', 'ฐานข้อมูล: เพิ่มตาราง activities ต้องรัน supabase/schema.sql อีกครั้ง']],
   ['1.0', '25 ต.ค. 2569', ['จัดการบัญชีผู้ใช้ในแอป (เพิ่มพนักงาน ตั้งรหัสผ่าน ลบ) ไม่ต้องเข้า Supabase และกำหนดระดับเข้าถึง ระบบปกติ/หลังบ้าน', 'แก้อาการค้าง "กำลังเชื่อมต่อฐานข้อมูล" ตอนเปิดแอป', 'ใบเบิกค่าเดินทาง A4 พิมพ์/บันทึก PDF มีเลขที่เอกสาร RE-ปีเดือน-รหัสพนักงาน โลโก้บริษัท ตารางไม่ทับเส้น ปุ่มปิด ✕ แดง', '"บันทึกไว้ก่อน" เก็บค่าเบิกทุกช่อง แล้วเติมให้ตอนขอเบิกย้อนหลัง', 'หน้าลงทะเบียนแสดงผู้ที่ล็อกอินอยู่และปุ่มออกจากระบบ', 'กิจกรรมล่าสุดในหลังบ้านแบ่งตามพนักงานเป็นบรรทัดเล็ก', 'เพิ่มรถยนต์ไฟฟ้าส่วนบุคคล (EV) 4 บ./กม.', 'ล็อกเอกสารที่อนุมัติแล้ว ผู้ขอแก้ไขไม่ได้ ต้องตีกลับ หรือผู้จัดการแก้', 'ข้อมูลผู้ใช้เพิ่มชื่อเล่น ชื่อไทย ชื่ออังกฤษ รถประจำ และทะเบียน', 'หลังบ้านแก้ค่าเริ่มต้นค่าใช้จ่ายตามระเบียบฯ 01/2569 (อัตราต่อกม. ทางด่วน รถเริ่มต้น)', 'คำนวณระยะทางถนนอัตโนมัติจากจุดเริ่มต้นถึงตำแหน่งเช็คอิน (สำรองเส้นตรง × 1.3) แก้ตัวเลขเองได้ เปิด/ปิดในตั้งค่า', 'ถอด Plus Code แบบสั้นโดยอิงตำบล/อำเภอ/จังหวัดที่ติดมา และตั้งจุดเริ่มต้นค่าเริ่มต้นเป็นสำนักงานขายมาบตาพุด', 'ลบลูกค้าได้เฉพาะผู้มีสิทธิ์ ประวัติการเข้าพบยังอยู่', 'สิทธิ์รายส่วน 6 ส่วนต่อผู้ใช้ (ไม่เห็น/ดู/แก้/ลบ) บังคับทั้งในแอปและฐานข้อมูล', 'ลบรายการเบิกแบบซ่อนไว้ (อนุมัติแล้วลบได้เฉพาะผู้มีอำนาจ) กู้คืนได้ในหลังบ้าน', 'ไอคอนพิมพ์ท้ายบรรทัดในสรุปการเบิก พิมพ์รายการเดียว', 'ตั้งค่ารายงานการขาย: เห็นเฉพาะของตัวเอง หรือเห็นด้วยกันหมด']],
@@ -824,7 +827,18 @@ async function connect() {
 }
 function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
 function isActive() { return S.mode !== 'shared' || S.admin || (S.meDoc && S.meDoc.status === 'active'); }
-function roleLabel() { return ROLES[S.me.role] || (S.admin ? ROLES.manager : ROLES.sales); }
+function roleLabel() { return posName({ role: S.me.role || (S.admin ? 'manager' : 'sales'), position: S.me.position }); }
+// ตำแหน่ง = ชื่อที่แสดง + ระดับการเข้าใช้ (role) + สิทธิ์ตั้งต้น · แก้/เพิ่ม/ลบได้ในหลังบ้าน เก็บใน settings.positions
+// ตำแหน่งพื้นฐาน owner / manager / sales เปลี่ยนชื่อและสิทธิ์ตั้งต้นได้ แต่ลบไม่ได้
+const POS_BUILTIN = ['owner', 'manager', 'sales'];
+function positions() {
+  const saved = Array.isArray(S.settings.positions) ? S.settings.positions.filter(x => x && x.id) : [];
+  const out = POS_BUILTIN.map(k => { const sv = saved.find(x => x.id === k) || {}; return { id: k, name: sv.name || ROLES[k], role: k, perms: k === 'owner' ? { ...ROLE_PERMS.owner } : { ...ROLE_PERMS[k], ...(sv.perms || {}) }, builtin: true }; });
+  saved.filter(x => !POS_BUILTIN.includes(x.id)).forEach(x => { const role = x.role === 'manager' ? 'manager' : 'sales'; out.push({ id: x.id, name: x.name || 'ตำแหน่ง', role, perms: { ...ROLE_PERMS[role], ...(x.perms || {}) } }); });
+  return out;
+}
+function posOf(u) { const ps = positions(), role = (u && u.role) || 'sales'; return (u && u.position && ps.find(x => x.id === u.position && x.role === role)) || ps.find(x => x.id === role) || ps[2]; }
+const posName = u => posOf(u).name;
 let cleaning = false;
 async function cleanupInvites() {
   if (cleaning || !S.admin || !S.db) return;
@@ -1745,9 +1759,10 @@ $('#custSearch').addEventListener('input', renderCustomers);
 $('#tmMonth').addEventListener('change', renderTeam); $('#rpMonth').addEventListener('change', renderReport); $('#rpWho').addEventListener('change', renderReport); $('#clMonth').addEventListener('change', renderClaims); $('#clWho').addEventListener('change', renderClaims);
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-act],[data-editact],[data-delact],[data-newact],[data-fu],[data-printrow],[data-delclaim],[data-restore],[data-purge],[data-delcust],[data-user],[data-ureg],[data-rminvite],[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
+  const t = e.target.closest('[data-posedit],[data-act],[data-editact],[data-delact],[data-newact],[data-fu],[data-printrow],[data-delclaim],[data-restore],[data-purge],[data-delcust],[data-user],[data-ureg],[data-rminvite],[data-claim],[data-drafts],[data-openfile],[data-savefile],[data-staff],[data-reportfor],[data-claimsfor],[data-open],[data-visit],[data-cust],[data-stage],[data-ap],[data-approve],[data-reject],[data-unset],[data-delvisit],[data-checkinat],[data-editcust],[data-zoom]');
   if (!t) return; const d = t.dataset;
-  if (d.act) openAct(d.act);
+  if (d.posedit) openPosition(d.posedit);
+  else if (d.act) openAct(d.act);
   else if (d.editact) openActForm({ act: S.acts.find(x => x.id === d.editact) });
   else if (d.delact) confirmBox({ title: 'ลบบันทึกนี้?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteActivity(S.acts.find(x => x.id === d.delact)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้ เฉพาะผู้ดูแลทีม')); });
   else if (d.newact) openActForm({ type: d.newact, cust: d.custid ? S.customers.find(x => x.id === d.custid) : null });
@@ -1806,7 +1821,7 @@ $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
 // ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
 const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
-const PROFILE_COLS = { perms: 'perms', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const PROFILE_COLS = { perms: 'perms', position: 'position', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
 const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k === 'perms' ? {} : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
 function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
@@ -1829,7 +1844,9 @@ const sb = {
   async loadFileData(v, f) { const { data, error } = await S.sb.storage.from('attachments').download(filePath(v, f)); if (error || !data) return null; return blobToDataUrl(data); },
   async saveStaff(p) { lsSet(LS_ME, S.me); if (!S.myId) return; if (!S.meDoc) return this.registerStaff({ ...p, registeredAt: Date.now() }); const { error } = await S.sb.from('profiles').update(profileToRow(p)).eq('id', S.myId); if (error) sbFail(error); sbRefresh(); },
   async registerStaff(doc) { const row = profileToRow(doc); delete row.role; delete row.status; const { error } = await S.sb.from('profiles').insert({ id: S.myId, email: S.email || null, ...row }); if (error) sbFail(error); await sbLoadAll(); },
-  async setStaff(uid, patch) { const { error } = await S.sb.from('profiles').update(profileToRow(patch)).eq('id', uid); if (error) sbFail(error); sbRefresh(); },
+  async setStaff(uid, patch) { let { error } = await S.sb.from('profiles').update(profileToRow(patch)).eq('id', uid);
+    if (error && patch.position !== undefined && /position/.test(error.message || '')) { const { position, ...rest } = patch; S.posColMissing = true; ({ error } = await S.sb.from('profiles').update(profileToRow(rest)).eq('id', uid)); if (!error) toast('บันทึกแล้ว แต่ยังเก็บตำแหน่งไม่ได้ ต้องรัน supabase/schema.sql ล่าสุดก่อน'); }
+    if (error) sbFail(error); sbRefresh(); },
   async deleteStaff(uid) { const { error } = await S.sb.rpc('admin_delete_user', { p_user: uid }); if (error) { if (!sbNoFn(error)) sbFail(error); const r = await S.sb.from('profiles').delete().eq('id', uid); if (r.error) sbFail(r.error); } sbRefresh(); },
   async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales', p_nick: u.nick || '', p_name_en: u.nameEn || '', p_vehicle: u.vehicle || 'car', p_plate: u.plate || '' }); if (error) sbFail(error); sbRefresh(); return data; },
   async adminSetPassword(uid, password) { const { error } = await S.sb.rpc('admin_set_password', { p_user: uid, p_password: password }); if (error) sbFail(error); },
@@ -2057,13 +2074,17 @@ function renderAdmin() {
     <div class="tiles"><div class="tile"><small>รถยนต์ส่วนตัว</small><b>${fmtB(st.rateCar)} <small>บ./กม.</small></b></div><div class="tile"><small>รถยนต์ไฟฟ้า EV</small><b>${fmtB(st.rateEv ?? 4)} <small>บ./กม.</small></b></div><div class="tile"><small>มอเตอร์ไซค์</small><b>${fmtB(st.rateMoto)} <small>บ./กม.</small></b></div>
     <div class="tile"><small>ทางด่วน/จอดรถ เริ่มต้น</small><b>${fmtB(st.defaultToll || 0)} <small>บาท</small></b></div><div class="tile"><small>รถเริ่มต้นสำหรับคนใหม่</small><b style="font-size:16px">${VEHICLES[st.defaultVehicle || 'car']}</b></div><div class="tile"><small>เติมระยะทางจากครั้งก่อน</small><b style="font-size:16px">${st.prefillKm === false ? 'ปิด' : 'เปิด'}</b></div></div>`;
   $('#adEditDefaults').addEventListener('click', openSettings);
+  const pcount = id => users.filter(u => posOf(u).id === id).length;
+  $('#adPositions').innerHTML = `<div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ตำแหน่ง</h2>${can('admin', 2) ? '<button class="btn soft sm" data-posedit="__new">+ เพิ่มตำแหน่ง</button>' : ''}</div>
+    <div class="sub">กำหนดชื่อตำแหน่ง ระดับการเข้าใช้ และสิทธิ์ตั้งต้น แล้วเลือกให้ผู้ใช้แต่ละคนในหน้าผู้ใช้งาน</div>${S.posColMissing ? '<div class="notice"><b>ยังเก็บตำแหน่งของผู้ใช้ไม่ได้</b> รัน supabase/schema.sql ล่าสุดใน Supabase SQL Editor อีกครั้ง</div>' : ''}
+    <div class="list">${positions().map(x => `<button class="item" data-posedit="${esc(x.id)}"><div class="main"><div class="t">${esc(x.name)}${x.builtin ? ' <span class="pill ex">พื้นฐาน</span>' : ''}</div><div class="m">${esc(ACCESS[x.role])}</div><div class="m">${esc(permSummary({ role: x.role, perms: x.perms }))}</div></div><span class="sub" style="white-space:nowrap">${pcount(x.id)} คน</span></button>`).join('')}</div>`;
   $('#adPending').innerHTML = pend.map(u => `<div class="item" style="cursor:default"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}</div><div class="m">${esc([u.code, u.dept, u.phone].filter(Boolean).join(' · ') || '-')}</div><div class="m">ส่งเมื่อ ${u.registeredAt ? dt(u.registeredAt) : '-'}</div></div>
     <div class="stack" style="gap:6px"><button class="btn primary sm" data-ureg="${esc(u.id)}" data-to="active">อนุมัติ</button><button class="btn ghost sm" data-ureg="${esc(u.id)}" data-to="rejected">ไม่อนุมัติ</button></div></div>`).join('');
   const f = S.userFilter || 'all', counts = { all: users.length, active: active.length, disabled: users.filter(u => u.status === 'disabled').length, manager: users.filter(u => u.role !== 'sales').length };
   $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'เข้าหลังบ้านได้']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
   const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
   $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
-    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${permIsCustom(u) ? ' <span class="pill ex" title="สิทธิ์กำหนดเอง">สิทธิ์เฉพาะ</span>' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, ROLES[u.role]].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${permIsCustom(u) ? ' <span class="pill ex" title="สิทธิ์กำหนดเอง">สิทธิ์เฉพาะ</span>' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, posName(u)].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
     : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
   const tr = S.trash || [];
   $('#adTrashWrap').hidden = !tr.length || !can('team', 2); $('#adTrashN').textContent = tr.length;
@@ -2083,6 +2104,46 @@ function renderAdmin() {
   $('#adFoot').textContent = S.backend === 'supabase' ? 'กำหนดสิทธิ์ได้ต่อคนในหน้าผู้ใช้งาน: "ระบบปกติเท่านั้น" หรือ "เข้าหลังบ้านได้" สร้างบัญชี ตั้งรหัสผ่าน และลบบัญชีได้จากหน้านี้ทั้งหมด' : 'สิทธิ์ "ผู้จัดการ / เจ้าของ" มาจากการแชร์ลิงก์แบบแก้ไขได้ (Editor) ส่วนพนักงานขายแชร์แบบ Contributor ระบบนี้จัดการเฉพาะข้อมูลและสถานะการใช้งาน';
   $('#adActivity').innerHTML = groups.length ? groups.slice(0, 12).map(g => `<div class="grp"><div class="who">${esc(g.name || 'ไม่ระบุชื่อ')}<span>${g.items.length} รายการ</span></div>${g.items.slice(0, 6).map(a => `<${a.id || a.act ? 'button' : 'div'} class="ln" ${a.id ? `data-visit="${esc(a.id)}"` : a.act ? `data-act="${esc(a.act)}"` : ''}><span class="tm">${dt(a.at)}</span><span class="tx${a.k ? ' k' : ''}">${esc(a.text)}</span></${a.id || a.act ? 'button' : 'div'}>`).join('')}${g.items.length > 6 ? `<div class="ln"><span class="tm"></span><span class="tx k">และอีก ${g.items.length - 6} รายการ</span></div>` : ''}</div>`).join('') : '<div class="empty">ยังไม่มีกิจกรรม</div>';
 }
+function openPosition(id) {
+  const isNew = id === '__new', p = isNew ? { id: '', name: '', role: 'sales', perms: { ...ROLE_PERMS.sales } } : positions().find(x => x.id === id); if (!p) return;
+  const edit = can('admin', 2) && S.canWrite, lock = p.role === 'owner', members = isNew ? [] : userRows().filter(u => posOf(u).id === p.id);
+  const roleFixed = !edit || p.builtin || members.length > 0;
+  openSheet(`${bar(isNew ? 'เพิ่มตำแหน่ง' : esc(p.name))}
+    <form id="fPos" class="stack" novalidate>
+      <label class="f">ชื่อตำแหน่ง<input type="text" id="poName" value="${esc(p.name)}" placeholder="เช่น ช่างเทคนิค, ธุรการขาย" required ${edit ? '' : 'disabled'}></label>
+      <label class="f">ระดับการเข้าใช้${!p.builtin && members.length ? '<span class="hint">เปลี่ยนได้เมื่อไม่มีผู้ใช้อยู่ในตำแหน่งนี้</span>' : ''}<select id="poRole" ${roleFixed ? 'disabled' : ''}>${(lock ? ['owner'] : ['sales', 'manager']).map(k => `<option value="${k}" ${k === p.role ? 'selected' : ''}>${ACCESS[k]}</option>`).join('')}</select></label>
+      <div class="card stack"><b>สิทธิ์ตั้งต้นของตำแหน่งนี้</b><p class="sub" style="margin:0">${lock ? 'เจ้าของ / CEO มีสิทธิ์ทุกส่วนเสมอ' : 'ใช้เมื่อเลือกตำแหน่งนี้ให้ผู้ใช้ แล้วปรับรายคนต่อได้ในหน้าผู้ใช้งาน'}</p>
+        ${PERM_FEATURES.map(([k, l, lv]) => `<label class="f"><span>${l}</span><select data-pperm="${k}" ${edit && !lock ? '' : 'disabled'}>${Object.entries(lv).map(([n, t]) => `<option value="${n}" ${+n === (p.perms[k] ?? 0) ? 'selected' : ''}>${t}</option>`).join('')}</select></label>`).join('')}</div>
+      ${members.length ? `<p class="sub">ใช้อยู่ ${members.length} คน: ${esc(members.map(u => u.name || 'ไม่ระบุชื่อ').join(', '))}</p>` : ''}
+      ${edit ? `<button class="btn primary block" type="submit">${isNew ? 'เพิ่มตำแหน่ง' : 'บันทึกตำแหน่ง'}</button>` : ''}
+      ${edit && !isNew && !p.builtin ? '<button class="btn ghost block" type="button" id="poDel" style="color:var(--bad)">ลบตำแหน่งนี้</button>' : ''}
+      ${p.builtin ? '<p class="sub">ตำแหน่งพื้นฐาน เปลี่ยนชื่อและสิทธิ์ตั้งต้นได้ แต่ลบไม่ได้</p>' : ''}
+    </form>`);
+  if (!edit) return;
+  const save = list => store.saveSettings({ ...S.settings, positions: list.map(({ builtin, ...x }) => x) });
+  $('#fPos').addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = $('#poName').value.trim(); if (!name) { $('#poName').focus(); toast('ใส่ชื่อตำแหน่ง'); return; }
+    const ps = positions(); if (ps.some(x => x.id !== p.id && x.name.trim() === name)) { toast('มีตำแหน่งชื่อนี้แล้ว'); return; }
+    const perms = {}; document.querySelectorAll('#fPos select[data-pperm]').forEach(sel => perms[sel.dataset.pperm] = +sel.value);
+    const np = { id: p.id || uid('p'), name, role: lock ? 'owner' : $('#poRole').value, perms: lock ? { ...ROLE_PERMS.owner } : perms };
+    const apply = members.filter(u => u.id !== S.myId && u.role !== 'owner');
+    const permsChanged = !isNew && JSON.stringify(np.perms) !== JSON.stringify(p.perms);
+    try {
+      await save(isNew ? [...ps, np] : ps.map(x => x.id === p.id ? np : x));
+      if (permsChanged && apply.length && await confirmBox({ title: `ใช้สิทธิ์ใหม่กับผู้ใช้ ${apply.length} คนในตำแหน่งนี้?`, body: `${apply.map(u => u.name).join(', ')}\nถ้าไม่ใช้ ทุกคนจะคงสิทธิ์เดิม สิทธิ์ใหม่จะใช้กับคนที่เลือกตำแหน่งนี้ภายหลัง`, ok: 'ใช้กับทุกคน' })) {
+        let fail = 0; for (const u of apply) { try { await store.setStaff(u.id, { role: np.role, position: np.id, perms: np.perms, updatedAt: Date.now() }); } catch { fail++; } }
+        if (fail) toast(`อัปเดตไม่สำเร็จ ${fail} คน`);
+      }
+      toast(isNew ? `เพิ่มตำแหน่ง ${name} แล้ว` : 'บันทึกตำแหน่งแล้ว'); closeSheet(); renderAdmin();
+    } catch { toast('บันทึกไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์แก้หลังบ้าน'); }
+  });
+  const del = $('#poDel'); if (del) del.addEventListener('click', async () => {
+    if (members.length) { toast(`ย้ายผู้ใช้ ${members.length} คนไปตำแหน่งอื่นก่อน จึงลบตำแหน่งนี้ได้`); return; }
+    if (!(await confirmBox({ title: `ลบตำแหน่ง ${p.name}?`, body: 'ไม่มีผู้ใช้อยู่ในตำแหน่งนี้ ลบแล้วเลือกตำแหน่งนี้ไม่ได้อีก', ok: 'ลบตำแหน่ง', danger: true }))) return;
+    try { await save(positions().filter(x => x.id !== p.id)); toast('ลบตำแหน่งแล้ว'); closeSheet(); renderAdmin(); } catch { toast('ลบไม่ได้'); }
+  });
+}
 async function decideUser(uid, to, note) {
   if (!can('admin', 2)) { toast('บัญชีนี้ไม่มีสิทธิ์แก้ไขผู้ใช้'); return; }
   const u = userRows().find(x => x.id === uid); if (!u) return;
@@ -2097,20 +2158,20 @@ function openUser(uid) {
   const u = userRows().find(x => x.id === uid); if (!u) return;
   const vs = S.visits.filter(v => v.createdBy === uid), ym = ymOf(Date.now()), m = vs.filter(v => ymOf(v.createdAt) === ym);
   openSheet(`${bar(esc(u.name || 'ผู้ใช้งาน'))}
-    <p class="sub">${esc(ROLES[u.role])} · <span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span>${u.registeredAt ? ' · ลงทะเบียน ' + dt(u.registeredAt) : ''}</p>
+    <p class="sub">${esc(posName(u))} · <span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span>${u.registeredAt ? ' · ลงทะเบียน ' + dt(u.registeredAt) : ''}</p>
     <div class="tiles"><div class="tile"><small>เข้าพบเดือนนี้</small><b>${m.length}</b></div><div class="tile"><small>รอตรวจ</small><b>${vs.filter(v => statusOf(v) === 'pending').length}</b></div><div class="tile"><small>เบิกเดือนนี้</small><b class="money">${fmtB(m.filter(v => statusOf(v) !== 'rejected').reduce((s, v) => s + (v.total || 0), 0))}</b></div></div>
     <form id="fUser" class="card stack" novalidate>
       <h2>ข้อมูลผู้ใช้งาน</h2>
       <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="usName" value="${esc(u.name || '')}" required></label>
         <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="usNick" value="${esc(u.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="usNameEn" value="${esc(u.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
-      <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(([k, l]) => `<option value="${k}" ${k === u.role ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
+      <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${positions().filter(x => x.role !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(x => `<option value="${esc(x.id)}" ${x.id === posOf(u).id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label></div>
       <div class="f"><span>สิทธิ์การเข้าใช้</span><div id="usAccess" class="sub" style="margin:4px 0 0">${esc(ACCESS[u.role])}</div></div>
       <div class="stack" id="permBox" style="gap:6px;border-top:1px solid var(--line);padding-top:8px"><div class="row" style="align-items:center"><b class="grow">สิทธิ์รายส่วน${permIsCustom(u) ? ' <span class="pill ex">กำหนดเอง</span>' : ''}</b>${uid !== S.myId && u.role !== 'owner' && can('admin', 2) ? '<button type="button" class="btn ghost sm" id="usPermReset">ใช้ค่าเริ่มต้นของตำแหน่ง</button>' : ''}</div>
         <p class="sub" style="margin:0">${u.role === 'owner' ? 'เจ้าของ / CEO มีสิทธิ์ทุกส่วนเสมอ' : uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : can('admin', 2) ? 'เริ่มจากค่าเริ่มต้นของตำแหน่ง แล้วปรับรายคนได้ มีผลทันทีที่บันทึก ทั้งเมนูในแอปและสิทธิ์ที่ฐานข้อมูล' : 'ดูได้อย่างเดียว'}</p>
         ${PERM_FEATURES.map(([k, l, lv]) => `<label class="f"><span>${l}</span><select data-perm="${k}" ${u.role === 'owner' || uid === S.myId || !can('admin', 2) ? 'disabled' : ''}>${Object.entries(lv).map(([n, t]) => `<option value="${n}" ${+n === permsOf(u)[k] ? 'selected' : ''}>${t}</option>`).join('')}</select></label>`).join('')}
       </div>
-      <p class="sub">${uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : S.backend === 'supabase' ? 'เลือกตำแหน่ง "พนักงานขาย" = เข้าได้เฉพาะระบบปกติ · "ผู้จัดการฝ่ายขาย" หรือ "เจ้าของ / CEO" = เข้าหลังบ้านได้ มีผลทันทีที่บันทึก' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
+      <p class="sub">${uid === S.myId ? 'เปลี่ยนสิทธิ์ของตัวเองไม่ได้ ให้ผู้ดูแลอีกคนเป็นผู้เปลี่ยน' : S.backend === 'supabase' ? 'ระดับการเข้าใช้และสิทธิ์ตั้งต้นมาจากตำแหน่งที่เลือก จัดการรายการตำแหน่งได้ที่หลังบ้าน → ตำแหน่ง มีผลทันทีที่บันทึก' : 'ตำแหน่งเป็นป้ายแสดงผลและใช้ในรายงาน สิทธิ์ดูทั้งทีม/อนุมัติ มาจากการแชร์ลิงก์แบบแก้ไขได้ให้คนนั้น'}</p>
       <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="usVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (u.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="usPlate" value="${esc(u.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">หมายเหตุภายใน<input type="text" id="usNote" value="${esc(u.note || '')}"></label>
       <button class="btn primary block" type="submit">บันทึกข้อมูล</button>
@@ -2122,19 +2183,20 @@ function openUser(uid) {
     </div>
     ${S.backend === 'supabase' && u.email ? `<div class="card stack"><h2>บัญชีเข้าสู่ระบบ</h2><div class="sub">ชื่อผู้ใช้ <b>${esc(showUser(u.email))}</b></div>${uid !== S.myId ? '<button class="btn soft block" type="button" id="usPw">ตั้งรหัสผ่านใหม่ให้ผู้ใช้นี้</button>' : '<button class="btn soft block" type="button" id="usPwMe">เปลี่ยนรหัสผ่านของฉัน</button>'}</div>` : ''}
     ${uid !== S.myId ? `<button class="btn ghost block" id="usDelete" style="color:var(--bad)">${S.backend === 'supabase' ? 'ลบบัญชีผู้ใช้นี้' : 'ลบผู้ใช้งานออกจากระบบ'}</button><p class="sub" style="text-align:center">รายการเข้าพบและการเบิกเดิมยังอยู่เพื่อการตรวจสอบย้อนหลัง</p>` : ''}`);
-  const setPermSelects = role => { const d = ROLE_PERMS[role] || ROLE_PERMS.sales; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => { sel.value = String(d[sel.dataset.perm]); sel.disabled = role === 'owner' || uid === S.myId || !can('admin', 2); }); };
-  const usRole = $('#usRole'); if (usRole) usRole.addEventListener('change', () => { $('#usAccess').textContent = ACCESS[usRole.value]; setPermSelects(usRole.value); });
-  const pr = $('#usPermReset'); if (pr) pr.addEventListener('click', () => setPermSelects($('#usRole').value));
+  const curPos = () => positions().find(x => x.id === $('#usRole').value) || posOf(u);
+  const setPermSelects = ps => { const d = ps.perms || ROLE_PERMS.sales; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => { sel.value = String(d[sel.dataset.perm] ?? 0); sel.disabled = ps.role === 'owner' || uid === S.myId || !can('admin', 2); }); };
+  const usRole = $('#usRole'); if (usRole) usRole.addEventListener('change', () => { const ps = curPos(); $('#usAccess').textContent = ACCESS[ps.role]; setPermSelects(ps); });
+  const pr = $('#usPermReset'); if (pr) pr.addEventListener('click', () => setPermSelects(curPos()));
   if (!can('admin', 2)) { document.querySelectorAll('#fUser input, #fUser select').forEach(el => el.disabled = true); const sb = document.querySelector('#fUser button[type=submit]'); if (sb) sb.hidden = true; document.querySelectorAll('[data-ureg], #usPw, #usDelete').forEach(el => { if (el.id !== 'usPwMe') el.hidden = true; }); }
   const pwBtn = $('#usPw'); if (pwBtn) pwBtn.addEventListener('click', () => openSetPassword(u));
   const pwMe = $('#usPwMe'); if (pwMe) pwMe.addEventListener('click', () => openChangePassword());
   $('#fUser').addEventListener('submit', async e => {
     e.preventDefault();
-    const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: $('#usRole').value, note: $('#usNote').value.trim(), updatedAt: Date.now() };
+    const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: curPos().role, position: curPos().id, note: $('#usNote').value.trim(), updatedAt: Date.now() };
     if (!patch.name) { toast('ใส่ชื่อ'); return; }
     if (patch.role !== 'owner' && uid !== S.myId && can('admin', 2)) { const pm = {}; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => pm[sel.dataset.perm] = +sel.value); patch.perms = pm; }
-    const accChanged = patch.role !== u.role || (patch.perms && JSON.stringify(permsOf({ role: patch.role, perms: patch.perms })) !== JSON.stringify(permsOf(u)));
-    if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${ROLES[patch.role]}${accChanged ? '\n' + permSummary({ role: patch.role, perms: patch.perms }) : ''}`, ok: 'บันทึก' }))) return;
+    const accChanged = patch.role !== u.role || patch.position !== posOf(u).id || (patch.perms && JSON.stringify(permsOf({ role: patch.role, perms: patch.perms })) !== JSON.stringify(permsOf(u)));
+    if (!(await confirmBox({ title: accChanged ? 'เปลี่ยนสิทธิ์การเข้าใช้?' : 'บันทึกข้อมูลผู้ใช้งาน?', body: `${patch.name} · ${curPos().name}${accChanged ? '\n' + permSummary({ role: patch.role, perms: patch.perms }) : ''}`, ok: 'บันทึก' }))) return;
     try { await store.setStaff(uid, patch); toast('บันทึกแล้ว'); closeSheet(); } catch { toast('บันทึกไม่ได้'); }
   });
   const del = $('#usDelete'); if (del) del.addEventListener('click', async () => {
@@ -2179,20 +2241,20 @@ function openAddUser() {
       <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="auVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === ({}.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="auPlate" value="${esc({}.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">ชื่อผู้ใช้สำหรับเข้าสู่ระบบ<span class="hint">ภาษาอังกฤษ/ตัวเลข ไม่มีช่องว่าง เช่น somchai</span><input type="text" id="auUser" required autocomplete="off" autocapitalize="off" spellcheck="false"></label>
       <label class="f">รหัสผ่านตั้งต้น<span class="hint">อย่างน้อย 6 ตัว พนักงานเปลี่ยนเองได้ภายหลัง</span><div class="row"><input type="text" id="auPw" class="grow" autocomplete="off" autocapitalize="off" spellcheck="false" value="${genPassword()}"><button class="btn soft sm" type="button" id="auGen">สุ่มใหม่</button></div></label>
-      <label class="f">สิทธิ์การเข้าใช้<select id="auRole">${Object.entries(ROLES).filter(([k]) => k !== 'owner' || S.me.role === 'owner').map(([k, l]) => `<option value="${k}">${l} · ${ACCESS[k]}</option>`).join('')}</select></label>
+      <label class="f">ตำแหน่ง<span class="hint">ระดับการเข้าใช้และสิทธิ์ตั้งต้นตามตำแหน่ง ปรับรายคนได้ภายหลัง</span><select id="auRole">${positions().filter(x => x.role !== 'owner' || S.me.role === 'owner').map(x => `<option value="${esc(x.id)}">${esc(x.name)} · ${ACCESS[x.role]}</option>`).join('')}</select></label>
       <button class="btn primary block" type="submit">สร้างบัญชี</button>
     </form>`);
   $('#auRole').value = 'sales';
   $('#auGen').addEventListener('click', () => { $('#auPw').value = genPassword(); });
   $('#fAdd').addEventListener('submit', async e => {
     e.preventDefault();
-    const name = $('#auName').value.trim(), user = $('#auUser').value.trim().toLowerCase(), pw = $('#auPw').value, code = $('#auCode').value.trim(), role = $('#auRole').value;
+    const name = $('#auName').value.trim(), user = $('#auUser').value.trim().toLowerCase(), pw = $('#auPw').value, code = $('#auCode').value.trim(), pos = positions().find(x => x.id === $('#auRole').value) || posOf({ role: 'sales' }), role = pos.role;
     if (!name) { toast('ใส่ชื่อ-นามสกุล'); return; }
     if (!/^[a-z0-9._-]+(@[a-z0-9.-]+)?$/.test(user)) { toast('ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 . _ -'); return; }
     if (pw.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
     if (code && userRows().some(u => (u.code || '').trim() === code)) { toast('รหัสพนักงานนี้มีอยู่แล้ว'); return; }
-    if (!(await confirmBox({ title: 'สร้างบัญชี?', body: `${name} · ผู้ใช้ ${user} · ${ROLES[role]}`, ok: 'สร้าง' }))) return;
-    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, nick: $('#auNick').value.trim(), nameEn: $('#auNameEn').value.trim(), vehicle: $('#auVeh').value, plate: $('#auPlate').value.trim(), code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
+    if (!(await confirmBox({ title: 'สร้างบัญชี?', body: `${name} · ผู้ใช้ ${user} · ${pos.name}`, ok: 'สร้าง' }))) return;
+    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, nick: $('#auNick').value.trim(), nameEn: $('#auNameEn').value.trim(), vehicle: $('#auVeh').value, plate: $('#auPlate').value.trim(), code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }).then(async nid => { if (nid && typeof nid === 'string' && (pos.id !== role || JSON.stringify(pos.perms) !== JSON.stringify(ROLE_PERMS[role]))) await store.setStaff(nid, { position: pos.id, perms: pos.perms, updatedAt: Date.now() }).catch(() => toast('สร้างบัญชีแล้ว แต่ตั้งตำแหน่งไม่สำเร็จ แก้ได้ในหน้าผู้ใช้งาน')); }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
     catch (err) { toast(sbNoFn(err) ? 'ต้องรันไฟล์ schema.sql เวอร์ชันล่าสุดใน Supabase ก่อน' : (err.message && /[ก-๙]/.test(err.message) ? err.message : 'สร้างบัญชีไม่ได้')); }
   });
 }
