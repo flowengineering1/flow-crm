@@ -632,8 +632,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 const APP_VERSIONS = [
+  ['1.2', '26 ต.ค. 2569', ['แก้ปัญหาผู้จัดการ/Admin ลบ (ซ่อน) แก้ไขค่าเดินทาง หรือแก้บันทึกงานของพนักงานคนอื่นไม่ได้ (ฐานข้อมูลปฏิเสธ) ตอนนี้ทำได้ตามสิทธิ์ "ทีมขาย: ดูและแก้ไข"', 'ข้อความแจ้งเมื่อลบไม่ได้บอกสาเหตุให้ตรงขึ้น']],
   ['1.1', '25 ต.ค. 2569', ['เพิ่มเมนู "บันทึกงาน" บันทึกการโทร LINE อีเมล และประชุมกับลูกค้า พร้อมผลการติดต่อ มูลค่าโอกาสขาย และนัดติดตาม', 'หน้าแรกแสดงงานขายวันนี้ รายการที่ต้องติดตาม และไทม์ไลน์ของวันนี้', 'การเช็คอินเข้าพบแสดงในไทม์ไลน์อัตโนมัติ การเบิกค่าเดินทางทำงานเหมือนเดิม', 'หน้าลูกค้าแสดงประวัติการติดต่อ ส่งออกบันทึกงานเป็น CSV ได้', 'พนักงานแก้บันทึกของตนเองได้ภายใน 7 วัน ผู้ดูแลทีมแก้และลบได้', 'แสดงเลขเวอร์ชันที่มุมบน และประวัติเวอร์ชันในหลังบ้าน', 'ฐานข้อมูล: เพิ่มตาราง activities ต้องรัน supabase/schema.sql อีกครั้ง']],
   ['1.0', '25 ต.ค. 2569', ['จัดการบัญชีผู้ใช้ในแอป (เพิ่มพนักงาน ตั้งรหัสผ่าน ลบ) ไม่ต้องเข้า Supabase และกำหนดระดับเข้าถึง ระบบปกติ/หลังบ้าน', 'แก้อาการค้าง "กำลังเชื่อมต่อฐานข้อมูล" ตอนเปิดแอป', 'ใบเบิกค่าเดินทาง A4 พิมพ์/บันทึก PDF มีเลขที่เอกสาร RE-ปีเดือน-รหัสพนักงาน โลโก้บริษัท ตารางไม่ทับเส้น ปุ่มปิด ✕ แดง', '"บันทึกไว้ก่อน" เก็บค่าเบิกทุกช่อง แล้วเติมให้ตอนขอเบิกย้อนหลัง', 'หน้าลงทะเบียนแสดงผู้ที่ล็อกอินอยู่และปุ่มออกจากระบบ', 'กิจกรรมล่าสุดในหลังบ้านแบ่งตามพนักงานเป็นบรรทัดเล็ก', 'เพิ่มรถยนต์ไฟฟ้าส่วนบุคคล (EV) 4 บ./กม.', 'ล็อกเอกสารที่อนุมัติแล้ว ผู้ขอแก้ไขไม่ได้ ต้องตีกลับ หรือผู้จัดการแก้', 'ข้อมูลผู้ใช้เพิ่มชื่อเล่น ชื่อไทย ชื่ออังกฤษ รถประจำ และทะเบียน', 'หลังบ้านแก้ค่าเริ่มต้นค่าใช้จ่ายตามระเบียบฯ 01/2569 (อัตราต่อกม. ทางด่วน รถเริ่มต้น)', 'คำนวณระยะทางถนนอัตโนมัติจากจุดเริ่มต้นถึงตำแหน่งเช็คอิน (สำรองเส้นตรง × 1.3) แก้ตัวเลขเองได้ เปิด/ปิดในตั้งค่า', 'ถอด Plus Code แบบสั้นโดยอิงตำบล/อำเภอ/จังหวัดที่ติดมา และตั้งจุดเริ่มต้นค่าเริ่มต้นเป็นสำนักงานขายมาบตาพุด', 'ลบลูกค้าได้เฉพาะผู้มีสิทธิ์ ประวัติการเข้าพบยังอยู่', 'สิทธิ์รายส่วน 6 ส่วนต่อผู้ใช้ (ไม่เห็น/ดู/แก้/ลบ) บังคับทั้งในแอปและฐานข้อมูล', 'ลบรายการเบิกแบบซ่อนไว้ (อนุมัติแล้วลบได้เฉพาะผู้มีอำนาจ) กู้คืนได้ในหลังบ้าน', 'ไอคอนพิมพ์ท้ายบรรทัดในสรุปการเบิก พิมพ์รายการเดียว', 'ตั้งค่ารายงานการขาย: เห็นเฉพาะของตัวเอง หรือเห็นด้วยกันหมด']],
 ];
@@ -1500,7 +1501,7 @@ async function softDeleteVisit(id) {
   const st = statusOf(v);
   if (!(await confirmBox({ title: `ลบรายการ ${ref(v)}?`, body: `${v.customer} · ${dt(v.createdAt)} · ${STATUS[st]}${st === 'approved' ? ' (อนุมัติแล้ว)' : ''}\nรายการจะถูกซ่อนจากทุกหน้าจอและยอดรวม ผู้ดูแลกู้คืนได้ที่หลังบ้าน`, ok: 'ลบ (ซ่อนไว้)', danger: true }))) return;
   try { await store.saveVisit({ ...v, deleted: true, deletedAt: Date.now(), deletedBy: S.myId, deletedByName: S.me.name || '' }); toast(`ซ่อนรายการ ${ref(v)} แล้ว กู้คืนได้ที่หลังบ้าน`); closeSheet(); if (S.backend !== 'supabase') { setVisits([...S.visits.filter(x => x.id !== id), { ...v, deleted: true }, ...S.trash]); renderAll(); } }
-  catch (err) { toast(/row-level security|policy/i.test((err && err.message) || '') ? 'ลบไม่ได้ รายการนี้อนุมัติแล้ว ต้องให้ผู้มีอำนาจเป็นผู้ลบ' : 'ลบไม่สำเร็จ ลองอีกครั้ง'); }
+  catch (err) { toast(err && err.code === 'invalid_argument' ? (isMine(v) && isLocked(v) ? 'ลบไม่ได้ รายการนี้อนุมัติแล้ว ต้องให้ผู้มีอำนาจเป็นผู้ลบ' : 'ลบไม่ได้ บัญชีนี้ไม่มีสิทธิ์ "ทีมขาย: ดูและแก้ไข"') : 'ลบไม่สำเร็จ ลองอีกครั้ง'); }
 }
 async function restoreVisit(id, purge) {
   const v = (S.trash || []).find(x => x.id === id); if (!v) return;
@@ -1813,8 +1814,16 @@ function sbFail(e) { const err = new Error(e.message || 'db'); err.code = /row-l
 function dataUrlToBlob(dataUrl, type) { const bin = atob(dataUrl.split(',')[1] || ''), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: type || 'application/octet-stream' }); }
 const blobToDataUrl = blob => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
 const filePath = (v, f) => `${v.createdBy}/${v.id}/${f.id}`;
+// บันทึกแถวของคนอื่น (เช่น ผู้จัดการลบ/แก้รายการของพนักงาน) ต้องใช้ update ไม่ใช่ upsert
+// เพราะ upsert ต้องผ่านเงื่อนไข INSERT (created_by = ผู้ใช้เอง) ของ RLS ด้วย จึงถูกปฏิเสธเสมอ
+async function sbPut(table, row) {
+  if (row.created_by === S.myId) return S.sb.from(table).upsert(row);
+  const r = await S.sb.from(table).update(row, { count: 'exact' }).eq('id', row.id);
+  if (!r.error && r.count === 0) r.error = { message: 'row-level security: not allowed to update this row' };
+  return r;
+}
 const sb = {
-  async saveVisit(v) { const { error } = await S.sb.from('visits').upsert({ id: v.id, created_by: v.createdBy, created_at: v.createdAt, staff_name: v.staffName, customer: v.customer, customer_id: v.customerId || null, claim_status: v.claimStatus || 'claimed', total: v.total || 0, km_round_trip: v.kmRoundTrip || 0, data: v, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
+  async saveVisit(v) { const { error } = await sbPut('visits', { id: v.id, created_by: v.createdBy, created_at: v.createdAt, staff_name: v.staffName, customer: v.customer, customer_id: v.customerId || null, claim_status: v.claimStatus || 'claimed', total: v.total || 0, km_round_trip: v.kmRoundTrip || 0, data: v, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
   async deleteVisit(v) { const paths = (v.files || []).map(f => filePath(v, f)); if (paths.length) await S.sb.storage.from('attachments').remove(paths); const { error } = await S.sb.from('visits').delete().eq('id', v.id); if (error) sbFail(error); sbRefresh(); },
   async saveFileData(v, f, dataUrl) { const { error } = await S.sb.storage.from('attachments').upload(filePath(v, f), dataUrlToBlob(dataUrl, f.type), { contentType: f.type || 'application/octet-stream', upsert: true }); if (error) sbFail(error); },
   async loadFileData(v, f) { const { data, error } = await S.sb.storage.from('attachments').download(filePath(v, f)); if (error || !data) return null; return blobToDataUrl(data); },
@@ -1825,7 +1834,7 @@ const sb = {
   async adminCreateUser(u) { const { data, error } = await S.sb.rpc('admin_create_user', { p_email: u.email, p_password: u.password, p_name: u.name || '', p_code: u.code || '', p_dept: u.dept || '', p_phone: u.phone || '', p_role: u.role || 'sales', p_nick: u.nick || '', p_name_en: u.nameEn || '', p_vehicle: u.vehicle || 'car', p_plate: u.plate || '' }); if (error) sbFail(error); sbRefresh(); return data; },
   async adminSetPassword(uid, password) { const { error } = await S.sb.rpc('admin_set_password', { p_user: uid, p_password: password }); if (error) sbFail(error); },
   async saveInvites(codes) { const { error } = await S.sb.from('settings').upsert({ key: 'invites', value: { codes }, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
-  async saveActivity(a) { const { error } = await S.sb.from('activities').upsert({ id: a.id, created_by: a.createdBy, created_at: a.createdAt, occurred_at: a.occurredAt, staff_name: a.staffName, type: a.type, customer: a.customer, customer_id: a.customerId || null, outcome: a.outcome || '', follow_up_at: a.nextDate ? new Date(a.nextDate + 'T00:00:00').getTime() : null, data: a, updated_at: Date.now() }); if (error) { if (/activities/.test(error.message || '') && /exist|schema cache/i.test(error.message || '')) { const e = new Error('no_table'); e.code = 'no_table'; throw e; } sbFail(error); } sbRefresh(); },
+  async saveActivity(a) { const { error } = await sbPut('activities', { id: a.id, created_by: a.createdBy, created_at: a.createdAt, occurred_at: a.occurredAt, staff_name: a.staffName, type: a.type, customer: a.customer, customer_id: a.customerId || null, outcome: a.outcome || '', follow_up_at: a.nextDate ? new Date(a.nextDate + 'T00:00:00').getTime() : null, data: a, updated_at: Date.now() }); if (error) { if (/activities/.test(error.message || '') && /exist|schema cache/i.test(error.message || '')) { const e = new Error('no_table'); e.code = 'no_table'; throw e; } sbFail(error); } sbRefresh(); },
   async deleteActivity(a) { const { error, count } = await S.sb.from('activities').delete({ count: 'exact' }).eq('id', a.id); if (error) sbFail(error); if (count === 0) { const e = new Error('denied'); e.code = 'invalid_argument'; throw e; } sbRefresh(); },
   async saveCustomer(c) { const { error } = await S.sb.from('customers').upsert({ id: c.id, name: c.name || '', data: c, updated_at: Date.now() }); if (error) sbFail(error); sbRefresh(); },
   async deleteCustomer(id) { const { error, count } = await S.sb.from('customers').delete({ count: 'exact' }).eq('id', id); if (error) sbFail(error); if (count === 0) throw new Error('ลบไม่ได้ เฉพาะผู้จัดการ/เจ้าของเท่านั้นที่ลบลูกค้าได้'); sbRefresh(); },
