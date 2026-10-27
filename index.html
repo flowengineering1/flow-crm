@@ -449,6 +449,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 
     <div class="card stack">
       <div class="step"><i>4</i><b>ค่าเดินทาง</b></div>
+      <div class="stack" id="carsWrap" style="gap:6px" hidden><span style="font-size:14px;font-weight:500">รถที่ใช้ <span class="hint">เพิ่ม/แก้รถของฉันได้ในตั้งค่า</span></span><div class="chips" id="ciCars"></div></div>
       <div class="chips" id="ciVehicle"></div>
       <label class="f" id="wrapPlate">ทะเบียนรถ<input type="text" id="ciPlate" placeholder="เช่น 1กข 1234"></label>
       <div id="kmBlock" class="stack">
@@ -649,8 +650,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '1.4';
+const APP_VERSION = '2.0';
 const APP_VERSIONS = [
+  ['2.0', '27 ต.ค. 2569', ['ต้องรัน supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ cars ในตาราง profiles ปลอดภัยกับข้อมูลเดิม)', '"รถของฉัน": พนักงานบันทึกรถได้หลายคัน (ชื่อเรียก ประเภท ทะเบียน) ในตั้งค่า ตอนเช็คอินและขอเบิกย้อนหลังแตะเลือกคันเดียวจบ ประเภทรถ/อัตราและทะเบียนตามคันที่เลือก ระบบจำคันล่าสุดที่ใช้', 'เลขไมล์เริ่มต้นเติมต่อจากรายการล่าสุดของ "คันนั้น" (ข้ามวันได้) ถ้าเช็คอินต่อเนื่องในวันเดียวกันยังเติมจากรายการก่อนหน้าเหมือนเดิม', 'รายงานการเดินทางสรุปจำนวนครั้ง กม. และยอดเบิกแยกรายคัน (ประเภท · ชื่อรถ ทะเบียน) และ CSV เพิ่มคอลัมน์ชื่อรถ', 'รถประจำ/ทะเบียนเดิมของทุกคนถูกย้ายเป็นรถคันแรกใน "รถของฉัน" อัตโนมัติ']],
   ['1.4', '27 ต.ค. 2569', ['เช็คอินต่อเนื่องหลายลูกค้าในวันเดียว: เลือก "ขานี้เริ่มจาก" บริษัท หรือต่อจากลูกค้ารายก่อนหน้า (ระบบเลือกให้เมื่อมีเช็คอินในวันเดียวกัน) ระยะทางคิดจากจุดก่อนหน้าถึงลูกค้ารายนี้ ไม่วนกลับบริษัททุกรายการ', 'ช่อง "กลับบริษัทจากที่นี่" บวกระยะขากลับ และเมื่อเช็คอินรายถัดไปแบบต่อจาก ระบบย้ายขากลับไปไว้ที่รายการล่าสุดของวันให้เอง ขากลับจึงไม่ซ้ำ (รายการที่อนุมัติแล้วไม่ถูกแก้ และระบบเตือนผู้ตรวจแทน)', 'เลขไมล์: ช่องเลขไมล์ออกจากจุดเริ่ม ถึงลูกค้า และถึงบริษัท ระบบคำนวณกม.ตามเลขไมล์ เติมเลขไมล์เริ่มจากรายการก่อนหน้าให้ และเตือนผู้ตรวจเมื่อต่างจากแผนที่เกินเกณฑ์', 'หลังบ้านตั้งค่า "ระยะทางที่ใช้คิดเงิน" ตามแผนที่ (ค่าเริ่มต้น) หรือตามเลขไมล์เมื่อกรอกครบ', 'ขอเบิกย้อนหลัง/แก้ไขค่าเดินทาง ใบสรุปขอเบิก รายละเอียดรายการ และ CSV แสดงจุดเริ่มขา ขากลับ และเลขไมล์ · รายการเก่ายังแสดงแบบไป-กลับเหมือนเดิม']],
   ['1.3', '26 ต.ค. 2569', ['หลังบ้านมีหัวข้อ "ตำแหน่ง" เพิ่ม แก้ชื่อ และลบตำแหน่งได้เอง แต่ละตำแหน่งกำหนดระดับการเข้าใช้และสิทธิ์ตั้งต้นของ 6 ส่วน', 'หน้าผู้ใช้งานและหน้าเพิ่มพนักงานเลือกจากรายการตำแหน่ง ระบบเติมสิทธิ์ตามตำแหน่งให้ แล้วปรับรายคนต่อได้', 'แก้สิทธิ์ของตำแหน่งแล้วเลือกใช้กับทุกคนในตำแหน่งนั้นได้ในครั้งเดียว · ตำแหน่งพื้นฐาน 3 ตำแหน่งเปลี่ยนชื่อได้แต่ลบไม่ได้', 'ฐานข้อมูล: เพิ่มคอลัมน์ position ในตาราง profiles ต้องรัน supabase/schema.sql อีกครั้ง']],
   ['1.2', '26 ต.ค. 2569', ['แก้ปัญหาผู้จัดการ/Admin ลบ (ซ่อน) แก้ไขค่าเดินทาง หรือแก้บันทึกงานของพนักงานคนอื่นไม่ได้ (ฐานข้อมูลปฏิเสธ) ตอนนี้ทำได้ตามสิทธิ์ "ทีมขาย: ดูและแก้ไข"', 'ข้อความแจ้งเมื่อลบไม่ได้บอกสาเหตุให้ตรงขึ้น']],
@@ -842,7 +844,15 @@ async function connect() {
   db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
   renderAll();
 }
-function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', cars: myCars(), customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+// ---- my vehicles: several cars per person, odometer chained per car ----
+function myCars() { let c = Array.isArray(S.me.cars) ? S.me.cars.filter(x => x && (x.plate || x.name)).map(x => ({ id: x.id || uid('car'), name: String(x.name || '').trim(), type: VEHICLES[x.type] && x.type !== 'company' ? x.type : 'car', plate: String(x.plate || '').trim() })) : []; if (!c.length && S.me.plate && S.me.vehicle !== 'company') c = [{ id: 'car_default', name: '', type: VEHICLES[S.me.vehicle] ? S.me.vehicle : 'car', plate: String(S.me.plate).trim() }]; return c; }
+const carLabel = c => c ? ((c.name ? c.name + ' · ' : '') + (c.plate || VEHICLES[c.type])) : '';
+const carById = id => myCars().find(c => c.id === id) || null;
+const normPlate = x => String(x || '').replace(/[\s-]/g, '').toLowerCase();
+function defaultCar() { const cs = myCars(); return cs.find(c => c.id === S.me.lastCarId) || cs[0] || null; }
+function sameCar(v, car) { if (!car) return false; return v.carId ? v.carId === car.id : !!(car.plate && v.plate && normPlate(v.plate) === normPlate(car.plate)); }
+function lastOdoFor(car, beforeMs, excludeId) { if (!car) return null; const last = S.visits.find(v => !v.isExample && !v.deleted && isMine(v) && v.id !== excludeId && v.createdAt <= (beforeMs || Infinity) && sameCar(v, car) && (v.odoHome > 0 || v.odoEnd > 0)); return last ? (last.returnHome && last.odoHome > 0 ? last.odoHome : last.odoEnd) : null; }
 function isActive() { return S.mode !== 'shared' || S.admin || (S.meDoc && S.meDoc.status === 'active'); }
 function roleLabel() { return posName({ role: S.me.role || (S.admin ? 'manager' : 'sales'), position: S.me.position }); }
 // ตำแหน่ง = ชื่อที่แสดง + ระดับการเข้าใช้ (role) + สิทธิ์ตั้งต้น · แก้/เพิ่ม/ลบได้ในหลังบ้าน เก็บใน settings.positions
@@ -1289,7 +1299,7 @@ function renderReport() {
   const dormant = custs.filter(c => c.stage !== 'ไม่ได้งาน').map(c => ({ c, last: (lastBy[ckey(c.name)] || {}).createdAt || null })).filter(x => x.last == null || t0 - x.last > 30 * 864e5).sort((a, b) => (a.last ?? 0) - (b.last ?? 0));
   const dormHtml = dormant.length ? `<div class="mini">${dormant.slice(0, 8).map(x => `<button class="it" data-cust="${esc(x.c.id)}"><span><b>${esc(x.c.name)}</b><br><span class="m">${esc(x.c.stage || '')}${x.c.dealValue ? ' · ฿' + fmtB(x.c.dealValue).replace(/\.00$/, '') : ''}${team && lastBy[ckey(x.c.name)] ? ' · ' + esc(lastBy[ckey(x.c.name)].staffName) : ''}</span></span><span class="r warn">${x.last ? 'ห่าง ' + Math.round((t0 - x.last) / 864e5) + ' วัน' : 'ยังไม่เคยพบ'}</span></button>`).join('')}</div>${dormant.length > 8 ? `<p class="sub" style="margin-top:8px">และอีก ${dormant.length - 8} ราย</p>` : ''}` : '<p class="sub">ทุกรายได้เข้าพบภายใน 30 วัน</p>';
   // travel
-  const byVeh = {}; live.forEach(v => { const k = VEHICLES[v.vehicle] || v.vehicle; byVeh[k] = byVeh[k] || { n: 0, km: 0, amt: 0 }; byVeh[k].n++; byVeh[k].km += v.kmRoundTrip || 0; byVeh[k].amt += v.total || 0; });
+  const byVeh = {}; live.forEach(v => { const k = (VEHICLES[v.vehicle] || v.vehicle) + (v.vehicle !== 'company' && (v.carName || v.plate) ? ' · ' + [v.carName, v.plate].filter(Boolean).join(' ') : ''); byVeh[k] = byVeh[k] || { n: 0, km: 0, amt: 0 }; byVeh[k].n++; byVeh[k].km += v.kmRoundTrip || 0; byVeh[k].amt += v.total || 0; });
   const stCount = k => month.filter(v => statusOf(v) === k).length;
   const travel = `<dl class="kv"><dt>ระยะทางรวม</dt><dd class="num">${fmtKm(km)} กม.</dd><dt>ยอดเบิกรวม</dt><dd class="num">฿${fmtB(amt)}</dd><dt>ต่อการเข้าพบ</dt><dd class="num">${n ? '฿' + fmtB(amt / n) : '-'}</dd><dt>สถานะ</dt><dd>อนุมัติ ${stCount('approved')} · รอตรวจ ${stCount('pending')} · ตีกลับ ${stCount('rejected')}</dd>${Object.entries(byVeh).map(([k, x]) => `<dt>${esc(k)}</dt><dd class="num">${x.n} ครั้ง · ${fmtKm(x.km)} กม. · ฿${fmtB(x.amt)}</dd>`).join('')}</dl><p class="sub" style="margin-top:10px">รายละเอียดรายรายการและไฟล์ CSV อยู่ในหน้าเบิก</p>`;
   let teamHtml = '';
@@ -1362,7 +1372,9 @@ function renderApprove() {
 }
 
 // ---------- check-in form ----------
-const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', gps: null, photos: [], files: [], legFrom: 'office', prev: null, legTouched: false };
+const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', gps: null, photos: [], files: [], legFrom: 'office', prev: null, legTouched: false, carId: null };
+function applyCar(id) { const c = carById(id); F.carId = c ? c.id : null; if (c) { F.vehicle = c.type; $('#ciPlate').value = c.plate; } else if (id === '__company') { F.vehicle = 'company'; $('#ciPlate').value = ''; } else if (F.vehicle === 'company') { F.vehicle = S.settings.defaultVehicle && S.settings.defaultVehicle !== 'company' ? S.settings.defaultVehicle : 'car'; } }
+function syncOdoStart() { const el = $('#ciOdoStart'); if (el.value && el.value !== String(F.odoAuto)) return; const car = carById(F.carId); const want = F.legFrom === 'prev' && F.prev && F.prev.odoEnd > 0 && (!car || sameCar(F.prev, car) || !F.prev.carId) ? F.prev.odoEnd : lastOdoFor(car); el.value = want != null ? want : ''; F.odoAuto = want; }
 function applyExpenseDefaults() { if (!$('#ciToll').value && +S.settings.defaultToll > 0) $('#ciToll').value = S.settings.defaultToll; }
 function prefillKmFor(name) { if (S.settings.prefillKm === false || F.vehicle === 'company' || F.legFrom === 'prev') return; const k = String(name || '').trim().toLowerCase(); if (!k) return; const last = S.visits.find(v => !v.isExample && v.customer.trim().toLowerCase() === k && v.vehicle !== 'company' && (v.kmOneWay > 0 || (v.draftClaim && v.draftClaim.kmOneWay > 0))); if (!last) return; const km = last.kmOneWay > 0 ? last.kmOneWay : last.draftClaim.kmOneWay; if (!$('#ciKm').value) { $('#ciKm').value = km; F.kmAuto = km; F.kmSrc = 'prev'; toast(`เติมระยะทาง ${fmtKm(km)} กม. จากครั้งก่อน แก้ได้ถ้าต่างจากจริง`); } }
 function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
@@ -1370,7 +1382,7 @@ function clearLegKm() { $('#ciKm').value = ''; F.kmAuto = null; F.kmSrc = null; 
 function syncLeg() {
   const p = prevLegVisit(Date.now()), pid = p && p.id, cid = F.prev && F.prev.id;
   if (pid !== cid) { F.prev = p; if (!F.legTouched || (F.legFrom === 'prev' && !p)) { F.legFrom = p ? 'prev' : 'office'; clearLegKm(); } }
-  if (F.legFrom === 'prev' && F.prev && F.prev.odoEnd > 0 && !$('#ciOdoStart').value) { $('#ciOdoStart').value = F.prev.odoEnd; F.odoAuto = F.prev.odoEnd; }
+  syncOdoStart();
 }
 function renderFormChips() {
   syncLeg();
@@ -1379,6 +1391,9 @@ function renderFormChips() {
   $('#ciLegNote').textContent = F.prev ? (F.legFrom === 'prev' ? 'คิดระยะจากตำแหน่งเช็คอินของรายการก่อนหน้ามาถึงที่นี่ ขากลับของรายการก่อนหน้าจะย้ายมาไว้ที่รายการนี้' : 'วันนี้มีเช็คอินไปแล้ว ถ้าขับต่อจากลูกค้ารายก่อนโดยไม่กลับบริษัท ให้เลือก "ต่อจาก"') : 'รายการแรกของวันเริ่มจากบริษัท รายการถัดไปในวันเดียวกันจะเลือก "ต่อจาก" ให้อัตโนมัติ';
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
   chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
+  const cars = myCars(); $('#carsWrap').hidden = !cars.length;
+  if (cars.length) { if (F.carId && !carById(F.carId)) F.carId = null; if (!F.carId && !F.carTouched && F.vehicle !== 'company') { const d0 = defaultCar(); if (d0) applyCar(d0.id); } chipGroup($('#ciCars'), [...cars.map(c => [c.id, carLabel(c)]), ['__company', 'รถส่วนกลาง'], ['__other', 'คันอื่น / ระบุเอง']], F.carId || (F.vehicle === 'company' ? '__company' : '__other'), 'car'); }
+  $('#ciVehicle').hidden = !!F.carId || (cars.length && F.vehicle === 'company');
   chipGroup($('#ciVehicle'), Object.keys(VEHICLES).map(k => [k, vehLabel(k)]), F.vehicle, 'veh');
 }
 function renderGps() {
@@ -1435,7 +1450,7 @@ function buildVisit(draft) {
     gps: g ? { lat: +g.lat.toFixed(6), lng: +g.lng.toFixed(6), acc: g.acc ?? null, source: g.source, at: g.at } : null,
     siteDistM: g && cu && cu.lat != null ? Math.round(haversineKm(g.lat, g.lng, cu.lat, cu.lng) * 1000) : null,
     report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: nextStepValue(), nextNote: $('#ciNextNote').value.trim(), nextDate: $('#ciNextDate').value,
-    photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
+    photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(), carId: F.vehicle === 'company' ? null : F.carId, carName: F.vehicle !== 'company' && carById(F.carId) ? carById(F.carId).name : '',
     kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d && F.vehicle !== 'company' ? r1((autoLeg != null ? autoLeg : lineKm(o, d)) + (c.back ? (autoBack != null ? autoBack : lineKm(d, officePt())) : 0)) : null, kmSource: F.vehicle === 'company' ? null : kmSourceNow(), kmAutoOneWay: autoLeg, kmAutoReturn: autoBack, rate: c.rate,
     legFrom: F.legFrom === 'prev' && F.prev ? 'prev' : 'office', prevVisitId: F.legFrom === 'prev' && F.prev ? F.prev.id : null, prevCustomer: F.legFrom === 'prev' && F.prev ? F.prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name },
     returnHome: c.back, kmReturn: c.kmBack, kmMap: c.kmMap, odoStart: c.odo.start, odoEnd: c.odo.end, odoHome: c.odo.home, odoKm: c.odo.km, kmBasis: c.basis,
@@ -1469,8 +1484,8 @@ async function rememberCustomAction(name) {
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.prev = null; F.legFrom = 'office'; $('#ciBack').checked = true; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
-  $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.carTouched = false; F.prev = null; F.legFrom = 'office'; $('#ciBack').checked = true; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
+  $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); const dc0 = F.vehicle === 'company' ? null : defaultCar(); F.carId = null; if (dc0) applyCar(dc0.id); renderPhotos(); updateCalc();
 }
 const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
 const extOf = n => (String(n).split('.').pop() || '').slice(0, 4).toUpperCase();
@@ -1530,7 +1545,8 @@ $('#fCheckin').addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
   if (t.dataset.purpose) { F.purpose = t.dataset.purpose; updateCalc(); }
   else if (t.dataset.cstage !== undefined && t.dataset.cstage) { F.stage = F.stage === t.dataset.cstage ? '' : t.dataset.cstage; updateCalc(); }
-  else if (t.dataset.veh) { F.vehicle = t.dataset.veh; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
+  else if (t.dataset.veh) { F.vehicle = t.dataset.veh; F.carId = null; F.carTouched = true; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
+  else if (t.dataset.car) { F.carTouched = true; applyCar(t.dataset.car); updateCalc(); }
   else if (t.dataset.rmfile) { F.files = F.files.filter(f => f.id !== t.dataset.rmfile); renderPhotos(); updateCalc(); }
   else if (t.dataset.leg) { if (F.legFrom === t.dataset.leg) return; F.legFrom = t.dataset.leg; F.legTouched = true; clearLegKm(); if (F.legFrom === 'office') prefillKmFor($('#ciCustomer').value); updateCalc(); }
 });
@@ -1564,7 +1580,7 @@ async function saveCheckin(claim) {
     const failed = [];
     for (const f of F.files) { btn.textContent = `กำลังอัปโหลดไฟล์ ${failed.length + F.files.indexOf(f) + 1}/${F.files.length}…`; try { await store.saveFileData(v, f, f.data); } catch { failed.push(f.name); } }
     if (failed.length) { v.files = v.files.filter(f => !failed.includes(f.name)); await store.saveVisit(v).catch(() => {}); }
-    S.me.vehicle = v.vehicle; if (v.vehicle !== 'company' && v.plate) S.me.plate = v.plate; lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
+    S.me.vehicle = v.vehicle; if (v.vehicle !== 'company' && v.plate) S.me.plate = v.plate; if (v.carId) S.me.lastCarId = v.carId; lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
     toast(failed.length ? `บันทึกแล้ว แต่แนบไม่สำเร็จ ${failed.length} ไฟล์` : moved === 'moved' ? `${claim ? 'ส่งแล้ว ' + ref(v) : 'บันทึกแล้ว ' + ref(v)} · ย้ายขากลับจาก ${v.prevCustomer} มาไว้ที่รายการนี้แล้ว` : moved === 'locked' || moved === 'failed' ? `${claim ? 'ส่งแล้ว ' + ref(v) : 'บันทึกแล้ว ' + ref(v)} · รายการก่อนหน้าแก้ไม่ได้ (อนุมัติแล้ว) ขากลับอาจซ้ำ แจ้งผู้ตรวจ` : claim ? `ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ` : `บันทึกแล้ว ${ref(v)} ขอเบิกย้อนหลังได้จากหน้าแรก`);
     resetForm(); go('home');
   } catch (err) {
@@ -1660,9 +1676,12 @@ function openClaim(id) {
   const st0 = statusOf(v), mode = v.claimStatus === 'none' ? 'claim' : (isMine(v) && !can('team', 2)) || st0 === 'rejected' ? 'resubmit' : 'adminEdit';
   const legacy = !!dc && !dc.legFrom; // claimed before v1.4: km was office round trip
   const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '',
-      legFrom: dc.legFrom || v.legFrom || 'office', back: dc.returnHome !== false, kmBack: dc.kmReturn != null ? dc.kmReturn : legacy ? dc.kmOneWay || '' : '', odoStart: dc.odoStart ?? v.odoStart ?? '', odoEnd: dc.odoEnd ?? v.odoEnd ?? '', odoHome: dc.odoHome ?? v.odoHome ?? '' }
-    : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '', legFrom: v.legFrom || (prev ? 'prev' : 'office'), back: v.returnHome !== false, kmBack: '', odoStart: v.odoStart ?? (prev && prev.odoEnd > 0 ? prev.odoEnd : ''), odoEnd: v.odoEnd ?? '', odoHome: v.odoHome ?? '' };
+      carId: dc.carId ?? v.carId ?? null, legFrom: dc.legFrom || v.legFrom || 'office', back: dc.returnHome !== false, kmBack: dc.kmReturn != null ? dc.kmReturn : legacy ? dc.kmOneWay || '' : '', odoStart: dc.odoStart ?? v.odoStart ?? '', odoEnd: dc.odoEnd ?? v.odoEnd ?? '', odoHome: dc.odoHome ?? v.odoHome ?? '' }
+    : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '', carId: v.carId ?? (defaultCar() || {}).id ?? null, legFrom: v.legFrom || (prev ? 'prev' : 'office'), back: v.returnHome !== false, kmBack: '', odoStart: v.odoStart ?? (prev && prev.odoEnd > 0 ? prev.odoEnd : ''), odoEnd: v.odoEnd ?? '', odoHome: v.odoHome ?? '' };
   if (C.legFrom === 'prev' && !prev) C.legFrom = 'office';
+  const cars = isMine(v) ? myCars() : [];
+  if (C.carId && !cars.find(c => c.id === C.carId)) C.carId = null;
+  if (C.carId && !dc) { const c = carById(C.carId); C.vehicle = c.type; if (C.plate == null) C.plate = c.plate; if (!C.odoStart) C.odoStart = lastOdoFor(c, v.createdAt, v.id) ?? ''; }
   const origin = () => legOrigin(C.legFrom, prev), dest = v.gps ? { lat: v.gps.lat, lng: v.gps.lng } : null;
   let auto = dest ? routeCached2(origin(), dest) : null, autoBack = dest ? routeCached2(dest, officePt()) : null;
   if (auto && !dc && !C.km) C.km = auto.km;
@@ -1675,7 +1694,8 @@ function openClaim(id) {
       ${mode === 'resubmit' && st0 === 'rejected' ? `<div class="notice">รายการนี้ถูกตีกลับ${S.approvals[v.id] && S.approvals[v.id].note ? ': ' + esc(S.approvals[v.id].note) : ''} แก้ไขแล้วกดส่ง จะกลับไปรอตรวจใหม่</div>` : mode === 'adminEdit' ? `<div class="notice">แก้ไขในฐานะผู้จัดการ สถานะ "${STATUS[st0]}" คงเดิม และบันทึกชื่อผู้แก้ไขไว้ในรายการ</div>` : ''}
       ${dc && mode === 'claim' ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม.'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
       <form id="fClaim" class="stack" novalidate>
-        <div class="chips">${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
+        ${cars.length ? `<div class="chips">${[...cars.map(c => [c.id, carLabel(c)]), ['__company', 'รถส่วนกลาง'], ['__other', 'คันอื่น / ระบุเอง']].map(([k, l]) => `<button type="button" class="chip" data-ccar="${esc(k)}" aria-pressed="${k === (C.carId || (C.vehicle === 'company' ? '__company' : '__other'))}">${esc(l)}</button>`).join('')}</div>` : ''}
+        <div class="chips" ${C.carId || (cars.length && C.vehicle === 'company') ? 'hidden' : ''}>${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
         <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
         ${C.vehicle !== 'company' ? `<div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips"><button type="button" class="chip" data-cleg="office" aria-pressed="${C.legFrom !== 'prev'}">บริษัท</button>${prev ? `<button type="button" class="chip" data-cleg="prev" aria-pressed="${C.legFrom === 'prev'}">ต่อจาก ${esc(prev.customer)} (${tm(prev.createdAt)})</button>` : ''}</div>${legacy ? '<p class="sub">รายการนี้บันทึกก่อนระบบทริปต่อเนื่อง ระยะเดิมคิดไป-กลับจากบริษัท แก้ไขแยกขาได้</p>' : ''}</div>
           <div class="notice" id="cmEst">${!officeSet() ? 'ยังไม่ได้ปักพิกัดจุดเริ่มต้นในตั้งค่า ใส่ระยะจาก Google Maps เอง' : v.gps ? `${auto ? 'ระยะขานี้ตามเส้นทางถนน <b class="num">' + fmtKm(auto.km) + ' กม.</b>' : 'ระยะขานี้โดยประมาณ <b class="num">' + fmtKm(lineKm(o, dest)) + ' กม.</b>'}${autoBack ? ' · ขากลับ ' + fmtKm(autoBack.km) + ' กม.' : ''}<br><a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o.name)} ใน Google Maps</a>` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
@@ -1709,8 +1729,9 @@ function openClaim(id) {
     }
     const keep = () => { C.plate = val('#cmPlate'); C.km = val('#cmKm'); C.fuel = val('#cmFuel'); C.receipt = val('#cmReceipt'); C.toll = val('#cmToll'); if ($('#cmBack')) C.back = chk('#cmBack'); C.kmBack = val('#cmKmBack'); C.odoStart = val('#cmOdoStart'); C.odoEnd = val('#cmOdoEnd'); C.odoHome = val('#cmOdoHome'); };
     $('#fClaim').addEventListener('input', calc);
-    $('#fClaim').addEventListener('click', e => { const t = e.target.closest('[data-cveh],[data-cleg]'); if (!t) return; keep();
-      if (t.dataset.cveh) C.vehicle = t.dataset.cveh;
+    $('#fClaim').addEventListener('click', e => { const t = e.target.closest('[data-cveh],[data-cleg],[data-ccar]'); if (!t) return; keep();
+      if (t.dataset.cveh) { C.vehicle = t.dataset.cveh; C.carId = null; }
+      else if (t.dataset.ccar) { const c = carById(t.dataset.ccar); C.carId = c ? c.id : null; if (c) { C.vehicle = c.type; C.plate = c.plate; if (!C.odoStart) C.odoStart = lastOdoFor(c, v.createdAt, v.id) ?? ''; } else if (t.dataset.ccar === '__company') { C.vehicle = 'company'; C.plate = ''; } else if (C.vehicle === 'company') C.vehicle = 'car'; }
       else { if (C.legFrom === t.dataset.cleg) return; C.legFrom = t.dataset.cleg; C.km = ''; C.legReq = null; auto = dest ? routeCached2(origin(), dest) : null; if (auto) C.km = auto.km; if (C.legFrom === 'prev' && prev && prev.odoEnd > 0 && !C.odoStart) C.odoStart = prev.odoEnd; }
       render(); });
     $('#fClaim').addEventListener('submit', async e => {
@@ -1721,11 +1742,11 @@ function openClaim(id) {
       const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. (' + (legFrom === 'prev' ? 'ต่อจาก ' + prev.customer : 'จากบริษัท') + (c.back ? ' + ขากลับ' : '') + ')'} · รวมเบิก ฿${fmtB(c.total)}`;
       if (!(await confirmBox(mode === 'adminEdit' ? { title: 'บันทึกการแก้ไขของผู้จัดการ?', body: sum, ok: 'บันทึก' } : mode === 'resubmit' ? { title: 'ส่งขอเบิกใหม่?', body: sum + ' จะกลับไปรอตรวจอีกครั้ง', ok: 'ส่งใหม่' } : { title: 'ส่งขอเบิกรายการนี้?', body: sum + ' เมื่ออนุมัติแล้วจะแก้ไขเองไม่ได้', ok: 'ส่งขอเบิก' }))) return;
       const est = C.vehicle === 'company' || !dest ? null : r1((auto ? auto.km : lineKm(o, dest)) + (c.back ? (autoBack ? autoBack.km : lineKm(dest, officePt())) : 0));
-      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, kmSource: kmSrcOf(c.kmOne), kmAutoOneWay: auto ? auto.km : (dc && dc.kmAutoOneWay) || null, kmAutoReturn: autoBack ? autoBack.km : null, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null,
+      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), carId: C.vehicle === 'company' ? null : C.carId || null, carName: C.vehicle !== 'company' && carById(C.carId) ? carById(C.carId).name : '', kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, kmSource: kmSrcOf(c.kmOne), kmAutoOneWay: auto ? auto.km : (dc && dc.kmAutoOneWay) || null, kmAutoReturn: autoBack ? autoBack.km : null, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null,
         legFrom, prevVisitId: legFrom === 'prev' ? prev.id : null, prevCustomer: legFrom === 'prev' ? prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name }, returnHome: C.vehicle === 'company' ? v.returnHome !== false : c.back, kmReturn: c.kmBack, kmMap: c.kmMap, odoStart: c.odo.start, odoEnd: c.odo.end, odoHome: c.odo.home, odoKm: c.odo.km, kmBasis: c.basis };
       if (mode === 'adminEdit') { nv.editedAt = Date.now(); nv.editedBy = S.myId; nv.editedByName = S.me.name || 'ผู้จัดการ'; }
       try { await store.saveVisit(nv); let moved = null; if (legFrom === 'prev') { try { moved = await detachReturn(S.visits.find(x => x.id === prev.id) || prev, nv); } catch { moved = 'failed'; } }
-        if (isMine(v)) { S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); }
+        if (isMine(v)) { S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; if (nv.carId) S.me.lastCarId = nv.carId; lsSet(LS_ME, S.me); }
         toast((mode === 'adminEdit' ? 'บันทึกการแก้ไขแล้ว' : mode === 'resubmit' ? `ส่งขอเบิกใหม่แล้ว ${ref(nv)} รอหัวหน้าตรวจ` : `ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`) + (moved === 'moved' ? ` · ย้ายขากลับจาก ${prev.customer} มาไว้ที่รายการนี้` : moved === 'locked' || moved === 'failed' ? ' · รายการก่อนหน้าแก้ไม่ได้ ขากลับอาจซ้ำ' : '')); closeSheet(); }
       catch (err) { toast(/row-level security|policy|invalid_argument/i.test((err && (err.message + err.code)) || '') ? 'บันทึกไม่ได้ รายการนี้ถูกล็อกเพราะอนุมัติแล้ว' : 'ส่งไม่สำเร็จ ลองอีกครั้ง'); }
     });
@@ -1802,7 +1823,9 @@ function openSettings() {
         <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="seNick" value="${esc(m.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="seNameEn" value="${esc(m.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
         <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="seCode" value="${esc(m.code)}"></label><label class="f grow">แผนก<input type="text" id="seDept" value="${esc(m.dept)}"></label></div>
         <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label></div>
-        <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="seVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (m.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="sePlate" value="${esc(m.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
+        <div class="stack" style="gap:8px"><span style="font-size:14px;font-weight:500">รถของฉัน <span class="hint">เพิ่มได้หลายคัน ตอนเช็คอินแตะเลือกคันที่ใช้ เลขไมล์จะต่อจากรายการล่าสุดของคันนั้น</span></span>
+          <div class="stack" id="seCars" style="gap:8px"></div>
+          <button type="button" class="btn ghost sm" id="seAddCar" style="align-self:flex-start">+ เพิ่มรถ</button></div>
       </div>
       <div class="card stack"><h2>ค่าบริษัท ${can('admin', 2) ? '' : '(เฉพาะผู้มีสิทธิ์แก้ไขหลังบ้าน)'}</h2>
         <div class="row"><label class="f grow">รถยนต์ส่วนตัว (บาท/กม.)<input type="number" id="seCar" step="0.01" min="0" value="${s.rateCar}" ${dis}></label><label class="f grow">มอเตอร์ไซค์ (บาท/กม.)<input type="number" id="seMoto" step="0.01" min="0" value="${s.rateMoto}" ${dis}></label></div>
@@ -1829,6 +1852,11 @@ function openSettings() {
       ${S.backend === 'supabase' ? `<button class="btn soft block" type="button" id="btnChangePw">เปลี่ยนรหัสผ่าน</button><button class="btn ghost block" type="button" id="btnSignOut">ออกจากระบบ${S.email ? ' (' + esc(showUser(S.email)) + ')' : ''}</button>` : ''}
       <p class="sub">${S.backend === 'supabase' ? 'ข้อมูลทั้งหมดเก็บในฐานข้อมูล Supabase ของบริษัท ทุกคนที่ล็อกอินเห็นข้อมูลตามสิทธิ์ของตน' : S.mode === 'shared' ? 'ข้อมูลรายงาน ลูกค้า และผลอนุมัติเก็บไว้ที่ส่วนกลาง ทุกคนที่เปิดลิงก์นี้เห็นข้อมูลชุดเดียวกัน' : 'ตอนนี้ข้อมูลเก็บในเครื่องนี้เท่านั้น เปิดผ่านลิงก์ใน Claude ขณะล็อกอินเพื่อใช้ข้อมูลกลางของทีม'}</p>
     </form>`);
+  const carRow = c => `<div class="row car-row" data-carid="${esc(c.id)}" style="align-items:flex-end;flex-wrap:wrap"><label class="f" style="flex:1 1 90px">ชื่อเรียก<input type="text" class="car-name" value="${esc(c.name)}" placeholder="เช่น วีออส"></label><label class="f" style="flex:1 1 120px">ประเภท<select class="car-type">${['car', 'ev', 'moto'].map(k => `<option value="${k}" ${k === c.type ? 'selected' : ''}>${VEHICLES[k]}</option>`).join('')}</select></label><label class="f" style="flex:1 1 110px">ทะเบียน<input type="text" class="car-plate" value="${esc(c.plate)}" placeholder="1กข 1234"></label><button type="button" class="btn ghost sm car-rm" style="color:var(--bad)" aria-label="ลบรถ">✕</button></div>`;
+  $('#seCars').innerHTML = myCars().map(carRow).join('');
+  $('#seAddCar').addEventListener('click', () => { $('#seCars').insertAdjacentHTML('beforeend', carRow({ id: uid('car'), name: '', type: S.settings.defaultVehicle && S.settings.defaultVehicle !== 'company' ? S.settings.defaultVehicle : 'car', plate: '' })); const last = $('#seCars').lastElementChild; last.querySelector('.car-plate').focus(); });
+  $('#seCars').addEventListener('click', e => { const b = e.target.closest('.car-rm'); if (b) b.closest('.car-row').remove(); });
+  const readCars = () => [...document.querySelectorAll('#seCars .car-row')].map(r => ({ id: r.dataset.carid, name: r.querySelector('.car-name').value.trim(), type: r.querySelector('.car-type').value, plate: r.querySelector('.car-plate').value.trim() })).filter(c => c.plate || c.name);
   const cp = $('#btnChangePw'); if (cp) cp.addEventListener('click', openChangePassword);
   const so = $('#btnSignOut'); if (so) so.addEventListener('click', async () => { if (await confirmBox({ title: 'ออกจากระบบ?', body: 'ต้องใส่อีเมลและรหัสผ่านอีกครั้งเมื่อกลับมาใช้', ok: 'ออกจากระบบ' })) { closeSheet(); await S.sb.auth.signOut(); } });
   const regBtn = $('#seRegDefaults'); if (regBtn) regBtn.addEventListener('click', () => { $('#seCar').value = 6; $('#seEv').value = 4; $('#seMoto').value = 2.5; toast('ใส่อัตราตามระเบียบแล้ว กดบันทึกเพื่อยืนยัน'); });
@@ -1838,7 +1866,7 @@ function openSettings() {
   });
   $('#fSet').addEventListener('submit', async e => {
     e.preventDefault();
-    S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), vehicle: $('#seVeh').value, plate: $('#sePlate').value.trim() }; lsSet(LS_ME, S.me);
+    S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim() }; const cars0 = readCars(); S.me.cars = cars0; const first = cars0.find(c => c.id === S.me.lastCarId) || cars0[0]; if (first) { S.me.vehicle = first.type; S.me.plate = first.plate; } else { S.me.plate = ''; } if (!cars0.find(c => c.id === S.me.lastCarId)) S.me.lastCarId = first ? first.id : null; lsSet(LS_ME, S.me);
     try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
     if (can('admin', 2)) {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? await resolveCoords(geoRaw) : null;
@@ -1900,8 +1928,8 @@ document.addEventListener('click', e => {
 // ---------- export ----------
 function csvText() {
   const rows = claimsRows(), q = x => `"${String(x ?? '').replace(/"/g, '""')}"`;
-  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนไฟล์แนบ', 'ประเภทรถ', 'ทะเบียน', 'จุดเริ่มขานี้', 'ระยะขานี้ (กม.)', 'ขากลับบริษัท (กม.)', 'ระยะตามแผนที่ (กม.)', 'เลขไมล์เริ่ม', 'เลขไมล์ถึงลูกค้า', 'เลขไมล์ถึงบริษัท', 'กม.ตามเลขไมล์', 'ฐานคิดเงิน', 'ระยะทางที่เบิก (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
-  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length + (v.files || []).length, VEHICLES[v.vehicle], v.plate, isTrip(v) ? legLabel(v) : 'จากบริษัท (ไป-กลับ)', isTrip(v) ? v.kmOneWay : v.kmOneWay ?? '', isTrip(v) ? (v.returnHome ? v.kmReturn : 0) : v.kmOneWay ?? '', isTrip(v) ? v.kmMap : v.kmRoundTrip, v.odoStart ?? '', v.odoEnd ?? '', v.odoHome ?? '', v.odoKm ?? '', v.kmBasis === 'odo' ? 'เลขไมล์' : 'แผนที่', v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
+  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนไฟล์แนบ', 'ประเภทรถ', 'ทะเบียน', 'ชื่อรถ', 'จุดเริ่มขานี้', 'ระยะขานี้ (กม.)', 'ขากลับบริษัท (กม.)', 'ระยะตามแผนที่ (กม.)', 'เลขไมล์เริ่ม', 'เลขไมล์ถึงลูกค้า', 'เลขไมล์ถึงบริษัท', 'กม.ตามเลขไมล์', 'ฐานคิดเงิน', 'ระยะทางที่เบิก (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
+  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length + (v.files || []).length, VEHICLES[v.vehicle], v.plate, v.carName || '', isTrip(v) ? legLabel(v) : 'จากบริษัท (ไป-กลับ)', isTrip(v) ? v.kmOneWay : v.kmOneWay ?? '', isTrip(v) ? (v.returnHome ? v.kmReturn : 0) : v.kmOneWay ?? '', isTrip(v) ? v.kmMap : v.kmRoundTrip, v.odoStart ?? '', v.odoEnd ?? '', v.odoHome ?? '', v.odoKm ?? '', v.kmBasis === 'odo' ? 'เลขไมล์' : 'แผนที่', v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
   return '﻿' + [head, ...body].map(r => r.map(q).join(',')).join('\r\n');
 }
 $('#btnCsv').addEventListener('click', async () => {
@@ -1922,8 +1950,8 @@ $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
 // ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
 const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
-const PROFILE_COLS = { perms: 'perms', position: 'position', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
-const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' ? [] : k === 'perms' ? {} : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
+const PROFILE_COLS = { perms: 'perms', position: 'position', cars: 'cars', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' || k === 'cars' ? [] : k === 'perms' ? {} : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
 function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
 function sbFail(e) { const err = new Error(e.message || 'db'); err.code = /row-level security|permission|policy/i.test(e.message || '') ? 'invalid_argument' : (e.code || 'db'); console.error(e); throw err; }
