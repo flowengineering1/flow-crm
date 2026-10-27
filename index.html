@@ -452,15 +452,30 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
       <div class="chips" id="ciVehicle"></div>
       <label class="f" id="wrapPlate">ทะเบียนรถ<input type="text" id="ciPlate" placeholder="เช่น 1กข 1234"></label>
       <div id="kmBlock" class="stack">
+        <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips" id="ciLeg"></div><p class="sub" id="ciLegNote"></p></div>
         <div class="notice" id="estBox"></div>
-        <label class="f">ระยะทางขาไป (กม.)
-          <span class="hint">ระบบคำนวณจากจุดเริ่มต้นถึงตำแหน่งเช็คอินให้อัตโนมัติ แก้ไขตัวเลขได้ถ้าต่างจากจริง · คูณ 2 เป็นไป-กลับให้เอง</span>
+        <label class="f">ระยะทางขานี้ (กม.)
+          <span class="hint">จากจุดเริ่มขานี้ถึงตำแหน่งเช็คอิน ระบบคำนวณตามเส้นทางถนนให้อัตโนมัติ แก้ไขตัวเลขได้ถ้าต่างจากจริง</span>
           <input type="number" id="ciKm" inputmode="decimal" min="0" step="0.1" placeholder="0.0">
+        </label>
+        <label class="row" style="gap:8px;align-items:center;font-size:14px;font-weight:500"><input type="checkbox" id="ciBack" checked style="width:20px;height:20px;margin:0">กลับบริษัทจากที่นี่ (บวกระยะขากลับ)</label>
+        <label class="f" id="wrapBack">ระยะทางขากลับบริษัท (กม.)
+          <span class="hint">ถ้าไปลูกค้ารายถัดไปต่อ ให้เช็คอินรายถัดไปแบบ "ต่อจาก" ระบบจะย้ายขากลับไปไว้ที่รายการล่าสุดของวันให้เอง ขากลับจึงไม่ซ้ำ</span>
+          <input type="number" id="ciKmBack" inputmode="decimal" min="0" step="0.1" placeholder="0.0">
         </label>
       </div>
       <div id="fuelBlock" class="stack" hidden>
         <label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="ciFuel" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
         <label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="ciReceipt"></label>
+      </div>
+      <div class="stack" id="odoBlock" style="gap:8px">
+        <span style="font-size:14px;font-weight:500">เลขไมล์ <span class="hint">ไม่บังคับ · หลังบ้านใช้เทียบกับระยะจากแผนที่</span></span>
+        <div class="row" style="flex-wrap:wrap">
+          <label class="f" style="flex:1 1 120px">ออกจากจุดเริ่ม<input type="number" id="ciOdoStart" inputmode="decimal" min="0" step="0.1" placeholder="เช่น 45210"></label>
+          <label class="f" style="flex:1 1 120px">ถึงลูกค้า<input type="number" id="ciOdoEnd" inputmode="decimal" min="0" step="0.1" placeholder="เช่น 45262"></label>
+          <label class="f" style="flex:1 1 120px" id="wrapOdoHome">ถึงบริษัท<input type="number" id="ciOdoHome" inputmode="decimal" min="0" step="0.1" placeholder="เติมทีหลังได้"></label>
+        </div>
+        <p class="sub" id="odoNote"></p>
       </div>
       <label class="f">ค่าทางด่วน / ที่จอดรถ (บาท)
         <span class="hint">เบิกตามใบเสร็จจริง ถ่ายรูปใบเสร็จแนบในข้อ 3 ได้</span>
@@ -490,7 +505,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     <div class="tile"><small>รวมเบิกสุทธิ</small><b class="money" id="clTotal">0</b></div>
   </div>
   <div class="tablewrap"><table>
-    <thead><tr><th>วัน/เวลา</th><th>พนักงาน</th><th>ลูกค้า</th><th class="n">ไป-กลับ กม.</th><th class="n">อัตรา</th><th class="n">ค่าน้ำมัน</th><th class="n">ทางด่วน/จอด</th><th class="n">รวม</th><th>สถานะ</th><th style="width:1%"></th></tr></thead>
+    <thead><tr><th>วัน/เวลา</th><th>พนักงาน</th><th>ลูกค้า</th><th class="n">ระยะเบิก กม.</th><th class="n">อัตรา</th><th class="n">ค่าน้ำมัน</th><th class="n">ทางด่วน/จอด</th><th class="n">รวม</th><th>สถานะ</th><th style="width:1%"></th></tr></thead>
     <tbody id="clBody"></tbody>
     <tfoot id="clFoot"></tfoot>
   </table></div>
@@ -634,8 +649,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const APP_VERSIONS = [
+  ['1.4', '27 ต.ค. 2569', ['เช็คอินต่อเนื่องหลายลูกค้าในวันเดียว: เลือก "ขานี้เริ่มจาก" บริษัท หรือต่อจากลูกค้ารายก่อนหน้า (ระบบเลือกให้เมื่อมีเช็คอินในวันเดียวกัน) ระยะทางคิดจากจุดก่อนหน้าถึงลูกค้ารายนี้ ไม่วนกลับบริษัททุกรายการ', 'ช่อง "กลับบริษัทจากที่นี่" บวกระยะขากลับ และเมื่อเช็คอินรายถัดไปแบบต่อจาก ระบบย้ายขากลับไปไว้ที่รายการล่าสุดของวันให้เอง ขากลับจึงไม่ซ้ำ (รายการที่อนุมัติแล้วไม่ถูกแก้ และระบบเตือนผู้ตรวจแทน)', 'เลขไมล์: ช่องเลขไมล์ออกจากจุดเริ่ม ถึงลูกค้า และถึงบริษัท ระบบคำนวณกม.ตามเลขไมล์ เติมเลขไมล์เริ่มจากรายการก่อนหน้าให้ และเตือนผู้ตรวจเมื่อต่างจากแผนที่เกินเกณฑ์', 'หลังบ้านตั้งค่า "ระยะทางที่ใช้คิดเงิน" ตามแผนที่ (ค่าเริ่มต้น) หรือตามเลขไมล์เมื่อกรอกครบ', 'ขอเบิกย้อนหลัง/แก้ไขค่าเดินทาง ใบสรุปขอเบิก รายละเอียดรายการ และ CSV แสดงจุดเริ่มขา ขากลับ และเลขไมล์ · รายการเก่ายังแสดงแบบไป-กลับเหมือนเดิม']],
   ['1.3', '26 ต.ค. 2569', ['หลังบ้านมีหัวข้อ "ตำแหน่ง" เพิ่ม แก้ชื่อ และลบตำแหน่งได้เอง แต่ละตำแหน่งกำหนดระดับการเข้าใช้และสิทธิ์ตั้งต้นของ 6 ส่วน', 'หน้าผู้ใช้งานและหน้าเพิ่มพนักงานเลือกจากรายการตำแหน่ง ระบบเติมสิทธิ์ตามตำแหน่งให้ แล้วปรับรายคนต่อได้', 'แก้สิทธิ์ของตำแหน่งแล้วเลือกใช้กับทุกคนในตำแหน่งนั้นได้ในครั้งเดียว · ตำแหน่งพื้นฐาน 3 ตำแหน่งเปลี่ยนชื่อได้แต่ลบไม่ได้', 'ฐานข้อมูล: เพิ่มคอลัมน์ position ในตาราง profiles ต้องรัน supabase/schema.sql อีกครั้ง']],
   ['1.2', '26 ต.ค. 2569', ['แก้ปัญหาผู้จัดการ/Admin ลบ (ซ่อน) แก้ไขค่าเดินทาง หรือแก้บันทึกงานของพนักงานคนอื่นไม่ได้ (ฐานข้อมูลปฏิเสธ) ตอนนี้ทำได้ตามสิทธิ์ "ทีมขาย: ดูและแก้ไข"', 'ข้อความแจ้งเมื่อลบไม่ได้บอกสาเหตุให้ตรงขึ้น']],
   ['1.1', '25 ต.ค. 2569', ['เพิ่มเมนู "บันทึกงาน" บันทึกการโทร LINE อีเมล และประชุมกับลูกค้า พร้อมผลการติดต่อ มูลค่าโอกาสขาย และนัดติดตาม', 'หน้าแรกแสดงงานขายวันนี้ รายการที่ต้องติดตาม และไทม์ไลน์ของวันนี้', 'การเช็คอินเข้าพบแสดงในไทม์ไลน์อัตโนมัติ การเบิกค่าเดินทางทำงานเหมือนเดิม', 'หน้าลูกค้าแสดงประวัติการติดต่อ ส่งออกบันทึกงานเป็น CSV ได้', 'พนักงานแก้บันทึกของตนเองได้ภายใน 7 วัน ผู้ดูแลทีมแก้และลบได้', 'แสดงเลขเวอร์ชันที่มุมบน และประวัติเวอร์ชันในหลังบ้าน', 'ฐานข้อมูล: เพิ่มตาราง activities ต้องรัน supabase/schema.sql อีกครั้ง']],
@@ -644,7 +660,7 @@ const APP_VERSIONS = [
 const ACT_TYPES = { call: 'โทร', line: 'LINE', email: 'อีเมล', meeting: 'ประชุม', other: 'อื่นๆ' };
 const ACT_OUTCOMES = ['สนใจ', 'ขอใบเสนอราคา', 'ปิดการขายได้', 'ยังไม่สนใจ', 'ติดต่อไม่ได้', 'ให้ข้อมูล'];
 const MAX_FILES = 10, MAX_FILE_BYTES = 3 * 1024 * 1024, CHUNK = 180000;
-const DEFAULT_SETTINGS = { officeName:'FLOW ENGINEERING & SERVICE (MAPTAPUT) SALES OFFICE', officeLat:12.713666, officeLng:101.160576, rateCar:6, rateEv:4, rateMoto:2.5, defaultToll:0, defaultVehicle:'car', prefillKm:true, autoKm:true, reportScope:'own', roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
+const DEFAULT_SETTINGS = { officeName:'FLOW ENGINEERING & SERVICE (MAPTAPUT) SALES OFFICE', officeLat:12.713666, officeLng:101.160576, rateCar:6, rateEv:4, rateMoto:2.5, defaultToll:0, defaultVehicle:'car', prefillKm:true, autoKm:true, kmBasis:'map', reportScope:'own', roadFactor:1.3, flagPct:20, siteRadiusM:1000, visitTarget:40 };
 const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
 // ---------- helpers ----------
@@ -654,6 +670,7 @@ const n2 = v => (Math.round((+v || 0) * 100) / 100);
 const fmtB = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtKm = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const pad = x => String(x).padStart(2, '0');
+const tm = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const dt = ms => { const d = new Date(ms); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${String(d.getFullYear()+543).slice(-2)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const ymOf = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
 const dayKey = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
@@ -868,36 +885,67 @@ const isMine = v => S.myId ? v.createdBy === S.myId : (S.me.name && v.staffName 
 function custByName(name) { const k = String(name || '').trim().toLowerCase(); return S.customers.find(c => c.name.trim().toLowerCase() === k); }
 function officeSet() { if (S.settings.officeLat == null || S.settings.officeLng == null) { S.settings.officeLat = DEFAULT_SETTINGS.officeLat; S.settings.officeLng = DEFAULT_SETTINGS.officeLng; if (!S.settings.officeName) S.settings.officeName = DEFAULT_SETTINGS.officeName; } return true; }
 function estimateRoundTrip(lat, lng) { if (!officeSet() || lat == null) return null; const r = routeCached(lat, lng); if (r) return Math.round(r.km * 2 * 10) / 10; return Math.round(haversineKm(S.settings.officeLat, S.settings.officeLng, lat, lng) * 2 * S.settings.roadFactor * 10) / 10; }
-// ---- auto distance: road route from the office (OSRM, free OpenStreetMap routing) with straight-line × factor as fallback ----
+// ---- auto distance: road route between two points (OSRM, free OpenStreetMap routing) with straight-line × factor as fallback ----
 const ROUTE = {};
 const ROUTE_URL = 'https://router.project-osrm.org/route/v1/driving/';
-function routeKey(lat, lng) { return officeSet() && lat != null ? `${S.settings.officeLat},${S.settings.officeLng}>${(+lat).toFixed(4)},${(+lng).toFixed(4)}` : null; }
-function routeCached(lat, lng) { const k = routeKey(lat, lng); return k && ROUTE[k] && ROUTE[k].src === 'route' ? ROUTE[k] : null; }
-function lineKmOneWay(lat, lng) { const s = S.settings; return Math.round(haversineKm(s.officeLat, s.officeLng, lat, lng) * s.roadFactor * 10) / 10; }
-async function roadKmOneWay(lat, lng) {
-  if (!officeSet() || lat == null) return null;
-  const k = routeKey(lat, lng); if (ROUTE[k]) return ROUTE[k];
-  const line = { km: lineKmOneWay(lat, lng), src: 'line' };
+const r1 = x => Math.round((+x || 0) * 10) / 10;
+function officePt() { officeSet(); return { lat: S.settings.officeLat, lng: S.settings.officeLng, name: S.settings.officeName, kind: 'office' }; }
+function routeKey2(a, b) { return a && b && a.lat != null && b.lat != null ? `${(+a.lat).toFixed(4)},${(+a.lng).toFixed(4)}>${(+b.lat).toFixed(4)},${(+b.lng).toFixed(4)}` : null; }
+function routeKey(lat, lng) { return officeSet() && lat != null ? routeKey2(officePt(), { lat, lng }) : null; }
+function routeCached2(a, b) { const k = routeKey2(a, b); return k && ROUTE[k] && ROUTE[k].src === 'route' ? ROUTE[k] : null; }
+function routeCached(lat, lng) { return lat == null ? null : routeCached2(officePt(), { lat, lng }); }
+function lineKm(a, b) { return r1(haversineKm(a.lat, a.lng, b.lat, b.lng) * S.settings.roadFactor); }
+function lineKmOneWay(lat, lng) { return lineKm(officePt(), { lat, lng }); }
+async function roadKm(a, b) {
+  if (!a || !b || a.lat == null || b.lat == null) return null;
+  const k = routeKey2(a, b); if (ROUTE[k]) return ROUTE[k];
+  const line = { km: lineKm(a, b), src: 'line' };
   if (S.settings.autoKm === false || typeof fetch !== 'function') return line;
   try {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
-    const r = await fetch(`${ROUTE_URL}${S.settings.officeLng},${S.settings.officeLat};${lng},${lat}?overview=false`, { signal: ctl.signal });
+    const r = await fetch(`${ROUTE_URL}${a.lng},${a.lat};${b.lng},${b.lat}?overview=false`, { signal: ctl.signal });
     clearTimeout(t);
     const j = await r.json(), m = j && j.routes && j.routes[0] && j.routes[0].distance;
     if (m > 0) return (ROUTE[k] = { km: Math.round(m / 100) / 10, src: 'route' });
   } catch (e) {}
   return (ROUTE[k] = line);
 }
+function roadKmOneWay(lat, lng) { return lat == null ? Promise.resolve(null) : roadKm(officePt(), { lat, lng }); }
 const KM_SRC = { route: 'คำนวณจากเส้นทางถนน', line: 'ประมาณจากเส้นตรง', prev: 'จากการไปครั้งก่อน', manual: 'พนักงานกรอกเอง' };
+// ---- trip chaining: a leg starts at the office or at the previous check-in of the same day ----
+const dayOf = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+function prevLegVisit(atMs, excludeId) { const at = atMs || Date.now(), day = dayOf(at); return S.visits.find(v => !v.isExample && !v.deleted && isMine(v) && v.id !== excludeId && v.gps && v.createdAt <= at && dayOf(v.createdAt) === day) || null; }
+function legOrigin(legFrom, prev) { return legFrom === 'prev' && prev && prev.gps ? { lat: prev.gps.lat, lng: prev.gps.lng, name: prev.customer, kind: 'prev' } : officePt(); }
+const legLabel = v => v.legFrom === 'prev' ? 'ต่อจาก ' + (v.prevCustomer || 'ลูกค้ารายก่อน') : 'จากบริษัท';
+const isTrip = v => !!v.legFrom;
+function tripNote(v) { if (!isTrip(v)) return ''; return `${legLabel(v)}${v.returnHome ? ' → กลับบริษัท' : ' (ไม่รวมขากลับ)'}${v.odoKm > 0 ? ' · เลขไมล์ ' + fmtKm(v.odoKm) + ' กม.' : ''}${v.kmBasis === 'odo' ? ' · คิดตามเลขไมล์' : ''}`; }
+function odoCalc(st, en, home) { st = +st || null; en = +en || null; home = +home || null; const leg = st > 0 && en != null && en >= st ? r1(en - st) : null, ret = en > 0 && home != null && home >= en ? r1(home - en) : null; return { start: st, end: en, home, leg, ret, km: leg != null ? r1(leg + (ret || 0)) : null, bad: (st > 0 && en > 0 && en < st) || (en > 0 && home > 0 && home < en) }; }
+function billKm(kmMap, odoKm, basis) { return basis === 'odo' && odoKm > 0 ? odoKm : r1(kmMap); }
+// Re-price a visit (or its draft claim) after its return leg moved to a later check-in
+function withoutReturn(v, movedTo) {
+  const fix = o => { if (!o) return o; const n = { ...o, returnHome: false, kmReturn: 0, odoHome: null }; n.kmMap = r1(n.kmOneWay || 0); n.odoKm = odoCalc(n.odoStart, n.odoEnd, null).km; n.kmEstimate = n.kmAutoOneWay != null ? n.kmAutoOneWay : n.kmEstimate != null ? r1(n.kmEstimate - (n.kmAutoReturn || 0)) : null;
+    if (n.vehicle !== 'company' && (n.kmRoundTrip > 0 || n.total > 0)) { n.kmRoundTrip = billKm(n.kmMap, n.odoKm, n.kmBasis); n.fuelAmount = n2(n.kmRoundTrip * (n.rate || 0)); n.total = n2(n.fuelAmount + (n.toll || 0)); } return n; };
+  const n = fix(v); if (v.draftClaim) n.draftClaim = fix(v.draftClaim); n.returnMovedTo = movedTo; n.returnMovedAt = Date.now(); return n;
+}
+async function detachReturn(prev, nv) {
+  if (!prev || !nv || nv.legFrom !== 'prev' || nv.prevVisitId !== prev.id || !prev.returnHome) return null;
+  if (isLocked(prev) || !canEditClaim(prev)) return 'locked';
+  await store.saveVisit(withoutReturn(prev, nv.id)); return 'moved';
+}
 function kmSourceNow() { const val = $('#ciKm').value; if (!val) return null; return F.kmAuto != null && val === String(F.kmAuto) ? F.kmSrc : 'manual'; }
-async function autoFillKm(d) {
+function backSourceNow() { const val = $('#ciKmBack').value; if (!val) return null; return F.backAuto != null && val === String(F.backAuto) ? F.backSrc : 'manual'; }
+function autoFillKm(d) {
   if (!d || F.vehicle === 'company' || S.settings.autoKm === false || !officeSet()) return;
-  const k = routeKey(d.lat, d.lng); if (F.kmReq === k) return; F.kmReq = k;
-  const r = await roadKmOneWay(d.lat, d.lng); if (!r || F.kmReq !== k) return;
-  const el = $('#ciKm'); if (el.value && kmSourceNow() === 'manual') { updateCalc(); return; }
-  el.value = r.km; F.kmAuto = r.km; F.kmSrc = r.src;
-  toast(r.src === 'route' ? `คำนวณระยะทางขาไป ${fmtKm(r.km)} กม. ตามเส้นทางถนนให้แล้ว แก้ได้ถ้าต่างจากจริง` : `ประมาณระยะขาไป ${fmtKm(r.km)} กม. (เส้นตรง × ${S.settings.roadFactor}) แก้ได้ถ้าต่างจากจริง`);
-  updateCalc();
+  const o = legOrigin(F.legFrom, F.prev), k = routeKey2(o, d);
+  if (F.kmReq !== k) { F.kmReq = k; roadKm(o, d).then(r => { if (!r || F.kmReq !== k) return;
+    const el = $('#ciKm'); if (el.value && kmSourceNow() === 'manual') { updateCalc(); return; }
+    el.value = r.km; F.kmAuto = r.km; F.kmSrc = r.src;
+    toast(r.src === 'route' ? `คำนวณระยะทางขานี้ ${fmtKm(r.km)} กม. ตามเส้นทางถนนให้แล้ว แก้ได้ถ้าต่างจากจริง` : `ประมาณระยะขานี้ ${fmtKm(r.km)} กม. (เส้นตรง × ${S.settings.roadFactor}) แก้ได้ถ้าต่างจากจริง`);
+    updateCalc(); }); }
+  const kb = routeKey2(d, officePt());
+  if ($('#ciBack').checked && F.backReq !== kb) { F.backReq = kb; roadKm(d, officePt()).then(r => { if (!r || F.backReq !== kb) return;
+    const el = $('#ciKmBack'); if (el.value && backSourceNow() === 'manual') { updateCalc(); return; }
+    el.value = r.km; F.backAuto = r.km; F.backSrc = r.src; updateCalc(); }); }
 }
 function auditFlags(v) {
   const f = [];
@@ -910,6 +958,9 @@ function auditFlags(v) {
   if (v.claimStatus === 'none') return f;
   if (v.vehicle !== 'company' && v.kmEstimate && v.kmRoundTrip > v.kmEstimate * (1 + S.settings.flagPct / 100)) f.push(`ระยะเบิกสูงกว่าที่ระบบประมาณ ${Math.round((v.kmRoundTrip / v.kmEstimate - 1) * 100)}% (ประมาณ ${fmtKm(v.kmEstimate)} กม.)`);
   if (v.vehicle === 'company' && !v.receiptNo && v.fuelAmount > 0) f.push('ไม่มีเลขที่ใบเสร็จน้ำมัน');
+  if (v.odoStart > 0 && v.odoEnd > 0 && v.odoEnd < v.odoStart) f.push('เลขไมล์ถึงลูกค้าน้อยกว่าเลขไมล์ออกจากจุดเริ่ม');
+  if (v.vehicle !== 'company' && v.odoKm > 0 && v.kmMap > 0 && Math.abs(v.odoKm - v.kmMap) > v.kmMap * S.settings.flagPct / 100) f.push(`กม.ตามเลขไมล์ ${fmtKm(v.odoKm)} ต่างจากแผนที่ ${fmtKm(v.kmMap)} กม. (${Math.round((v.odoKm / v.kmMap - 1) * 100)}%)`);
+  if (v.legFrom === 'prev' && v.prevVisitId && v.id !== 'draft') { const p = S.visits.find(x => x.id === v.prevVisitId); if (p && p.returnHome && p.vehicle !== 'company' && p.kmReturn > 0) f.push(`รายการก่อนหน้า (${p.customer}) ยังคิดขากลับอยู่ ขากลับอาจซ้ำ`); }
   return f;
 }
 
@@ -1292,7 +1343,7 @@ function renderClaims() {
   const sum = k => live.reduce((s, v) => s + (+v[k] || 0), 0);
   $('#clKm').textContent = fmtKm(sum('kmRoundTrip')); $('#clFuel').textContent = fmtB(sum('fuelAmount')); $('#clTotal').textContent = fmtB(sum('total'));
   $('#clBody').innerHTML = rows.length ? rows.map(v => { const st = statusOf(v); return `<tr data-visit="${esc(v.id)}" style="cursor:pointer${st === 'rejected' ? ';opacity:.55' : ''}">
-    <td class="num" style="white-space:nowrap">${dt(v.createdAt).replace(' ', '<br>')}</td><td>${esc(v.staffName)}</td><td>${esc(v.customer)}</td>
+    <td class="num" style="white-space:nowrap">${dt(v.createdAt).replace(' ', '<br>')}</td><td>${esc(v.staffName)}</td><td>${esc(v.customer)}${isTrip(v) ? `<div class="sub">${esc(tripNote(v))}</div>` : ''}</td>
     <td class="n">${v.vehicle === 'company' ? '-' : fmtKm(v.kmRoundTrip)}</td><td class="n">${v.vehicle === 'company' ? 'ตามบิล' : fmtB(v.rate)}</td>
     <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td><td><span class="pill ${st}">${STATUS[st]}</span></td>
     <td class="rowact" style="white-space:nowrap"><button class="btn ghost sm" data-printrow="${esc(v.id)}" title="ดูตัวอย่าง / พิมพ์รายการนี้" aria-label="พิมพ์"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-3px"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7"/></svg></button>${canEditClaim(v) ? `<button class="btn ghost sm" data-delclaim="${esc(v.id)}" title="ลบรายการ (ซ่อนไว้ กู้คืนได้ที่หลังบ้าน)" style="color:var(--bad)">✕</button>` : ''}</td></tr>`; }).join('')
@@ -1311,11 +1362,21 @@ function renderApprove() {
 }
 
 // ---------- check-in form ----------
-const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', gps: null, photos: [], files: [] };
+const F = { purpose: PURPOSES[0], stage: '', vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', gps: null, photos: [], files: [], legFrom: 'office', prev: null, legTouched: false };
 function applyExpenseDefaults() { if (!$('#ciToll').value && +S.settings.defaultToll > 0) $('#ciToll').value = S.settings.defaultToll; }
-function prefillKmFor(name) { if (S.settings.prefillKm === false || F.vehicle === 'company') return; const k = String(name || '').trim().toLowerCase(); if (!k) return; const last = S.visits.find(v => !v.isExample && v.customer.trim().toLowerCase() === k && v.vehicle !== 'company' && (v.kmOneWay > 0 || (v.draftClaim && v.draftClaim.kmOneWay > 0))); if (!last) return; const km = last.kmOneWay > 0 ? last.kmOneWay : last.draftClaim.kmOneWay; if (!$('#ciKm').value) { $('#ciKm').value = km; F.kmAuto = km; F.kmSrc = 'prev'; toast(`เติมระยะทาง ${fmtKm(km)} กม. จากครั้งก่อน แก้ได้ถ้าต่างจากจริง`); } }
+function prefillKmFor(name) { if (S.settings.prefillKm === false || F.vehicle === 'company' || F.legFrom === 'prev') return; const k = String(name || '').trim().toLowerCase(); if (!k) return; const last = S.visits.find(v => !v.isExample && v.customer.trim().toLowerCase() === k && v.vehicle !== 'company' && (v.kmOneWay > 0 || (v.draftClaim && v.draftClaim.kmOneWay > 0))); if (!last) return; const km = last.kmOneWay > 0 ? last.kmOneWay : last.draftClaim.kmOneWay; if (!$('#ciKm').value) { $('#ciKm').value = km; F.kmAuto = km; F.kmSrc = 'prev'; toast(`เติมระยะทาง ${fmtKm(km)} กม. จากครั้งก่อน แก้ได้ถ้าต่างจากจริง`); } }
 function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
+function clearLegKm() { $('#ciKm').value = ''; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; if (F.odoAuto != null && $('#ciOdoStart').value === String(F.odoAuto)) $('#ciOdoStart').value = ''; F.odoAuto = null; }
+function syncLeg() {
+  const p = prevLegVisit(Date.now()), pid = p && p.id, cid = F.prev && F.prev.id;
+  if (pid !== cid) { F.prev = p; if (!F.legTouched || (F.legFrom === 'prev' && !p)) { F.legFrom = p ? 'prev' : 'office'; clearLegKm(); } }
+  if (F.legFrom === 'prev' && F.prev && F.prev.odoEnd > 0 && !$('#ciOdoStart').value) { $('#ciOdoStart').value = F.prev.odoEnd; F.odoAuto = F.prev.odoEnd; }
+}
 function renderFormChips() {
+  syncLeg();
+  const items = [['office', 'บริษัท']]; if (F.prev) items.push(['prev', `ต่อจาก ${F.prev.customer} (${tm(F.prev.createdAt)})`]);
+  chipGroup($('#ciLeg'), items, F.legFrom, 'leg');
+  $('#ciLegNote').textContent = F.prev ? (F.legFrom === 'prev' ? 'คิดระยะจากตำแหน่งเช็คอินของรายการก่อนหน้ามาถึงที่นี่ ขากลับของรายการก่อนหน้าจะย้ายมาไว้ที่รายการนี้' : 'วันนี้มีเช็คอินไปแล้ว ถ้าขับต่อจากลูกค้ารายก่อนโดยไม่กลับบริษัท ให้เลือก "ต่อจาก"') : 'รายการแรกของวันเริ่มจากบริษัท รายการถัดไปในวันเดียวกันจะเลือก "ต่อจาก" ให้อัตโนมัติ';
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
   chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
   chipGroup($('#ciVehicle'), Object.keys(VEHICLES).map(k => [k, vehLabel(k)]), F.vehicle, 'veh');
@@ -1332,35 +1393,41 @@ function renderGps() {
 function currentDest() { if (F.gps) return F.gps; const c = custByName($('#ciCustomer').value); return c && c.lat != null ? { lat: c.lat, lng: c.lng } : null; }
 function computeForm() {
   const v = F.vehicle, s = S.settings, kmOne = Math.max(0, +$('#ciKm').value || 0), toll = Math.max(0, +$('#ciToll').value || 0);
-  const kmRT = v === 'company' ? 0 : Math.round(kmOne * 2 * 10) / 10;
+  const back = $('#ciBack').checked, kmBack = back ? Math.max(0, +$('#ciKmBack').value || 0) : 0;
+  const odo = odoCalc($('#ciOdoStart').value, $('#ciOdoEnd').value, back ? $('#ciOdoHome').value : null);
+  const kmMap = v === 'company' ? 0 : r1(kmOne + kmBack), basis = v !== 'company' && s.kmBasis === 'odo' && odo.km > 0 ? 'odo' : 'map';
+  const kmRT = v === 'company' ? 0 : billKm(kmMap, odo.km, basis);
   const rate = rateFor(v, s);
   const fuel = v === 'company' ? n2(Math.max(0, +$('#ciFuel').value || 0)) : n2(kmRT * rate);
-  return { kmOne, kmRT, rate, fuel, toll: n2(toll), total: n2(fuel + toll) };
+  return { kmOne, kmBack, back, kmMap, odo, basis, kmRT, rate, fuel, toll: n2(toll), total: n2(fuel + toll) };
 }
 function updateCalc() {
   renderFormChips();
   const v = F.vehicle, c = computeForm(), d = currentDest();
   $('#kmBlock').hidden = v === 'company'; $('#fuelBlock').hidden = v !== 'company';
-  const est = d ? estimateRoundTrip(d.lat, d.lng) : null, s = S.settings, rc = d ? routeCached(d.lat, d.lng) : null, src = kmSourceNow();
-  const mapLink = d && officeSet() ? `<a href="${mapsDir(s.officeLat, s.officeLng, d.lat, d.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(s.officeName)} ใน Google Maps</a>` : '';
+  const s = S.settings, o = legOrigin(F.legFrom, F.prev), rc = d ? routeCached2(o, d) : null, rb = d ? routeCached2(d, officePt()) : null, src = kmSourceNow();
+  const estLeg = d ? (rc ? rc.km : lineKm(o, d)) : null, estBack = d ? (rb ? rb.km : lineKm(d, officePt())) : null;
+  $('#wrapBack').hidden = !c.back; $('#wrapOdoHome').hidden = !c.back;
+  const mapLink = d && officeSet() ? `<a href="${mapsDir(o.lat, o.lng, d.lat, d.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o.name)} ใน Google Maps</a>` : '';
   $('#estBox').innerHTML = !officeSet() ? 'ยังไม่ได้ปักพิกัดจุดเริ่มต้นในตั้งค่า ระบบจึงคำนวณระยะให้ไม่ได้ ใส่ระยะจาก Google Maps เองได้'
-    : !d ? 'บันทึกตำแหน่งในข้อ 2 ก่อน ระบบจะคำนวณระยะทางจากจุดเริ่มต้นให้อัตโนมัติ'
-    : s.autoKm === false ? `ระบบประมาณไป-กลับ <b class="num">${fmtKm(est)} กม.</b> (เส้นตรง × ${s.roadFactor})<br>${mapLink} แล้วนำระยะขาไปมาใส่`
+    : !d ? 'บันทึกตำแหน่งในข้อ 2 ก่อน ระบบจะคำนวณระยะทางจากจุดเริ่มขานี้ให้อัตโนมัติ'
+    : s.autoKm === false ? `ระบบประมาณขานี้ <b class="num">${fmtKm(estLeg)} กม.</b>${c.back ? ' · ขากลับ ' + fmtKm(estBack) + ' กม.' : ''} (เส้นตรง × ${s.roadFactor})<br>${mapLink} แล้วนำระยะมาใส่`
     : v === 'company' ? 'รถส่วนกลางเบิกตามใบเสร็จน้ำมัน ไม่คิดระยะทาง'
     : F.kmReq && !rc && !ROUTE[F.kmReq] ? 'กำลังคำนวณระยะทางจากเส้นทางถนน…'
-    : `${rc ? 'ระยะขาไปตามเส้นทางถนน' : 'ระยะขาไปโดยประมาณ (เส้นตรง × ' + s.roadFactor + ')'} <b class="num">${fmtKm(rc ? rc.km : est / 2)} กม.</b> · ไป-กลับ ${fmtKm(est)} กม.${src === 'manual' ? ` <span class="sub">(พนักงานแก้เป็น ${fmtKm(c.kmOne)} กม.)</span>` : src === 'prev' ? ' <span class="sub">(ใช้ค่าครั้งก่อน)</span>' : ''}<br>${mapLink}`;
+    : `${rc ? 'ระยะขานี้ตามเส้นทางถนน' : 'ระยะขานี้โดยประมาณ (เส้นตรง × ' + s.roadFactor + ')'} <b class="num">${fmtKm(estLeg)} กม.</b>${c.back ? ` · ขากลับบริษัท ${fmtKm(estBack)} กม.` : ''}${src === 'manual' ? ` <span class="sub">(พนักงานแก้เป็น ${fmtKm(c.kmOne)} กม.)</span>` : src === 'prev' ? ' <span class="sub">(ใช้ค่าครั้งก่อน)</span>' : ''}<br>${mapLink}`;
   autoFillKm(d);
+  $('#odoNote').textContent = c.odo.bad ? 'เลขไมล์ปลายทางน้อยกว่าเลขไมล์ต้นทาง ตรวจตัวเลขอีกครั้ง' : c.odo.km != null ? `ตามเลขไมล์ ${fmtKm(c.odo.leg)} กม.${c.odo.ret != null ? ' + ขากลับ ' + fmtKm(c.odo.ret) + ' กม. = ' + fmtKm(c.odo.km) + ' กม.' : ''}${v !== 'company' && c.kmMap > 0 ? ' · แผนที่ ' + fmtKm(c.kmMap) + ' กม.' : ''}${c.basis === 'odo' ? ' · คิดเงินตามเลขไมล์' : v !== 'company' && c.odo.km > 0 ? ' · คิดเงินตามแผนที่ (เลขไมล์ใช้เทียบ)' : ''}` : (F.odoAuto != null && $('#ciOdoStart').value ? 'เติมเลขไมล์เริ่มจากรายการก่อนหน้าให้แล้ว ใส่เลขไมล์ถึงลูกค้าเพื่อให้ระบบคำนวณ' : 'ใส่เลขไมล์หน้าปัดตอนออกและตอนถึง ระบบคำนวณกม.ให้ และหลังบ้านใช้เทียบกับแผนที่');
   $('#calcBox').innerHTML = v === 'company'
     ? `<span>ค่าน้ำมันตามใบเสร็จ</span><span class="num">${fmtB(c.fuel)}</span><span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(c.toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(c.total)}</span>`
-    : `<span>ไป-กลับ ${fmtKm(c.kmRT)} กม. × ${fmtB(c.rate)} บาท</span><span class="num">${fmtB(c.fuel)}</span><span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(c.toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(c.total)}</span>`;
+    : `<span>ขานี้ ${fmtKm(c.kmOne)}${c.back ? ' + ขากลับ ' + fmtKm(c.kmBack) : ''} = ${fmtKm(c.kmMap)} กม.${c.basis === 'odo' ? ' → คิดตามเลขไมล์ ' + fmtKm(c.kmRT) + ' กม.' : ''} × ${fmtB(c.rate)} บาท</span><span class="num">${fmtB(c.fuel)}</span><span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(c.toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(c.total)}</span>`;
   $('#wrapPlate').querySelector('input').placeholder = v === 'company' ? 'ทะเบียนรถส่วนกลาง' : 'เช่น 1กข 1234';
   const draft = buildVisit(true), fl = auditFlags(draft);
   $('#ciFlags').innerHTML = fl.length ? fl.map(x => `<li>⚠ ${esc(x)}</li>`).join('') : '<li class="good">✓ ข้อมูลครบสำหรับการตรวจ</li>';
   renderGps();
 }
 function buildVisit(draft) {
-  const c = computeForm(), cust = $('#ciCustomer').value.trim(), cu = custByName(cust), d = currentDest();
-  const g = F.gps;
+  const c = computeForm(), cust = $('#ciCustomer').value.trim(), cu = custByName(cust), d = currentDest(), o = legOrigin(F.legFrom, F.prev);
+  const g = F.gps, autoLeg = F.vehicle !== 'company' && F.kmAuto != null && F.kmSrc !== 'prev' ? F.kmAuto : null, autoBack = F.vehicle !== 'company' && c.back && F.backAuto != null ? F.backAuto : null;
   return {
     id: draft ? 'draft' : uid('v'), createdAt: Date.now(), createdBy: S.myId || null,
     staffName: S.me.name || 'ไม่ระบุชื่อ', staffCode: S.me.code || '', dept: S.me.dept || '',
@@ -1369,7 +1436,9 @@ function buildVisit(draft) {
     siteDistM: g && cu && cu.lat != null ? Math.round(haversineKm(g.lat, g.lng, cu.lat, cu.lng) * 1000) : null,
     report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: nextStepValue(), nextNote: $('#ciNextNote').value.trim(), nextDate: $('#ciNextDate').value,
     photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(),
-    kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d ? estimateRoundTrip(d.lat, d.lng) : null, kmSource: F.vehicle === 'company' ? null : kmSourceNow(), kmAutoOneWay: F.vehicle !== 'company' && F.kmAuto != null && F.kmSrc !== 'prev' ? F.kmAuto : null, rate: c.rate,
+    kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d && F.vehicle !== 'company' ? r1((autoLeg != null ? autoLeg : lineKm(o, d)) + (c.back ? (autoBack != null ? autoBack : lineKm(d, officePt())) : 0)) : null, kmSource: F.vehicle === 'company' ? null : kmSourceNow(), kmAutoOneWay: autoLeg, kmAutoReturn: autoBack, rate: c.rate,
+    legFrom: F.legFrom === 'prev' && F.prev ? 'prev' : 'office', prevVisitId: F.legFrom === 'prev' && F.prev ? F.prev.id : null, prevCustomer: F.legFrom === 'prev' && F.prev ? F.prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name },
+    returnHome: c.back, kmReturn: c.kmBack, kmMap: c.kmMap, odoStart: c.odo.start, odoEnd: c.odo.end, odoHome: c.odo.home, odoKm: c.odo.km, kmBasis: c.basis,
     fuelAmount: c.fuel, receiptNo: $('#ciReceipt').value.trim(), toll: c.toll, total: c.total,
     officeAt: officeSet() ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null,
   };
@@ -1400,7 +1469,7 @@ async function rememberCustomAction(name) {
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.prev = null; F.legFrom = 'office'; $('#ciBack').checked = true; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); renderPhotos(); updateCalc();
 }
 const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
@@ -1463,8 +1532,10 @@ $('#fCheckin').addEventListener('click', e => {
   else if (t.dataset.cstage !== undefined && t.dataset.cstage) { F.stage = F.stage === t.dataset.cstage ? '' : t.dataset.cstage; updateCalc(); }
   else if (t.dataset.veh) { F.vehicle = t.dataset.veh; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
   else if (t.dataset.rmfile) { F.files = F.files.filter(f => f.id !== t.dataset.rmfile); renderPhotos(); updateCalc(); }
+  else if (t.dataset.leg) { if (F.legFrom === t.dataset.leg) return; F.legFrom = t.dataset.leg; F.legTouched = true; clearLegKm(); if (F.legFrom === 'office') prefillKmFor($('#ciCustomer').value); updateCalc(); }
 });
-['ciKm', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
+['ciKm', 'ciKmBack', 'ciOdoStart', 'ciOdoEnd', 'ciOdoHome', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
+$('#ciBack').addEventListener('change', updateCalc);
 $('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } prefillKmFor($('#ciCustomer').value); applyExpenseDefaults(); updateCalc(); });
 $('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.files.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
 async function saveCheckin(claim) {
@@ -1476,10 +1547,10 @@ async function saveCheckin(claim) {
   if ($('#ciNext').value === NEXT_NEW && !$('#ciNextNew').value.trim()) { $('#ciNextNew').focus(); toast('พิมพ์ชื่อตัวเลือกใหม่ หรือเลือกจากรายการ'); return; }
   const v = buildVisit(false), btn = claim ? $('#btnSubmit') : $('#btnSave'), label = btn.textContent;
   if (claim) { v.claimStatus = 'claimed'; v.claimedAt = v.createdAt; }
-  else { v.draftClaim = { vehicle: v.vehicle, plate: v.plate, kmOneWay: v.kmOneWay, kmRoundTrip: v.kmRoundTrip, kmEstimate: v.kmEstimate, kmSource: v.kmSource, kmAutoOneWay: v.kmAutoOneWay, rate: v.rate, fuelAmount: v.fuelAmount, receiptNo: v.receiptNo, toll: v.toll, total: v.total, savedAt: Date.now() };
-    Object.assign(v, { kmOneWay: 0, kmRoundTrip: 0, rate: 0, fuelAmount: 0, receiptNo: '', toll: 0, total: 0, claimStatus: 'none' }); }
+  else { v.draftClaim = { vehicle: v.vehicle, plate: v.plate, kmOneWay: v.kmOneWay, kmRoundTrip: v.kmRoundTrip, kmEstimate: v.kmEstimate, kmSource: v.kmSource, kmAutoOneWay: v.kmAutoOneWay, kmAutoReturn: v.kmAutoReturn, returnHome: v.returnHome, kmReturn: v.kmReturn, kmMap: v.kmMap, odoStart: v.odoStart, odoEnd: v.odoEnd, odoHome: v.odoHome, odoKm: v.odoKm, kmBasis: v.kmBasis, rate: v.rate, fuelAmount: v.fuelAmount, receiptNo: v.receiptNo, toll: v.toll, total: v.total, savedAt: Date.now() };
+    Object.assign(v, { kmOneWay: 0, kmRoundTrip: 0, kmReturn: 0, kmMap: 0, rate: 0, fuelAmount: 0, receiptNo: '', toll: 0, total: 0, claimStatus: 'none' }); }
   const q = claim
-    ? { title: 'ส่งรายงานและขอเบิก?', body: `${v.customer} · ${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(v.total)} ส่งแล้วแก้ไขเองไม่ได้ ต้องให้ผู้จัดการตีกลับ`, ok: 'ส่งรายงาน' }
+    ? { title: 'ส่งรายงานและขอเบิก?', body: `${v.customer} · ${v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. (' + legLabel(v) + (v.returnHome ? ' + ขากลับ' : '') + ')'} · รวมเบิก ฿${fmtB(v.total)} ส่งแล้วแก้ไขเองไม่ได้ ต้องให้ผู้จัดการตีกลับ`, ok: 'ส่งรายงาน' }
     : { title: 'บันทึกการเข้าพบไว้ก่อน?', body: `${v.customer} · ยังไม่ส่งขอเบิก กลับมากดขอเบิกย้อนหลังได้จากรายการนี้ในหน้าแรก`, ok: 'บันทึกไว้ก่อน' };
   if (!(await confirmBox(q))) return;
   btn.disabled = true; $('#btnSubmit').disabled = $('#btnSave').disabled = true; btn.textContent = 'กำลังบันทึก…';
@@ -1489,11 +1560,12 @@ async function saveCheckin(claim) {
     else { cu = { ...cu, contact: cu.contact || v.contact, lat: cu.lat ?? v.gps.lat, lng: cu.lng ?? v.gps.lng, stage: v.stage || cu.stage, dealValue: v.dealValue || cu.dealValue || 0, followUp: v.nextStep || cu.followUp || '', followDate: v.nextDate || cu.followDate || '', updatedAt: Date.now() }; }
     v.customerId = cu.id;
     await store.saveCustomer(cu); await store.saveVisit(v); await rememberCustomAction(v.nextStep);
+    let moved = null; if (v.legFrom === 'prev') { try { moved = await detachReturn(S.visits.find(x => x.id === v.prevVisitId) || F.prev, v); } catch { moved = 'failed'; } }
     const failed = [];
     for (const f of F.files) { btn.textContent = `กำลังอัปโหลดไฟล์ ${failed.length + F.files.indexOf(f) + 1}/${F.files.length}…`; try { await store.saveFileData(v, f, f.data); } catch { failed.push(f.name); } }
     if (failed.length) { v.files = v.files.filter(f => !failed.includes(f.name)); await store.saveVisit(v).catch(() => {}); }
     S.me.vehicle = v.vehicle; if (v.vehicle !== 'company' && v.plate) S.me.plate = v.plate; lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
-    toast(failed.length ? `บันทึกแล้ว แต่แนบไม่สำเร็จ ${failed.length} ไฟล์` : claim ? `ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ` : `บันทึกแล้ว ${ref(v)} ขอเบิกย้อนหลังได้จากหน้าแรก`);
+    toast(failed.length ? `บันทึกแล้ว แต่แนบไม่สำเร็จ ${failed.length} ไฟล์` : moved === 'moved' ? `${claim ? 'ส่งแล้ว ' + ref(v) : 'บันทึกแล้ว ' + ref(v)} · ย้ายขากลับจาก ${v.prevCustomer} มาไว้ที่รายการนี้แล้ว` : moved === 'locked' || moved === 'failed' ? `${claim ? 'ส่งแล้ว ' + ref(v) : 'บันทึกแล้ว ' + ref(v)} · รายการก่อนหน้าแก้ไม่ได้ (อนุมัติแล้ว) ขากลับอาจซ้ำ แจ้งผู้ตรวจ` : claim ? `ส่งแล้ว ${ref(v)} รอหัวหน้าตรวจ` : `บันทึกแล้ว ${ref(v)} ขอเบิกย้อนหลังได้จากหน้าแรก`);
     resetForm(); go('home');
   } catch (err) {
     toast(err && err.code === 'quota_exceeded' ? 'พื้นที่เก็บข้อมูลเต็ม แจ้งผู้ดูแล' : err && err.code === 'invalid_argument' ? 'บันทึกไม่ได้ อาจไม่มีสิทธิ์เขียนหรือข้อมูลใหญ่เกิน' : 'ส่งไม่สำเร็จ ลองอีกครั้ง');
@@ -1542,12 +1614,12 @@ function openVisit(id) {
     </dl>
     <div class="card stack"><h2>รายงานผลการเข้าพบ</h2><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(v.report || '-')}</div>
       ${attachmentsHtml(v)}</div>
-    ${st === 'draft' ? `<div class="card stack"><h2>ค่าเดินทาง</h2><p class="sub">ยังไม่ได้ขอเบิกสำหรับการเข้าพบครั้งนี้${v.draftClaim ? ' · บันทึกไว้: ' + (v.draftClaim.vehicle === 'company' ? 'รถส่วนกลาง น้ำมัน ฿' + fmtB(v.draftClaim.fuelAmount) : fmtKm(v.draftClaim.kmRoundTrip) + ' กม. × ' + fmtB(v.draftClaim.rate)) + (v.draftClaim.toll ? ' + ทางด่วน ฿' + fmtB(v.draftClaim.toll) : '') + ' = ฿' + fmtB(v.draftClaim.total) : ''}</p>${(isMine(v) || S.admin) && S.canWrite ? `<button class="btn primary" data-claim="${esc(v.id)}">ขอเบิกค่าเดินทางย้อนหลัง</button>` : ''}</div>` : `<div class="card stack"><h2>ค่าเดินทาง · ${VEHICLES[v.vehicle] || v.vehicle}${v.plate ? ' · ' + esc(v.plate) : ''}</h2>
+    ${st === 'draft' ? `<div class="card stack"><h2>ค่าเดินทาง</h2><p class="sub">ยังไม่ได้ขอเบิกสำหรับการเข้าพบครั้งนี้${isTrip(v) ? ' · ' + esc(tripNote(v)) : ''}${v.draftClaim ? ' · บันทึกไว้: ' + (v.draftClaim.vehicle === 'company' ? 'รถส่วนกลาง น้ำมัน ฿' + fmtB(v.draftClaim.fuelAmount) : fmtKm(v.draftClaim.kmRoundTrip) + ' กม. × ' + fmtB(v.draftClaim.rate)) + (v.draftClaim.toll ? ' + ทางด่วน ฿' + fmtB(v.draftClaim.toll) : '') + ' = ฿' + fmtB(v.draftClaim.total) : ''}</p>${(isMine(v) || S.admin) && S.canWrite ? `<button class="btn primary" data-claim="${esc(v.id)}">ขอเบิกค่าเดินทางย้อนหลัง</button>` : ''}</div>` : `<div class="card stack"><h2>ค่าเดินทาง · ${VEHICLES[v.vehicle] || v.vehicle}${v.plate ? ' · ' + esc(v.plate) : ''}</h2>
       <div class="calc">${v.vehicle === 'company'
         ? `<span>ค่าน้ำมันตามใบเสร็จ${v.receiptNo ? ' (' + esc(v.receiptNo) + ')' : ''}</span><span class="num">${fmtB(v.fuelAmount)}</span>`
-        : `<span>ไป-กลับ ${fmtKm(v.kmRoundTrip)} กม. × ${fmtB(v.rate)}</span><span class="num">${fmtB(v.fuelAmount)}</span>${v.kmEstimate ? `<span class="sub">${v.kmSource === 'route' ? 'ระบบคำนวณตามเส้นทางถนน' : v.kmSource === 'manual' ? (v.kmAutoOneWay != null ? 'ระบบคำนวณไว้ · พนักงานแก้เอง' : 'ระบบประมาณไว้ · พนักงานกรอกเอง') : v.kmSource === 'prev' ? 'ระบบประมาณไว้ · ใช้ค่าครั้งก่อน' : 'ระบบประมาณไว้'}</span><span class="num sub">${fmtKm(v.kmEstimate)} กม.</span>` : ''}`}
+        : `<span>${isTrip(v) ? 'ระยะเบิก' : 'ไป-กลับ'} ${fmtKm(v.kmRoundTrip)} กม. × ${fmtB(v.rate)}</span><span class="num">${fmtB(v.fuelAmount)}</span>${isTrip(v) ? `<span class="sub">${esc(legLabel(v))} ${fmtKm(v.kmOneWay)} กม.${v.returnHome ? ' + ขากลับบริษัท ' + fmtKm(v.kmReturn) + ' กม.' : ' (ไม่รวมขากลับ' + (v.returnMovedTo ? ' ย้ายไปรายการถัดไปแล้ว' : '') + ')'}</span><span class="num sub">${fmtKm(v.kmMap)}</span>` : ''}${v.odoStart > 0 || v.odoEnd > 0 ? `<span class="sub">เลขไมล์ ${v.odoStart ?? '-'} → ${v.odoEnd ?? '-'}${v.odoHome ? ' → ' + v.odoHome : ''}${v.kmBasis === 'odo' ? ' · ใช้คิดเงิน' : ''}</span><span class="num sub">${v.odoKm != null ? fmtKm(v.odoKm) : '-'}</span>` : ''}${v.kmEstimate ? `<span class="sub">${v.kmSource === 'route' ? 'ระบบคำนวณตามเส้นทางถนน' : v.kmSource === 'manual' ? (v.kmAutoOneWay != null ? 'ระบบคำนวณไว้ · พนักงานแก้เอง' : 'ระบบประมาณไว้ · พนักงานกรอกเอง') : v.kmSource === 'prev' ? 'ระบบประมาณไว้ · ใช้ค่าครั้งก่อน' : 'ระบบประมาณไว้'}</span><span class="num sub">${fmtKm(v.kmEstimate)} กม.</span>` : ''}`}
         <span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(v.toll)}</span><span class="total">รวมเบิกสุทธิ</span><span class="total num">${fmtB(v.total)}</span></div>
-      ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากบริษัทใน Google Maps</a>` : ''}</div>`}
+      ${o && v.gps && v.vehicle !== 'company' ? `<a href="${mapsDir(v.fromAt && v.fromAt.lat != null ? v.fromAt.lat : o.lat, v.fromAt && v.fromAt.lat != null ? v.fromAt.lng : o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทาง${v.legFrom === 'prev' ? 'จาก ' + esc(v.prevCustomer || 'รายการก่อน') : 'จากบริษัท'}ใน Google Maps</a>` : ''}</div>`}
     ${st === 'approved' ? `<div class="notice" style="display:flex;gap:8px;align-items:flex-start"><span style="font-size:18px;line-height:1">🔒</span><span>รายการนี้อนุมัติแล้วและถูกล็อก ผู้ขอเบิกแก้ไขไม่ได้ ${S.admin ? 'ผู้จัดการแก้ไขได้ด้วยปุ่มด้านล่าง หรือกด "ตีกลับ" เพื่อให้พนักงานแก้ไขแล้วส่งใหม่' : 'หากต้องแก้ไข ให้แจ้งผู้จัดการตีกลับรายการนี้'}</span></div>` : ''}
     ${st === 'rejected' && isMine(v) && !can('team', 2) && can('checkin', 2) && S.canWrite ? `<button class="btn primary block" data-claim="${esc(v.id)}">แก้ไขค่าเดินทางและส่งขอเบิกใหม่</button>` : ''}
     ${v.editedAt ? `<p class="sub">แก้ไขล่าสุดโดย ${esc(v.editedByName || 'ผู้จัดการ')} เมื่อ ${dt(v.editedAt)}</p>` : ''}
@@ -1584,49 +1656,77 @@ async function saveToDevice(f, data) {
 function openClaim(id) {
   const v = S.visits.find(x => x.id === id); if (!v) return;
   if (!canEditClaim(v)) { toast(isLocked(v) ? 'รายการนี้อนุมัติแล้ว ถูกล็อก ให้ผู้จัดการตีกลับก่อนจึงแก้ไขได้' : 'ไม่มีสิทธิ์แก้ไขรายการนี้'); return; }
-  const s = S.settings, dc = v.claimStatus !== 'none' ? v : (v.draftClaim || null); let est = v.gps ? estimateRoundTrip(v.gps.lat, v.gps.lng) : null, auto = v.gps ? routeCached(v.gps.lat, v.gps.lng) : null, autoFilled = false;
-  if (auto && !dc) autoFilled = true;
+  const s = S.settings, dc = v.claimStatus !== 'none' ? v : (v.draftClaim || null), prev = prevLegVisit(v.createdAt, v.id);
   const st0 = statusOf(v), mode = v.claimStatus === 'none' ? 'claim' : (isMine(v) && !can('team', 2)) || st0 === 'rejected' ? 'resubmit' : 'adminEdit';
-  const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '' } : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: auto ? auto.km : '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '' };
+  const legacy = !!dc && !dc.legFrom; // claimed before v1.4: km was office round trip
+  const C = dc ? { vehicle: dc.vehicle || 'car', plate: dc.plate || '', km: dc.kmOneWay || '', fuel: dc.fuelAmount || '', receipt: dc.receiptNo || '', toll: dc.toll || '',
+      legFrom: dc.legFrom || v.legFrom || 'office', back: dc.returnHome !== false, kmBack: dc.kmReturn != null ? dc.kmReturn : legacy ? dc.kmOneWay || '' : '', odoStart: dc.odoStart ?? v.odoStart ?? '', odoEnd: dc.odoEnd ?? v.odoEnd ?? '', odoHome: dc.odoHome ?? v.odoHome ?? '' }
+    : { vehicle: S.me.vehicle || S.settings.defaultVehicle || 'car', plate: null, km: '', fuel: '', receipt: '', toll: +S.settings.defaultToll > 0 ? S.settings.defaultToll : '', legFrom: v.legFrom || (prev ? 'prev' : 'office'), back: v.returnHome !== false, kmBack: '', odoStart: v.odoStart ?? (prev && prev.odoEnd > 0 ? prev.odoEnd : ''), odoEnd: v.odoEnd ?? '', odoHome: v.odoHome ?? '' };
+  if (C.legFrom === 'prev' && !prev) C.legFrom = 'office';
+  const origin = () => legOrigin(C.legFrom, prev), dest = v.gps ? { lat: v.gps.lat, lng: v.gps.lng } : null;
+  let auto = dest ? routeCached2(origin(), dest) : null, autoBack = dest ? routeCached2(dest, officePt()) : null;
+  if (auto && !dc && !C.km) C.km = auto.km;
+  if (autoBack && !dc && !C.kmBack) C.kmBack = autoBack.km;
   const kmSrcOf = km1 => C.vehicle === 'company' ? null : auto && km1 === auto.km ? auto.src : dc && dc.kmOneWay === km1 && dc.kmSource ? dc.kmSource : 'manual';
   const render = () => {
-    const rate = rateFor(C.vehicle, s);
+    const rate = rateFor(C.vehicle, s), o = origin();
     openSheet(`${bar(mode === 'claim' ? 'ขอเบิกย้อนหลัง' : mode === 'resubmit' ? 'แก้ไขและส่งขอเบิกใหม่' : 'แก้ไขค่าเดินทาง (ผู้จัดการ)')}
       <p class="sub">${esc(v.customer)} · เช็คอิน ${dt(v.createdAt)}${mode !== 'claim' ? ' · ' + ref(v) : ''}</p>
       ${mode === 'resubmit' && st0 === 'rejected' ? `<div class="notice">รายการนี้ถูกตีกลับ${S.approvals[v.id] && S.approvals[v.id].note ? ': ' + esc(S.approvals[v.id].note) : ''} แก้ไขแล้วกดส่ง จะกลับไปรอตรวจใหม่</div>` : mode === 'adminEdit' ? `<div class="notice">แก้ไขในฐานะผู้จัดการ สถานะ "${STATUS[st0]}" คงเดิม และบันทึกชื่อผู้แก้ไขไว้ในรายการ</div>` : ''}
-      ${dc && mode === 'claim' ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม. ไป-กลับ'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
+      ${dc && mode === 'claim' ? `<div class="notice">ดึงค่าที่บันทึกไว้ตอนเช็คอินมาให้แล้ว (${dc.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(dc.kmRoundTrip) + ' กม.'} · รวม ฿${fmtB(dc.total)}) ตรวจแล้วกดส่งได้เลย หรือแก้ไขก่อน</div>` : ''}
       <form id="fClaim" class="stack" novalidate>
         <div class="chips">${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
         <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
-        ${C.vehicle !== 'company' ? `<div class="notice" id="cmEst">${!officeSet() ? 'ยังไม่ได้ปักพิกัดจุดเริ่มต้นในตั้งค่า ใส่ระยะจาก Google Maps เอง' : v.gps ? `${auto ? 'ระยะขาไปตามเส้นทางถนน <b class="num">' + fmtKm(auto.km) + ' กม.</b> · ไป-กลับ ' + fmtKm(est) + ' กม.' : 'ระบบประมาณไป-กลับ <b class="num">' + fmtKm(est) + ' กม.</b>'}<br><a href="${mapsDir(s.officeLat, s.officeLng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากจุดเริ่มต้นใน Google Maps</a>` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
-          <label class="f">ระยะทางขาไป (กม.)<span class="hint">ระบบเติมจากการคำนวณเส้นทางให้ แก้ไขได้ · คูณ 2 เป็นไป-กลับให้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>`
+        ${C.vehicle !== 'company' ? `<div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips"><button type="button" class="chip" data-cleg="office" aria-pressed="${C.legFrom !== 'prev'}">บริษัท</button>${prev ? `<button type="button" class="chip" data-cleg="prev" aria-pressed="${C.legFrom === 'prev'}">ต่อจาก ${esc(prev.customer)} (${tm(prev.createdAt)})</button>` : ''}</div>${legacy ? '<p class="sub">รายการนี้บันทึกก่อนระบบทริปต่อเนื่อง ระยะเดิมคิดไป-กลับจากบริษัท แก้ไขแยกขาได้</p>' : ''}</div>
+          <div class="notice" id="cmEst">${!officeSet() ? 'ยังไม่ได้ปักพิกัดจุดเริ่มต้นในตั้งค่า ใส่ระยะจาก Google Maps เอง' : v.gps ? `${auto ? 'ระยะขานี้ตามเส้นทางถนน <b class="num">' + fmtKm(auto.km) + ' กม.</b>' : 'ระยะขานี้โดยประมาณ <b class="num">' + fmtKm(lineKm(o, dest)) + ' กม.</b>'}${autoBack ? ' · ขากลับ ' + fmtKm(autoBack.km) + ' กม.' : ''}<br><a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o.name)} ใน Google Maps</a>` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
+          <label class="f">ระยะทางขานี้ (กม.)<span class="hint">จาก${C.legFrom === 'prev' ? 'ลูกค้ารายก่อน' : 'บริษัท'}ถึงลูกค้ารายนี้ ระบบเติมจากการคำนวณเส้นทางให้ แก้ไขได้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>
+          <label class="row" style="gap:8px;align-items:center;font-size:14px;font-weight:500"><input type="checkbox" id="cmBack" ${C.back ? 'checked' : ''} style="width:20px;height:20px;margin:0">กลับบริษัทจากที่นี่ (บวกระยะขากลับ)</label>
+          <label class="f" id="cmBackWrap" ${C.back ? '' : 'hidden'}>ระยะทางขากลับบริษัท (กม.)<input type="number" id="cmKmBack" inputmode="decimal" min="0" step="0.1" value="${esc(C.kmBack)}"></label>`
         : `<label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="cmFuel" inputmode="decimal" min="0" step="0.01" value="${esc(C.fuel)}"></label><label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="cmReceipt" value="${esc(C.receipt)}"></label>`}
+        <div class="stack" style="gap:8px"><span style="font-size:14px;font-weight:500">เลขไมล์ <span class="hint">ไม่บังคับ</span></span>
+          <div class="row" style="flex-wrap:wrap"><label class="f" style="flex:1 1 110px">ออกจากจุดเริ่ม<input type="number" id="cmOdoStart" inputmode="decimal" min="0" step="0.1" value="${esc(C.odoStart)}"></label><label class="f" style="flex:1 1 110px">ถึงลูกค้า<input type="number" id="cmOdoEnd" inputmode="decimal" min="0" step="0.1" value="${esc(C.odoEnd)}"></label><label class="f" style="flex:1 1 110px" id="cmOdoHomeWrap" ${C.vehicle !== 'company' && !C.back ? 'hidden' : ''}>ถึงบริษัท<input type="number" id="cmOdoHome" inputmode="decimal" min="0" step="0.1" value="${esc(C.odoHome)}"></label></div>
+          <p class="sub" id="cmOdoNote"></p></div>
         <label class="f">ค่าทางด่วน / ที่จอดรถ (บาท)<input type="number" id="cmToll" inputmode="decimal" min="0" step="0.01" value="${esc(C.toll)}"></label>
         <div class="calc" id="cmCalc"></div>
         <button class="btn primary block lg" type="submit">${mode === 'adminEdit' ? 'บันทึกการแก้ไข' : mode === 'resubmit' ? 'ส่งขอเบิกใหม่' : 'ส่งขอเบิก'}</button>
       </form>`);
-    const val = sel => { const el = $(sel); return el ? el.value : ''; };
-    const calc = () => { const km1 = Math.max(0, +val('#cmKm') || 0), kmRT = Math.round(km1 * 2 * 10) / 10, toll = n2(Math.max(0, +val('#cmToll') || 0)), fuel = C.vehicle === 'company' ? n2(Math.max(0, +val('#cmFuel') || 0)) : n2(kmRT * rate), total = n2(fuel + toll);
-      $('#cmCalc').innerHTML = (C.vehicle === 'company' ? `<span>ค่าน้ำมันตามใบเสร็จ</span><span class="num">${fmtB(fuel)}</span>` : `<span>ไป-กลับ ${fmtKm(kmRT)} กม. × ${fmtB(rate)} บาท</span><span class="num">${fmtB(fuel)}</span>`) + `<span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(total)}</span>`;
-      return { kmOne: km1, kmRT, rate, fuel, toll, total }; };
+    const val = sel => { const el = $(sel); return el ? el.value : ''; }, chk = sel => { const el = $(sel); return !!(el && el.checked); };
+    const calc = () => {
+      const company = C.vehicle === 'company', km1 = Math.max(0, +val('#cmKm') || 0), back = company ? C.back : chk('#cmBack'), kmBack = back ? Math.max(0, +val('#cmKmBack') || 0) : 0;
+      const odo = odoCalc(val('#cmOdoStart'), val('#cmOdoEnd'), back ? val('#cmOdoHome') : null), kmMap = company ? 0 : r1(km1 + kmBack), basis = !company && s.kmBasis === 'odo' && odo.km > 0 ? 'odo' : 'map';
+      const kmRT = company ? 0 : billKm(kmMap, odo.km, basis), toll = n2(Math.max(0, +val('#cmToll') || 0)), fuel = company ? n2(Math.max(0, +val('#cmFuel') || 0)) : n2(kmRT * rate), total = n2(fuel + toll);
+      const bw = $('#cmBackWrap'); if (bw) bw.hidden = !back; const ow = $('#cmOdoHomeWrap'); if (ow) ow.hidden = !company && !back;
+      $('#cmOdoNote').textContent = odo.bad ? 'เลขไมล์ปลายทางน้อยกว่าเลขไมล์ต้นทาง ตรวจตัวเลขอีกครั้ง' : odo.km != null ? `ตามเลขไมล์ ${fmtKm(odo.km)} กม.${!company && kmMap > 0 ? ' · แผนที่ ' + fmtKm(kmMap) + ' กม.' : ''}${basis === 'odo' ? ' · คิดเงินตามเลขไมล์' : ''}` : '';
+      $('#cmCalc').innerHTML = (company ? `<span>ค่าน้ำมันตามใบเสร็จ</span><span class="num">${fmtB(fuel)}</span>` : `<span>ขานี้ ${fmtKm(km1)}${back ? ' + ขากลับ ' + fmtKm(kmBack) : ''} = ${fmtKm(kmMap)} กม.${basis === 'odo' ? ' → คิดตามเลขไมล์ ' + fmtKm(kmRT) + ' กม.' : ''} × ${fmtB(rate)} บาท</span><span class="num">${fmtB(fuel)}</span>`) + `<span>ทางด่วน / ที่จอดรถ</span><span class="num">${fmtB(toll)}</span><span class="total">รวมเบิกสุทธิ (บาท)</span><span class="total num">${fmtB(total)}</span>`;
+      return { kmOne: km1, back, kmBack, kmMap, odo, basis, kmRT, rate, fuel, toll, total }; };
     calc();
-    if (C.vehicle !== 'company' && v.gps && officeSet() && s.autoKm !== false && !auto && !autoFilled) {
-      autoFilled = true;
-      roadKmOneWay(v.gps.lat, v.gps.lng).then(r => { if (!r) return; est = estimateRoundTrip(v.gps.lat, v.gps.lng); auto = r; const el = $('#cmKm'); if (!el) return;
-        if (!el.value || (dc && String(dc.kmOneWay || '') === el.value && dc.kmSource && dc.kmSource !== 'manual')) { el.value = r.km; C.km = r.km; toast(r.src === 'route' ? `คำนวณระยะทางขาไป ${fmtKm(r.km)} กม. ตามเส้นทางถนนให้แล้ว แก้ได้` : `ประมาณระยะขาไป ${fmtKm(r.km)} กม. แก้ได้`); calc(); }
-        const eb = $('#cmEst'); if (eb) (eb.innerHTML = `${r.src === 'route' ? 'ระยะขาไปตามเส้นทางถนน' : 'ระยะขาไปโดยประมาณ (เส้นตรง × ' + s.roadFactor + ')'} <b class="num">${fmtKm(r.km)} กม.</b> · ไป-กลับ ${fmtKm(est)} กม.<br><a href="${mapsDir(s.officeLat, s.officeLng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจากจุดเริ่มต้นใน Google Maps</a>`); });
+    if (C.vehicle !== 'company' && dest && officeSet() && s.autoKm !== false) {
+      const o0 = o, kA = routeKey2(o0, dest), kB = routeKey2(dest, officePt());
+      if (!auto && C.legReq !== kA) { C.legReq = kA; roadKm(o0, dest).then(r => { if (!r || C.legReq !== kA) return; auto = r; const el = $('#cmKm'); if (!el) return;
+        if (!el.value || (dc && String(dc.kmOneWay || '') === el.value && dc.kmSource && dc.kmSource !== 'manual' && !legacy)) { el.value = r.km; C.km = r.km; toast(r.src === 'route' ? `คำนวณระยะทางขานี้ ${fmtKm(r.km)} กม. ตามเส้นทางถนนให้แล้ว แก้ได้` : `ประมาณระยะขานี้ ${fmtKm(r.km)} กม. แก้ได้`); calc(); }
+        const eb = $('#cmEst'); if (eb) eb.innerHTML = `${r.src === 'route' ? 'ระยะขานี้ตามเส้นทางถนน' : 'ระยะขานี้โดยประมาณ (เส้นตรง × ' + s.roadFactor + ')'} <b class="num">${fmtKm(r.km)} กม.</b>${autoBack ? ' · ขากลับ ' + fmtKm(autoBack.km) + ' กม.' : ''}<br><a href="${mapsDir(o0.lat, o0.lng, dest.lat, dest.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o0.name)} ใน Google Maps</a>`; }); }
+      if (!autoBack && C.backReq !== kB) { C.backReq = kB; roadKm(dest, officePt()).then(r => { if (!r || C.backReq !== kB) return; autoBack = r; const el = $('#cmKmBack'); if (!el) return; if (!el.value) { el.value = r.km; C.kmBack = r.km; calc(); } }); }
     }
-    const keep = () => { C.plate = val('#cmPlate'); C.km = val('#cmKm'); C.fuel = val('#cmFuel'); C.receipt = val('#cmReceipt'); C.toll = val('#cmToll'); };
+    const keep = () => { C.plate = val('#cmPlate'); C.km = val('#cmKm'); C.fuel = val('#cmFuel'); C.receipt = val('#cmReceipt'); C.toll = val('#cmToll'); if ($('#cmBack')) C.back = chk('#cmBack'); C.kmBack = val('#cmKmBack'); C.odoStart = val('#cmOdoStart'); C.odoEnd = val('#cmOdoEnd'); C.odoHome = val('#cmOdoHome'); };
     $('#fClaim').addEventListener('input', calc);
-    $('#fClaim').addEventListener('click', e => { const t = e.target.closest('[data-cveh]'); if (!t) return; keep(); C.vehicle = t.dataset.cveh; render(); });
+    $('#fClaim').addEventListener('click', e => { const t = e.target.closest('[data-cveh],[data-cleg]'); if (!t) return; keep();
+      if (t.dataset.cveh) C.vehicle = t.dataset.cveh;
+      else { if (C.legFrom === t.dataset.cleg) return; C.legFrom = t.dataset.cleg; C.km = ''; C.legReq = null; auto = dest ? routeCached2(origin(), dest) : null; if (auto) C.km = auto.km; if (C.legFrom === 'prev' && prev && prev.odoEnd > 0 && !C.odoStart) C.odoStart = prev.odoEnd; }
+      render(); });
     $('#fClaim').addEventListener('submit', async e => {
       e.preventDefault(); const c = calc(); keep();
       if (C.vehicle !== 'company' && !c.kmOne) { toast('ใส่ระยะทางก่อน'); return; }
-      const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. ไป-กลับ'} · รวมเบิก ฿${fmtB(c.total)}`;
+      if (c.odo.bad) { toast('เลขไมล์ปลายทางน้อยกว่าต้นทาง แก้ไขก่อน'); return; }
+      const legFrom = C.vehicle !== 'company' && C.legFrom === 'prev' && prev ? 'prev' : 'office', o = legOrigin(legFrom, prev);
+      const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. (' + (legFrom === 'prev' ? 'ต่อจาก ' + prev.customer : 'จากบริษัท') + (c.back ? ' + ขากลับ' : '') + ')'} · รวมเบิก ฿${fmtB(c.total)}`;
       if (!(await confirmBox(mode === 'adminEdit' ? { title: 'บันทึกการแก้ไขของผู้จัดการ?', body: sum, ok: 'บันทึก' } : mode === 'resubmit' ? { title: 'ส่งขอเบิกใหม่?', body: sum + ' จะกลับไปรอตรวจอีกครั้ง', ok: 'ส่งใหม่' } : { title: 'ส่งขอเบิกรายการนี้?', body: sum + ' เมื่ออนุมัติแล้วจะแก้ไขเองไม่ได้', ok: 'ส่งขอเบิก' }))) return;
-      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, kmSource: kmSrcOf(c.kmOne), kmAutoOneWay: auto ? auto.km : (dc && dc.kmAutoOneWay) || null, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null };
+      const est = C.vehicle === 'company' || !dest ? null : r1((auto ? auto.km : lineKm(o, dest)) + (c.back ? (autoBack ? autoBack.km : lineKm(dest, officePt())) : 0));
+      const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, kmSource: kmSrcOf(c.kmOne), kmAutoOneWay: auto ? auto.km : (dc && dc.kmAutoOneWay) || null, kmAutoReturn: autoBack ? autoBack.km : null, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null,
+        legFrom, prevVisitId: legFrom === 'prev' ? prev.id : null, prevCustomer: legFrom === 'prev' ? prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name }, returnHome: C.vehicle === 'company' ? v.returnHome !== false : c.back, kmReturn: c.kmBack, kmMap: c.kmMap, odoStart: c.odo.start, odoEnd: c.odo.end, odoHome: c.odo.home, odoKm: c.odo.km, kmBasis: c.basis };
       if (mode === 'adminEdit') { nv.editedAt = Date.now(); nv.editedBy = S.myId; nv.editedByName = S.me.name || 'ผู้จัดการ'; }
-      try { await store.saveVisit(nv); if (isMine(v)) { S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); } toast(mode === 'adminEdit' ? 'บันทึกการแก้ไขแล้ว' : mode === 'resubmit' ? `ส่งขอเบิกใหม่แล้ว ${ref(nv)} รอหัวหน้าตรวจ` : `ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`); closeSheet(); }
+      try { await store.saveVisit(nv); let moved = null; if (legFrom === 'prev') { try { moved = await detachReturn(S.visits.find(x => x.id === prev.id) || prev, nv); } catch { moved = 'failed'; } }
+        if (isMine(v)) { S.me.vehicle = C.vehicle; if (C.vehicle !== 'company' && nv.plate) S.me.plate = nv.plate; lsSet(LS_ME, S.me); }
+        toast((mode === 'adminEdit' ? 'บันทึกการแก้ไขแล้ว' : mode === 'resubmit' ? `ส่งขอเบิกใหม่แล้ว ${ref(nv)} รอหัวหน้าตรวจ` : `ส่งขอเบิกแล้ว ${ref(nv)} รอหัวหน้าตรวจ`) + (moved === 'moved' ? ` · ย้ายขากลับจาก ${prev.customer} มาไว้ที่รายการนี้` : moved === 'locked' || moved === 'failed' ? ' · รายการก่อนหน้าแก้ไม่ได้ ขากลับอาจซ้ำ' : '')); closeSheet(); }
       catch (err) { toast(/row-level security|policy|invalid_argument/i.test((err && (err.message + err.code)) || '') ? 'บันทึกไม่ได้ รายการนี้ถูกล็อกเพราะอนุมัติแล้ว' : 'ส่งไม่สำเร็จ ลองอีกครั้ง'); }
     });
   };
@@ -1713,6 +1813,7 @@ function openSettings() {
         <div class="row"><label class="f grow">ทางด่วน / ที่จอดรถ เริ่มต้น (บาท)<span class="hint">0 = ให้กรอกเอง</span><input type="number" id="seToll" step="0.01" min="0" value="${s.defaultToll || 0}" ${dis}></label><label class="f grow">รถเริ่มต้นสำหรับคนใหม่<select id="seDefVeh" ${dis}>${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (s.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label></div>
         <label class="f"><span>คำนวณระยะทางอัตโนมัติจากจุดเริ่มต้นถึงตำแหน่งเช็คอิน</span><span class="hint">ใช้เส้นทางถนนจากบริการแผนที่ฟรี (OpenStreetMap) ถ้าติดต่อไม่ได้จะประมาณจากเส้นตรง × ตัวคูณ พนักงานแก้ตัวเลขได้เสมอ</span><select id="seAutoKm" ${dis}><option value="1" ${s.autoKm !== false ? 'selected' : ''}>เปิด (เติมให้ พนักงานแก้ได้)</option><option value="0" ${s.autoKm === false ? 'selected' : ''}>ปิด (แสดงค่าประมาณอย่างเดียว)</option></select></label>
         <label class="f"><span>เติมระยะทางจากการไปลูกค้ารายเดิมครั้งก่อน</span><span class="hint">เมื่อพนักงานเลือกลูกค้าที่เคยไปแล้ว ระบบเติม "ระยะทางขาไป" ที่เคยบันทึก/เบิกครั้งล่าสุดของลูกค้ารายนั้นให้ทันที พนักงานแก้ได้ ถ้าคำนวณเส้นทางถนนอัตโนมัติสำเร็จ ระบบจะใช้ค่าจากเส้นทางแทน จึงมีผลหลักเมื่อไม่มีพิกัด ไม่มีสัญญาณ หรือปิดคำนวณอัตโนมัติ · ปิด = ปล่อยช่องว่างให้กรอกเอง</span><select id="sePrefill" ${dis}><option value="1" ${s.prefillKm !== false ? 'selected' : ''}>เปิด (พนักงานแก้ได้)</option><option value="0" ${s.prefillKm === false ? 'selected' : ''}>ปิด</option></select></label>
+        <label class="f"><span>ระยะทางที่ใช้คิดเงิน</span><span class="hint">"ตามแผนที่" = ใช้ระยะเส้นทางถนนที่ระบบคำนวณ/พนักงานแก้ และใช้เลขไมล์เป็นตัวเทียบเตือนเท่านั้น · "ตามเลขไมล์" = เมื่อกรอกเลขไมล์ครบ ใช้กม.จากเลขไมล์คิดเงินแทน (รายการที่ไม่มีเลขไมล์ยังใช้แผนที่)</span><select id="seBasis" ${dis}><option value="map" ${(s.kmBasis || 'map') === 'map' ? 'selected' : ''}>ตามแผนที่ (เลขไมล์ใช้เทียบ)</option><option value="odo" ${s.kmBasis === 'odo' ? 'selected' : ''}>ตามเลขไมล์เมื่อกรอกครบ</option></select></label>
         <label class="f"><span>รายงานการขาย: ใครเห็นของใคร</span><span class="hint">"เฉพาะของตัวเอง" = พนักงานขายเห็นรายงานและสถิติของตนเองเท่านั้น · "เห็นด้วยกันหมด" = ทุกคนเลือกดูของคนอื่นและทั้งทีมได้ · หัวหน้า/CEO/ผู้มีสิทธิ์ "รายงานสรุป: ดูทั้งทีม" เห็นทุกคนเสมอ</span><select id="seReport" ${dis}><option value="own" ${(s.reportScope || 'own') === 'own' ? 'selected' : ''}>เฉพาะของตัวเอง (ค่าเริ่มต้น)</option><option value="all" ${s.reportScope === 'all' ? 'selected' : ''}>เห็นด้วยกันหมดทั้งทีม</option></select></label>
         <label class="f">เป้าเข้าพบต่อคนต่อเดือน (ครั้ง)<span class="hint">ใช้ในหน้ารายงานของเซลส์และทีม</span><input type="number" id="seTarget" min="0" step="1" value="${s.visitTarget}" ${dis}></label>
         <label class="f">ชื่อจุดเริ่มต้น<span class="hint">จุดตั้งต้นที่ใช้คำนวณระยะทางไป-กลับของทุกคน ค่าเริ่มต้นคือสำนักงานขายมาบตาพุด เปลี่ยนได้</span><input type="text" id="seOffice" value="${esc(s.officeName)}" ${dis}></label>
@@ -1743,8 +1844,8 @@ function openSettings() {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? await resolveCoords(geoRaw) : null;
       if (geoRaw && !g) { toast('อ่านพิกัดบริษัทไม่ออก'); return; } if (g && g.short) toast('ถอด Plus Code เป็น ' + g.lat.toFixed(6) + ', ' + g.lng.toFixed(6) + coordNote(g));
       const ns = { officeName: $('#seOffice').value.trim() || DEFAULT_SETTINGS.officeName, officeLat: g ? +g.lat.toFixed(6) : DEFAULT_SETTINGS.officeLat, officeLng: g ? +g.lng.toFixed(6) : DEFAULT_SETTINGS.officeLng,
-        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), defaultToll: n2(Math.max(0, +$('#seToll').value || 0)), defaultVehicle: $('#seDefVeh').value, prefillKm: $('#sePrefill').value === '1', autoKm: $('#seAutoKm').value === '1', reportScope: $('#seReport').value === 'all' ? 'all' : 'own', updatedAt: Date.now(), updatedBy: S.myId };
-      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget', 'defaultToll', 'defaultVehicle', 'prefillKm', 'autoKm', 'reportScope'].some(k => ns[k] !== S.settings[k]);
+        rateCar: n2(+$('#seCar').value || 0), rateEv: n2(+$('#seEv').value || 0), rateMoto: n2(+$('#seMoto').value || 0), roadFactor: Math.max(1, +$('#seFactor').value || 1.3), flagPct: Math.max(0, +$('#seFlag').value || 0), siteRadiusM: Math.max(50, +$('#seRadius').value || 1000), visitTarget: Math.max(0, Math.round(+$('#seTarget').value || 0)), defaultToll: n2(Math.max(0, +$('#seToll').value || 0)), defaultVehicle: $('#seDefVeh').value, prefillKm: $('#sePrefill').value === '1', autoKm: $('#seAutoKm').value === '1', kmBasis: $('#seBasis').value === 'odo' ? 'odo' : 'map', reportScope: $('#seReport').value === 'all' ? 'all' : 'own', updatedAt: Date.now(), updatedBy: S.myId };
+      const changed = ['officeName', 'officeLat', 'officeLng', 'rateCar', 'rateEv', 'rateMoto', 'roadFactor', 'flagPct', 'siteRadiusM', 'visitTarget', 'defaultToll', 'defaultVehicle', 'prefillKm', 'autoKm', 'kmBasis', 'reportScope'].some(k => ns[k] !== S.settings[k]);
       if (changed && !(await confirmBox({ title: 'บันทึกค่าบริษัทใหม่?', body: `รถยนต์ ${ns.rateCar} · EV ${ns.rateEv} · มอเตอร์ไซค์ ${ns.rateMoto} บ./กม. · เป้า ${ns.visitTarget} ครั้ง/เดือน มีผลกับทุกคนที่ส่งรายงานหลังจากนี้`, ok: 'บันทึก' }))) return;
       if (changed) { try { await store.saveSettings(ns); } catch { toast('บันทึกค่าบริษัทไม่ได้ บัญชีนี้อาจไม่มีสิทธิ์'); return; } }
     }
@@ -1799,8 +1900,8 @@ document.addEventListener('click', e => {
 // ---------- export ----------
 function csvText() {
   const rows = claimsRows(), q = x => `"${String(x ?? '').replace(/"/g, '""')}"`;
-  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนไฟล์แนบ', 'ประเภทรถ', 'ทะเบียน', 'ระยะทางไป-กลับ (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
-  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length + (v.files || []).length, VEHICLES[v.vehicle], v.plate, v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
+  const head = ['ลำดับ', 'เลขที่', 'วัน/เวลา เช็คอิน', 'พนักงาน', 'รหัสพนักงาน', 'ชื่อบริษัทลูกค้า', 'ผู้ติดต่อ / แผนก', 'วัตถุประสงค์', 'พิกัด GPS', 'ลิงก์ Google Maps', 'แหล่งพิกัด', 'รายงานผลการเข้าพบ', 'จำนวนไฟล์แนบ', 'ประเภทรถ', 'ทะเบียน', 'จุดเริ่มขานี้', 'ระยะขานี้ (กม.)', 'ขากลับบริษัท (กม.)', 'ระยะตามแผนที่ (กม.)', 'เลขไมล์เริ่ม', 'เลขไมล์ถึงลูกค้า', 'เลขไมล์ถึงบริษัท', 'กม.ตามเลขไมล์', 'ฐานคิดเงิน', 'ระยะทางที่เบิก (กม.)', 'ระบบประมาณ (กม.)', 'อัตรา (บาท/กม.)', 'ค่าน้ำมัน (บาท)', 'เลขที่ใบเสร็จน้ำมัน', 'ค่าทางด่วน / ที่จอดรถ (บาท)', 'รวมเบิกสุทธิ (บาท)', 'สถานะตรวจรับ', 'ผู้ตรวจ', 'หมายเหตุผู้ตรวจ', 'จุดที่ควรตรวจ'];
+  const body = rows.map((v, i) => { const a = S.approvals[v.id] || {}; return [i + 1, ref(v), dt(v.createdAt), v.staffName, v.staffCode, v.customer, v.contact, v.purpose, v.gps ? `${v.gps.lat}, ${v.gps.lng}` : '', v.gps ? mapsPin(v.gps.lat, v.gps.lng) : '', v.gps ? (v.gps.source === 'device' ? 'เครื่อง' : 'ใส่เอง') : '', v.report, (v.photos || []).length + (v.files || []).length, VEHICLES[v.vehicle], v.plate, isTrip(v) ? legLabel(v) : 'จากบริษัท (ไป-กลับ)', isTrip(v) ? v.kmOneWay : v.kmOneWay ?? '', isTrip(v) ? (v.returnHome ? v.kmReturn : 0) : v.kmOneWay ?? '', isTrip(v) ? v.kmMap : v.kmRoundTrip, v.odoStart ?? '', v.odoEnd ?? '', v.odoHome ?? '', v.odoKm ?? '', v.kmBasis === 'odo' ? 'เลขไมล์' : 'แผนที่', v.kmRoundTrip, v.kmEstimate ?? '', v.rate, v.fuelAmount, v.receiptNo, v.toll, v.total, STATUS[statusOf(v)], a.byName || '', a.note || '', auditFlags(v).join(' / ')]; });
   return '﻿' + [head, ...body].map(r => r.map(q).join(',')).join('\r\n');
 }
 $('#btnCsv').addEventListener('click', async () => {
@@ -2311,7 +2412,7 @@ function claimPageHtml(rows, ym, key) {
   const hasPhoto = live.some(v => hasPhotos(v)), hasGps = live.length && live.every(v => v.gps), hasToll = live.some(v => v.toll > 0), hasFuelBill = live.some(v => v.vehicle === 'company' && v.fuelAmount > 0);
   const bx = on => `<span class="bx">${on ? '✓' : ''}</span>`;
   const tr = live.map((v, i) => `<tr><td class="c">${i + 1}</td><td class="c">${dOnly(v.createdAt)}<br><span class="r">${ref(v)}</span></td>
-    <td>${esc(v.customer)}${v.contact ? `<div class="s">${esc(v.contact)}</div>` : ''}${v.gps ? `<div class="s">GPS ${v.gps.lat}, ${v.gps.lng}</div>` : ''}</td>
+    <td>${esc(v.customer)}${v.contact ? `<div class="s">${esc(v.contact)}</div>` : ''}${isTrip(v) ? `<div class="s">${esc(legLabel(v))} ${fmtKm(v.kmOneWay)} กม.${v.returnHome ? ' + กลับบริษัท ' + fmtKm(v.kmReturn) + ' กม.' : ''}${v.odoStart > 0 && v.odoEnd > 0 ? ' · ไมล์ ' + v.odoStart + '→' + v.odoEnd + (v.odoHome ? '→' + v.odoHome : '') : ''}</div>` : ''}${v.gps ? `<div class="s">GPS ${v.gps.lat}, ${v.gps.lng}</div>` : ''}</td>
     <td>${esc(v.purpose || '')}${v.vehicle === 'company' ? '<div class="s">รถส่วนกลาง' + (v.receiptNo ? ' · ใบเสร็จ ' + esc(v.receiptNo) : '') + '</div>' : ''}</td>
     <td class="n">${v.vehicle === 'company' ? '-' : fmtKm(v.kmRoundTrip)}</td><td class="n">${v.vehicle === 'company' ? 'ตามบิล' : fmtB(v.rate)}</td>
     <td class="n">${fmtB(v.fuelAmount)}</td><td class="n">${fmtB(v.toll)}</td><td class="n">${fmtB(v.total)}</td>
@@ -2325,7 +2426,7 @@ function claimPageHtml(rows, ym, key) {
         <span>ประจำเดือน</span><div>${thaiMonth(ym)}</div>
         <span>ยานพาหนะ</span><div>${esc(vehicles || '-')}${rates ? ' · อัตรา ' + rates + ' บาท/กม.' : ''}</div>
       </div><div><div class="no"><small>เลขที่ใบเบิก (RE No.)</small><b>${docNo}</b><small>วันที่ยื่นเบิก ${dFull(Date.now())}</small></div></div></div>
-    <table class="pt"><thead><tr><th style="width:8mm">ที่</th><th style="width:24mm">วันที่ /<br>เลขอ้างอิง</th><th>ลูกค้า (เส้นทาง: บริษัท → ลูกค้า → บริษัท)</th><th style="width:20mm">วัตถุประสงค์</th><th style="width:15mm">ระยะทาง<br>(กม.)</th><th style="width:13mm">อัตรา<br>(บาท/กม.)</th><th style="width:18mm">ค่าน้ำมัน<br>(บาท)</th><th style="width:15mm">ทางด่วน /<br>จอดรถ</th><th style="width:19mm">รวม<br>(บาท)</th><th style="width:15mm">สถานะ</th></tr></thead>
+    <table class="pt"><thead><tr><th style="width:8mm">ที่</th><th style="width:24mm">วันที่ /<br>เลขอ้างอิง</th><th>ลูกค้า (เส้นทางแต่ละขา · เริ่มและจบที่บริษัท)</th><th style="width:20mm">วัตถุประสงค์</th><th style="width:15mm">ระยะทาง<br>(กม.)</th><th style="width:13mm">อัตรา<br>(บาท/กม.)</th><th style="width:18mm">ค่าน้ำมัน<br>(บาท)</th><th style="width:15mm">ทางด่วน /<br>จอดรถ</th><th style="width:19mm">รวม<br>(บาท)</th><th style="width:15mm">สถานะ</th></tr></thead>
       <tbody>${tr || '<tr><td colspan="10" class="c" style="padding:12px;color:#777">ไม่มีรายการขอเบิกในเดือนนี้</td></tr>'}</tbody>
       <tfoot><tr><td colspan="4" style="text-align:right">รวมสุทธิ (${live.length} รายการ)</td><td class="n">${fmtKm(sum('kmRoundTrip'))}</td><td></td><td class="n">${fmtB(sum('fuelAmount'))}</td><td class="n">${fmtB(sum('toll'))}</td><td class="n">${fmtB(sum('total'))}</td><td></td></tr></tfoot></table>
     <div class="words"><span>จำนวนเงินรวม (ตัวอักษร): <b style="font-family:inherit;font-size:inherit">${bahtText(sum('total'))}</b></span><span>ยอดขอเบิกสุทธิ <b>${fmtB(sum('total'))}</b> บาท</span></div>
