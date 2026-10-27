@@ -309,7 +309,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 .rowact .btn.sm{padding:2px 6px;min-height:0;line-height:1}
 /* sales log */
 .ver{font-size:11px;font-weight:500;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 6px;margin-left:6px;vertical-align:2px;letter-spacing:0}
-.qlog{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:560px}
+.qlog{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px;max-width:620px}
 #homeLog .tile{background:var(--bg)}
 .qlog button{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;min-height:72px;transition:transform .12s ease}
 .qlog button:active{transform:scale(.97)}
@@ -362,14 +362,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     <div class="tile"><small id="tKmL">ระยะทางเดือนนี้</small><b id="tKm">0 กม.</b></div>
     <div class="tile"><small id="tAmtL">ยอดเบิกเดือนนี้</small><b class="money" id="tAmt">฿0</b></div>
   </div>
-  <div class="home-actions"><button class="btn primary block lg" data-go="checkin">
+  <div class="home-actions"><button class="btn primary block lg" data-go="checkin" data-need="checkin:2">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-    เช็คอินเข้าพบลูกค้า
+    เข้าพบหน้างาน (เช็คอิน)
   </button><button class="btn ghost block" data-go="report" style="margin-top:8px">ดูรายงานเดือนนี้</button></div>
   <div class="notice" id="setupNotice" hidden></div>
   <div class="notice" id="draftNotice" hidden></div>
   <div class="card stack" id="homeLog" data-need="checkin">
-    <div class="row" style="align-items:center"><h2 class="grow" style="margin:0" id="logHomeH">งานขายวันนี้</h2><button class="btn ghost sm" data-go="log">บันทึกทั้งหมด</button></div>
+    <div class="row" style="align-items:center"><h2 class="grow" style="margin:0" id="logHomeH">งานขายวันนี้</h2><button class="btn ghost sm" data-go="log">บันทึกงานทั้งหมด</button></div>
     <div class="tiles" id="logTiles"></div>
     <div class="qlog" id="logQuick"></div>
   </div>
@@ -390,8 +390,10 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 <!-- CHECK-IN -->
 <section class="view wrap" id="v-checkin" hidden>
   <div class="stack" style="gap:4px">
-    <h1>เช็คอินเข้าพบลูกค้า</h1>
-    <p class="sub">กรอกที่หน้างาน ส่งครั้งเดียวได้ทั้งรายงานและค่าเดินทาง</p>
+    <a href="#" data-go="log" class="sub" style="text-decoration:none">← บันทึกงานทั้งหมด</a>
+    <h1>บันทึกงาน · เข้าพบหน้างาน</h1>
+    <p class="sub">กรอกที่หน้างาน ส่งครั้งเดียวได้ทั้งรายงานการขายและค่าเดินทาง · ถ้าเป็นการโทร LINE อีเมล หรือประชุม เลือกประเภทด้านล่างแทน</p>
+    <div class="chips" id="ciType"></div>
   </div>
   <form id="fCheckin" class="stack" novalidate>
     <div class="card stack">
@@ -453,7 +455,14 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
       <div class="chips" id="ciVehicle"></div>
       <label class="f" id="wrapPlate">ทะเบียนรถ<input type="text" id="ciPlate" placeholder="เช่น 1กข 1234"></label>
       <div id="kmBlock" class="stack">
-        <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips" id="ciLeg"></div><p class="sub" id="ciLegNote"></p></div>
+        <div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips" id="ciLeg"></div><p class="sub" id="ciLegNote"></p>
+          <details id="legCustom"><summary class="sub" style="cursor:pointer">เริ่มจากจุดอื่น เช่น ออกจากบ้านตรงไปหาลูกค้า</summary>
+            <div class="stack" style="margin-top:8px;gap:8px">
+              <div class="row" style="flex-wrap:wrap"><label class="f" style="flex:1 1 110px">ชื่อจุด<input type="text" id="ciFromName" placeholder="เช่น บ้าน"></label><label class="f" style="flex:2 1 200px">พิกัด หรือลิงก์ Google Maps<input type="text" id="ciFromGeo" placeholder="12.7136, 101.1605 หรือวางลิงก์"></label></div>
+              <div class="row" style="flex-wrap:wrap"><button type="button" class="btn ghost sm" id="ciFromHere">ใช้ตำแหน่งที่ยืนอยู่ตอนนี้</button><button type="button" class="btn soft sm" id="ciFromUse">ใช้จุดนี้เป็นจุดเริ่ม</button><button type="button" class="btn ghost sm" id="ciFromSaved" hidden></button></div>
+              <label class="row" style="gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="ciFromSave" checked style="width:18px;height:18px;margin:0">จำจุดนี้ไว้ในเครื่องนี้สำหรับครั้งต่อไป</label>
+              <p class="sub">ขากลับยังคิดถึงบริษัทตามระเบียบ ถ้ากลับบ้านโดยตรงให้เอาติ๊ก "กลับบริษัทจากที่นี่" ออกแล้วใส่ระยะเอง</p>
+            </div></details></div>
         <div class="notice" id="estBox"></div>
         <label class="f">ระยะทางขานี้ (กม.)
           <span class="hint">จากจุดเริ่มขานี้ถึงตำแหน่งเช็คอิน ระบบคำนวณตามเส้นทางถนนให้อัตโนมัติ แก้ไขตัวเลขได้ถ้าต่างจากจริง</span>
@@ -549,8 +558,9 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 
 <!-- SALES LOG -->
 <section class="view wrap" id="v-log" hidden>
-  <div class="row" style="align-items:center"><h1 class="grow">บันทึกงานขาย</h1><button class="btn primary sm" data-newact="call" data-need="checkin:2">+ บันทึกการติดต่อ</button></div>
-  <p class="sub">รวมการเข้าพบจากการเช็คอิน และการโทร LINE อีเมล ประชุม ที่บันทึกไว้</p>
+  <div class="stack" style="gap:4px"><h1>บันทึกงาน</h1><p class="sub">เลือกประเภทงานที่จะบันทึก ถ้าไปพบลูกค้าที่หน้างานเลือก "เข้าพบหน้างาน" จะมีส่วนพิกัด รูป และค่าเดินทางให้</p></div>
+  <div class="qlog" id="slNew" data-need="checkin:2"></div>
+  <h2 style="margin:6px 0 0">บันทึกที่ผ่านมา</h2>
   <div class="notice" id="slNote" hidden></div>
   <div class="row"><input type="search" id="slSearch" placeholder="ค้นหาลูกค้า ผู้ติดต่อ หรือข้อความ" style="flex:2;min-width:0"><select id="slWho" style="width:auto;flex:1;min-width:0" hidden aria-label="พนักงาน"></select></div>
   <div class="chips" id="slPeriod"></div>
@@ -591,8 +601,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
 <nav class="tabs" aria-label="เมนูหลัก"><div class="wrap">
   <button data-go="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>หน้าแรก</button>
   <button data-go="customers" data-need="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M8 8h3M8 12h3M8 16h3M2 21h20"/></svg>ลูกค้า</button>
-  <button data-go="checkin" class="fab" data-need="checkin"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span>เช็คอิน</button>
-  <button data-go="log" data-need="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>บันทึกงาน</button>
+  <button data-go="log" class="fab" data-need="checkin"><span class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></span>บันทึกงาน</button>
   <button data-go="team" data-need="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.2 3.2 0 0 1 0 6.3M18 14.2c1.8.8 3 2.6 3 4.8"/></svg>ทีมขาย</button>
   <button data-go="claims" class="desk-only" data-need="checkin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7"/></svg>เบิก</button>
   <button data-go="report" data-need="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>รายงาน</button>
@@ -650,8 +659,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 const APP_VERSIONS = [
+  ['2.1', '27 ต.ค. 2569', ['รวมเมนู "เช็คอิน" กับ "บันทึกงาน" เป็นเมนูเดียวชื่อ "บันทึกงาน" (ปุ่มกลาง) เลือกประเภทก่อน: โทร / LINE / อีเมล / ประชุม / เข้าพบหน้างาน', 'ประเภท "เข้าพบหน้างาน" คือฟอร์มเช็คอินเดิม (พิกัด รูป ค่าเดินทาง) ประเภทอื่นเป็นฟอร์มสั้น สลับประเภทระหว่างกรอกได้โดยชื่อลูกค้าติดไปด้วย', 'หน้าแรก: ปุ่มใหญ่เข้าพบหน้างาน (เช็คอิน) และปุ่มลัดทุกประเภทอยู่ครบ ข้อมูลและสิทธิ์เดิมไม่เปลี่ยน', 'ข้อ 4 ค่าเดินทาง: รายการแรกของวันเริ่มจากบริษัทเป็นค่าเริ่มต้น และมีเมนูซ่อน "เริ่มจากจุดอื่น" (เช่น ออกจากบ้าน) ใส่พิกัด/ลิงก์ หรือใช้ตำแหน่งปัจจุบัน จำจุดไว้ในเครื่องสำหรับครั้งต่อไปได้ ระยะคิดจากจุดนั้นถึงลูกค้า ขากลับยังคิดถึงบริษัท']],
   ['2.0', '27 ต.ค. 2569', ['ต้องรัน supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ cars ในตาราง profiles ปลอดภัยกับข้อมูลเดิม)', '"รถของฉัน": พนักงานบันทึกรถได้หลายคัน (ชื่อเรียก ประเภท ทะเบียน) ในตั้งค่า ตอนเช็คอินและขอเบิกย้อนหลังแตะเลือกคันเดียวจบ ประเภทรถ/อัตราและทะเบียนตามคันที่เลือก ระบบจำคันล่าสุดที่ใช้', 'เลขไมล์เริ่มต้นเติมต่อจากรายการล่าสุดของ "คันนั้น" (ข้ามวันได้) ถ้าเช็คอินต่อเนื่องในวันเดียวกันยังเติมจากรายการก่อนหน้าเหมือนเดิม', 'รายงานการเดินทางสรุปจำนวนครั้ง กม. และยอดเบิกแยกรายคัน (ประเภท · ชื่อรถ ทะเบียน) และ CSV เพิ่มคอลัมน์ชื่อรถ', 'รถประจำ/ทะเบียนเดิมของทุกคนถูกย้ายเป็นรถคันแรกใน "รถของฉัน" อัตโนมัติ']],
   ['1.4', '27 ต.ค. 2569', ['เช็คอินต่อเนื่องหลายลูกค้าในวันเดียว: เลือก "ขานี้เริ่มจาก" บริษัท หรือต่อจากลูกค้ารายก่อนหน้า (ระบบเลือกให้เมื่อมีเช็คอินในวันเดียวกัน) ระยะทางคิดจากจุดก่อนหน้าถึงลูกค้ารายนี้ ไม่วนกลับบริษัททุกรายการ', 'ช่อง "กลับบริษัทจากที่นี่" บวกระยะขากลับ และเมื่อเช็คอินรายถัดไปแบบต่อจาก ระบบย้ายขากลับไปไว้ที่รายการล่าสุดของวันให้เอง ขากลับจึงไม่ซ้ำ (รายการที่อนุมัติแล้วไม่ถูกแก้ และระบบเตือนผู้ตรวจแทน)', 'เลขไมล์: ช่องเลขไมล์ออกจากจุดเริ่ม ถึงลูกค้า และถึงบริษัท ระบบคำนวณกม.ตามเลขไมล์ เติมเลขไมล์เริ่มจากรายการก่อนหน้าให้ และเตือนผู้ตรวจเมื่อต่างจากแผนที่เกินเกณฑ์', 'หลังบ้านตั้งค่า "ระยะทางที่ใช้คิดเงิน" ตามแผนที่ (ค่าเริ่มต้น) หรือตามเลขไมล์เมื่อกรอกครบ', 'ขอเบิกย้อนหลัง/แก้ไขค่าเดินทาง ใบสรุปขอเบิก รายละเอียดรายการ และ CSV แสดงจุดเริ่มขา ขากลับ และเลขไมล์ · รายการเก่ายังแสดงแบบไป-กลับเหมือนเดิม']],
   ['1.3', '26 ต.ค. 2569', ['หลังบ้านมีหัวข้อ "ตำแหน่ง" เพิ่ม แก้ชื่อ และลบตำแหน่งได้เอง แต่ละตำแหน่งกำหนดระดับการเข้าใช้และสิทธิ์ตั้งต้นของ 6 ส่วน', 'หน้าผู้ใช้งานและหน้าเพิ่มพนักงานเลือกจากรายการตำแหน่ง ระบบเติมสิทธิ์ตามตำแหน่งให้ แล้วปรับรายคนต่อได้', 'แก้สิทธิ์ของตำแหน่งแล้วเลือกใช้กับทุกคนในตำแหน่งนั้นได้ในครั้งเดียว · ตำแหน่งพื้นฐาน 3 ตำแหน่งเปลี่ยนชื่อได้แต่ลบไม่ได้', 'ฐานข้อมูล: เพิ่มคอลัมน์ position ในตาราง profiles ต้องรัน supabase/schema.sql อีกครั้ง']],
@@ -925,8 +935,8 @@ const KM_SRC = { route: 'คำนวณจากเส้นทางถนน'
 // ---- trip chaining: a leg starts at the office or at the previous check-in of the same day ----
 const dayOf = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
 function prevLegVisit(atMs, excludeId) { const at = atMs || Date.now(), day = dayOf(at); return S.visits.find(v => !v.isExample && !v.deleted && isMine(v) && v.id !== excludeId && v.gps && v.createdAt <= at && dayOf(v.createdAt) === day) || null; }
-function legOrigin(legFrom, prev) { return legFrom === 'prev' && prev && prev.gps ? { lat: prev.gps.lat, lng: prev.gps.lng, name: prev.customer, kind: 'prev' } : officePt(); }
-const legLabel = v => v.legFrom === 'prev' ? 'ต่อจาก ' + (v.prevCustomer || 'ลูกค้ารายก่อน') : 'จากบริษัท';
+function legOrigin(legFrom, prev, custom) { if (legFrom === 'custom' && custom && custom.lat != null) return { lat: +custom.lat, lng: +custom.lng, name: custom.name || 'จุดอื่น', kind: 'custom' }; return legFrom === 'prev' && prev && prev.gps ? { lat: prev.gps.lat, lng: prev.gps.lng, name: prev.customer, kind: 'prev' } : officePt(); }
+const legLabel = v => v.legFrom === 'prev' ? 'ต่อจาก ' + (v.prevCustomer || 'ลูกค้ารายก่อน') : v.legFrom === 'custom' ? 'จาก' + (v.fromAt && v.fromAt.name ? v.fromAt.name : 'จุดอื่น') : 'จากบริษัท';
 const isTrip = v => !!v.legFrom;
 function tripNote(v) { if (!isTrip(v)) return ''; return `${legLabel(v)}${v.returnHome ? ' → กลับบริษัท' : ' (ไม่รวมขากลับ)'}${v.odoKm > 0 ? ' · เลขไมล์ ' + fmtKm(v.odoKm) + ' กม.' : ''}${v.kmBasis === 'odo' ? ' · คิดตามเลขไมล์' : ''}`; }
 function odoCalc(st, en, home) { st = +st || null; en = +en || null; home = +home || null; const leg = st > 0 && en != null && en >= st ? r1(en - st) : null, ret = en > 0 && home != null && home >= en ? r1(home - en) : null; return { start: st, end: en, home, leg, ret, km: leg != null ? r1(leg + (ret || 0)) : null, bad: (st > 0 && en > 0 && en < st) || (en > 0 && home > 0 && home < en) }; }
@@ -946,7 +956,7 @@ function kmSourceNow() { const val = $('#ciKm').value; if (!val) return null; re
 function backSourceNow() { const val = $('#ciKmBack').value; if (!val) return null; return F.backAuto != null && val === String(F.backAuto) ? F.backSrc : 'manual'; }
 function autoFillKm(d) {
   if (!d || F.vehicle === 'company' || S.settings.autoKm === false || !officeSet()) return;
-  const o = legOrigin(F.legFrom, F.prev), k = routeKey2(o, d);
+  const o = legOrigin(F.legFrom, F.prev, F.origin), k = routeKey2(o, d);
   if (F.kmReq !== k) { F.kmReq = k; roadKm(o, d).then(r => { if (!r || F.kmReq !== k) return;
     const el = $('#ciKm'); if (el.value && kmSourceNow() === 'manual') { updateCalc(); return; }
     el.value = r.km; F.kmAuto = r.km; F.kmSrc = r.src;
@@ -979,7 +989,7 @@ function go(view) {
   if (NAV_NEED[view] && !can(NAV_NEED[view])) { toast('บัญชีนี้ไม่มีสิทธิ์เข้าส่วนนี้ ติดต่อผู้ดูแลระบบ'); view = 'home'; }
   S.view = view;
   document.querySelectorAll('section.view').forEach(s => s.hidden = s.id !== 'v-' + view);
-  document.querySelectorAll('nav.tabs button').forEach(b => b.dataset.go === view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  document.querySelectorAll('nav.tabs button').forEach(b => b.dataset.go === view || (view === 'checkin' && b.dataset.go === 'log') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   window.scrollTo(0, 0);
   if (view === 'checkin') updateCalc();
 }
@@ -1109,7 +1119,7 @@ function renderLogHome() {
   $('#logHomeH').textContent = team ? 'งานขายของทีมวันนี้' : 'งานขายของฉันวันนี้';
   $('#logTiles').innerHTML = tile('ลูกค้าที่ติดต่อ', new Set(today.map(e => ckey(e.customer))).size) + tile('เข้าพบ', today.filter(e => e.type === 'visit').length) + tile('โทร LINE อีเมล', today.filter(e => e.type !== 'visit').length);
   $('#logQuick').hidden = !(S.canWrite && can('checkin', 2));
-  $('#logQuick').innerHTML = [['call', 'โทร'], ['line', 'LINE'], ['email', 'อีเมล']].map(([k, l]) => `<button type="button" data-newact="${k}">${actIc(k)}${l}</button>`).join('') + `<button type="button" data-go="checkin">${actIc('visit')}เข้าพบ</button>`;
+  $('#logQuick').innerHTML = typePicker();
   const show = fu.filter(x => x.t == null || x.t <= t0 + 7 * 864e5).slice(0, 6);
   $('#homeFuWrap').hidden = !show.length || !can('checkin');
   $('#homeFuH').textContent = `ต้องติดตาม${due.length ? ` (ถึงกำหนด ${due.length})` : ''}`;
@@ -1118,9 +1128,14 @@ function renderLogHome() {
   $('#homeTl').innerHTML = today.length ? today.slice(0, 8).map(e => evItem(e, team)).join('') + (today.length > 8 ? `<button class="btn ghost sm" data-go="log" style="margin-top:8px">ดูอีก ${today.length - 8} รายการ</button>` : '')
     : '<div class="empty">ยังไม่มีบันทึกวันนี้<br>กดปุ่มด้านบนเมื่อโทร ส่ง LINE หรืออีเมลถึงลูกค้า</div>';
 }
+const NEW_TYPES = [['call', 'โทร'], ['line', 'LINE'], ['email', 'อีเมล'], ['meeting', 'ประชุม'], ['visit', 'เข้าพบหน้างาน']];
+function typePicker() { return NEW_TYPES.map(([k, l]) => k === 'visit' ? `<button type="button" data-go="checkin">${actIc('visit')}${l}</button>` : `<button type="button" data-newact="${k}">${actIc(k)}${l}</button>`).join(''); }
+function renderTypeChips() { const el = $('#ciType'); if (el) el.innerHTML = NEW_TYPES.map(([k, l]) => `<button type="button" class="chip" ${k === 'visit' ? 'aria-pressed="true"' : `data-newact="${k}" data-fromci="1" aria-pressed="false"`}>${esc(l)}</button>`).join(''); }
 let slType = 'all', slPeriod = 'week';
 function renderLog() {
   if (!$('#slList')) return;
+  if ($('#slNew')) { $('#slNew').innerHTML = typePicker(); $('#slNew').hidden = !(S.canWrite && can('checkin', 2)); }
+  renderTypeChips();
   const team = can('team'), sel = $('#slWho');
   sel.hidden = !team;
   if (team) {
@@ -1178,7 +1193,7 @@ function openActForm(o = {}) {
   const lt = ms => { const d = new Date(ms); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
   openSheet(`${bar(a ? 'แก้ไขบันทึก' : 'บันทึกการติดต่อ')}
     <form id="fAct" class="stack" novalidate>
-      <div class="stack" style="gap:6px"><span class="lbl">ช่องทาง</span><div class="chips">${Object.entries(ACT_TYPES).map(([k, l]) => `<button type="button" class="chip" data-at="${k}" aria-pressed="${k === type}">${l}</button>`).join('')}</div><span class="hint">ถ้าไปพบลูกค้าที่หน้างาน ใช้ปุ่มเช็คอิน เพื่อเก็บพิกัดและเบิกค่าเดินทาง</span></div>
+      <div class="stack" style="gap:6px"><span class="lbl">ประเภทงาน</span><div class="chips">${Object.entries(ACT_TYPES).map(([k, l]) => `<button type="button" class="chip" data-at="${k}" aria-pressed="${k === type}">${l}</button>`).join('')}${a ? '' : '<button type="button" class="chip" data-tovisit="1" aria-pressed="false">เข้าพบหน้างาน</button>'}</div></div>
       <label class="f">ลูกค้า<input type="text" id="acCust" list="dlCustomers" autocomplete="off" value="${esc(a ? a.customer : c0 ? c0.name : '')}" placeholder="พิมพ์ชื่อหรือเลือกจากรายชื่อลูกค้า" required></label>
       <label class="f">ผู้ติดต่อ<input type="text" id="acContact" value="${esc(a ? a.contact || '' : c0 ? c0.contact || '' : '')}" placeholder="เช่น คุณวิชัย ฝ่ายซ่อมบำรุง"></label>
       <label class="f">วันและเวลาที่ติดต่อ<input type="datetime-local" id="acAt" value="${lt(a ? a.occurredAt : Date.now())}"></label>
@@ -1199,6 +1214,7 @@ function openActForm(o = {}) {
   f.addEventListener('click', e => {
     const t = e.target.closest('button[type="button"]'); if (!t) return; const d = t.dataset;
     if (d.at) { type = d.at; f.querySelectorAll('[data-at]').forEach(b => b.setAttribute('aria-pressed', b.dataset.at === type)); }
+    else if (d.tovisit) { const name = $('#acCust').value.trim(), contact = $('#acContact').value.trim(); closeSheet(); resetForm(); if (name) { $('#ciCustomer').value = name; $('#ciCustomer').dispatchEvent(new Event('change')); if (contact && !$('#ciContact').value) $('#ciContact').value = contact; } go('checkin'); }
     else if (d.ao) { out = out === d.ao ? '' : d.ao; f.querySelectorAll('[data-ao]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ao === out)); }
     else if (d.and) $('#acNextDate').value = d.and;
   });
@@ -1386,9 +1402,10 @@ function syncLeg() {
 }
 function renderFormChips() {
   syncLeg();
-  const items = [['office', 'บริษัท']]; if (F.prev) items.push(['prev', `ต่อจาก ${F.prev.customer} (${tm(F.prev.createdAt)})`]);
+  const items = [['office', S.settings.officeName || 'บริษัท']]; if (F.prev) items.push(['prev', `ต่อจาก ${F.prev.customer} (${tm(F.prev.createdAt)})`]); items.push(['custom', F.origin ? `จุดอื่น: ${F.origin.name || 'จุดที่ตั้งไว้'}` : 'จุดอื่น…']);
   chipGroup($('#ciLeg'), items, F.legFrom, 'leg');
-  $('#ciLegNote').textContent = F.prev ? (F.legFrom === 'prev' ? 'คิดระยะจากตำแหน่งเช็คอินของรายการก่อนหน้ามาถึงที่นี่ ขากลับของรายการก่อนหน้าจะย้ายมาไว้ที่รายการนี้' : 'วันนี้มีเช็คอินไปแล้ว ถ้าขับต่อจากลูกค้ารายก่อนโดยไม่กลับบริษัท ให้เลือก "ต่อจาก"') : 'รายการแรกของวันเริ่มจากบริษัท รายการถัดไปในวันเดียวกันจะเลือก "ต่อจาก" ให้อัตโนมัติ';
+  const sv = $('#ciFromSaved'); if (sv) { sv.hidden = !(S.me.home && S.me.home.lat != null); if (!sv.hidden) sv.textContent = `ใช้ "${S.me.home.name || 'จุดที่บันทึกไว้'}" ที่จำไว้`; }
+  $('#ciLegNote').textContent = F.legFrom === 'custom' && F.origin ? `คิดระยะจาก ${F.origin.name || 'จุดที่ตั้งไว้'} (${(+F.origin.lat).toFixed(4)}, ${(+F.origin.lng).toFixed(4)}) ถึงลูกค้ารายนี้` : F.prev ? (F.legFrom === 'prev' ? 'คิดระยะจากตำแหน่งเช็คอินของรายการก่อนหน้ามาถึงที่นี่ ขากลับของรายการก่อนหน้าจะย้ายมาไว้ที่รายการนี้' : 'วันนี้มีเช็คอินไปแล้ว ถ้าขับต่อจากลูกค้ารายก่อนโดยไม่กลับบริษัท ให้เลือก "ต่อจาก"') : `รายการแรกของวันเริ่มจาก ${S.settings.officeName || 'บริษัท'} (ชื่อจุดเริ่มต้นตามตั้งค่า) รายการถัดไปในวันเดียวกันจะเลือก "ต่อจาก" ให้อัตโนมัติ`;
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
   chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
   const cars = myCars(); $('#carsWrap').hidden = !cars.length;
@@ -1420,7 +1437,7 @@ function updateCalc() {
   renderFormChips();
   const v = F.vehicle, c = computeForm(), d = currentDest();
   $('#kmBlock').hidden = v === 'company'; $('#fuelBlock').hidden = v !== 'company';
-  const s = S.settings, o = legOrigin(F.legFrom, F.prev), rc = d ? routeCached2(o, d) : null, rb = d ? routeCached2(d, officePt()) : null, src = kmSourceNow();
+  const s = S.settings, o = legOrigin(F.legFrom, F.prev, F.origin), rc = d ? routeCached2(o, d) : null, rb = d ? routeCached2(d, officePt()) : null, src = kmSourceNow();
   const estLeg = d ? (rc ? rc.km : lineKm(o, d)) : null, estBack = d ? (rb ? rb.km : lineKm(d, officePt())) : null;
   $('#wrapBack').hidden = !c.back; $('#wrapOdoHome').hidden = !c.back;
   const mapLink = d && officeSet() ? `<a href="${mapsDir(o.lat, o.lng, d.lat, d.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o.name)} ใน Google Maps</a>` : '';
@@ -1441,7 +1458,7 @@ function updateCalc() {
   renderGps();
 }
 function buildVisit(draft) {
-  const c = computeForm(), cust = $('#ciCustomer').value.trim(), cu = custByName(cust), d = currentDest(), o = legOrigin(F.legFrom, F.prev);
+  const c = computeForm(), cust = $('#ciCustomer').value.trim(), cu = custByName(cust), d = currentDest(), o = legOrigin(F.legFrom, F.prev, F.origin);
   const g = F.gps, autoLeg = F.vehicle !== 'company' && F.kmAuto != null && F.kmSrc !== 'prev' ? F.kmAuto : null, autoBack = F.vehicle !== 'company' && c.back && F.backAuto != null ? F.backAuto : null;
   return {
     id: draft ? 'draft' : uid('v'), createdAt: Date.now(), createdBy: S.myId || null,
@@ -1452,7 +1469,7 @@ function buildVisit(draft) {
     report: $('#ciReport').value.trim(), stage: F.stage, dealValue: n2(Math.max(0, +$('#ciValue').value || 0)), nextStep: nextStepValue(), nextNote: $('#ciNextNote').value.trim(), nextDate: $('#ciNextDate').value,
     photos: [], files: F.files.map(f => ({ id: f.id, name: f.name, type: f.type, size: f.size, kind: f.kind, thumb: f.thumb || null })), vehicle: F.vehicle, plate: $('#ciPlate').value.trim(), carId: F.vehicle === 'company' ? null : F.carId, carName: F.vehicle !== 'company' && carById(F.carId) ? carById(F.carId).name : '',
     kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: d && F.vehicle !== 'company' ? r1((autoLeg != null ? autoLeg : lineKm(o, d)) + (c.back ? (autoBack != null ? autoBack : lineKm(d, officePt())) : 0)) : null, kmSource: F.vehicle === 'company' ? null : kmSourceNow(), kmAutoOneWay: autoLeg, kmAutoReturn: autoBack, rate: c.rate,
-    legFrom: F.legFrom === 'prev' && F.prev ? 'prev' : 'office', prevVisitId: F.legFrom === 'prev' && F.prev ? F.prev.id : null, prevCustomer: F.legFrom === 'prev' && F.prev ? F.prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name },
+    legFrom: F.legFrom === 'prev' && F.prev ? 'prev' : F.legFrom === 'custom' && F.origin ? 'custom' : 'office', prevVisitId: F.legFrom === 'prev' && F.prev ? F.prev.id : null, prevCustomer: F.legFrom === 'prev' && F.prev ? F.prev.customer : null, fromAt: { lat: o.lat, lng: o.lng, name: o.name },
     returnHome: c.back, kmReturn: c.kmBack, kmMap: c.kmMap, odoStart: c.odo.start, odoEnd: c.odo.end, odoHome: c.odo.home, odoKm: c.odo.km, kmBasis: c.basis,
     fuelAmount: c.fuel, receiptNo: $('#ciReceipt').value.trim(), toll: c.toll, total: c.total,
     officeAt: officeSet() ? { lat: S.settings.officeLat, lng: S.settings.officeLng } : null,
@@ -1484,7 +1501,7 @@ async function rememberCustomAction(name) {
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
 function resetForm() {
-  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.carTouched = false; F.prev = null; F.legFrom = 'office'; $('#ciBack').checked = true; renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
+  $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.carTouched = false; F.prev = null; F.legFrom = 'office'; F.origin = S.me.home && S.me.home.lat != null ? { ...S.me.home } : null; $('#ciBack').checked = true; $('#legCustom').open = false; if (F.origin) { $('#ciFromName').value = F.origin.name || ''; $('#ciFromGeo').value = F.origin.lat + ', ' + F.origin.lng; } renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); const dc0 = F.vehicle === 'company' ? null : defaultCar(); F.carId = null; if (dc0) applyCar(dc0.id); renderPhotos(); updateCalc();
 }
 const fmtSize = n => n < 1024 * 1024 ? Math.max(1, Math.round(n / 1024)) + ' KB' : (n / 1048576).toFixed(1) + ' MB';
@@ -1548,10 +1565,14 @@ $('#fCheckin').addEventListener('click', e => {
   else if (t.dataset.veh) { F.vehicle = t.dataset.veh; F.carId = null; F.carTouched = true; if (F.vehicle !== 'company' && !$('#ciPlate').value) $('#ciPlate').value = S.me.plate || ''; updateCalc(); }
   else if (t.dataset.car) { F.carTouched = true; applyCar(t.dataset.car); updateCalc(); }
   else if (t.dataset.rmfile) { F.files = F.files.filter(f => f.id !== t.dataset.rmfile); renderPhotos(); updateCalc(); }
-  else if (t.dataset.leg) { if (F.legFrom === t.dataset.leg) return; F.legFrom = t.dataset.leg; F.legTouched = true; clearLegKm(); if (F.legFrom === 'office') prefillKmFor($('#ciCustomer').value); updateCalc(); }
+  else if (t.dataset.leg) { if (t.dataset.leg === 'custom' && !F.origin) { $('#legCustom').open = true; $('#ciFromGeo').focus(); toast('ใส่พิกัดจุดเริ่ม หรือกดใช้ตำแหน่งที่ยืนอยู่ แล้วกด "ใช้จุดนี้เป็นจุดเริ่ม"'); return; } if (F.legFrom === t.dataset.leg) return; F.legFrom = t.dataset.leg; F.legTouched = true; clearLegKm(); if (F.legFrom === 'office') prefillKmFor($('#ciCustomer').value); updateCalc(); }
 });
 ['ciKm', 'ciKmBack', 'ciOdoStart', 'ciOdoEnd', 'ciOdoHome', 'ciToll', 'ciFuel', 'ciReport', 'ciReceipt'].forEach(id => $('#' + id).addEventListener('input', updateCalc));
 $('#ciBack').addEventListener('change', updateCalc);
+function useOrigin(o, remember) { F.origin = { lat: +(+o.lat).toFixed(6), lng: +(+o.lng).toFixed(6), name: (o.name || '').trim() || 'จุดอื่น' }; F.legFrom = 'custom'; F.legTouched = true; clearLegKm(); if (remember) { S.me.home = { ...F.origin }; lsSet(LS_ME, S.me); } $('#legCustom').open = false; updateCalc(); toast(`เริ่มขานี้จาก ${F.origin.name} (${F.origin.lat}, ${F.origin.lng})`); }
+$('#ciFromUse').addEventListener('click', async () => { const raw = $('#ciFromGeo').value.trim(); if (!raw) { $('#ciFromGeo').focus(); toast('วางพิกัดหรือลิงก์ Google Maps ก่อน'); return; } const c0 = parseCoords(raw); if (!c0) { toast('อ่านพิกัดไม่ออก ใส่เป็นตัวเลข เช่น 12.713666, 101.160576'); return; } const c = await resolveCoords(raw); useOrigin({ lat: c.lat, lng: c.lng, name: $('#ciFromName').value }, $('#ciFromSave').checked); });
+$('#ciFromHere').addEventListener('click', () => { if (!navigator.geolocation) { toast('เครื่องนี้จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; } const b = $('#ciFromHere'); b.disabled = true; navigator.geolocation.getCurrentPosition(p => { b.disabled = false; $('#ciFromGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); useOrigin({ lat: p.coords.latitude, lng: p.coords.longitude, name: $('#ciFromName').value }, $('#ciFromSave').checked); }, () => { b.disabled = false; toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); }, { enableHighAccuracy: true, timeout: 15000 }); });
+$('#ciFromSaved').addEventListener('click', () => { if (S.me.home) useOrigin(S.me.home, false); });
 $('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } prefillKmFor($('#ciCustomer').value); applyExpenseDefaults(); updateCalc(); });
 $('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.files.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
 async function saveCheckin(claim) {
@@ -1682,7 +1703,8 @@ function openClaim(id) {
   const cars = isMine(v) ? myCars() : [];
   if (C.carId && !cars.find(c => c.id === C.carId)) C.carId = null;
   if (C.carId && !dc) { const c = carById(C.carId); C.vehicle = c.type; if (C.plate == null) C.plate = c.plate; if (!C.odoStart) C.odoStart = lastOdoFor(c, v.createdAt, v.id) ?? ''; }
-  const origin = () => legOrigin(C.legFrom, prev), dest = v.gps ? { lat: v.gps.lat, lng: v.gps.lng } : null;
+  const customAt = v.legFrom === 'custom' && v.fromAt && v.fromAt.lat != null ? v.fromAt : null; if (C.legFrom === 'custom' && !customAt) C.legFrom = 'office';
+  const origin = () => legOrigin(C.legFrom, prev, customAt), dest = v.gps ? { lat: v.gps.lat, lng: v.gps.lng } : null;
   let auto = dest ? routeCached2(origin(), dest) : null, autoBack = dest ? routeCached2(dest, officePt()) : null;
   if (auto && !dc && !C.km) C.km = auto.km;
   if (autoBack && !dc && !C.kmBack) C.kmBack = autoBack.km;
@@ -1697,9 +1719,9 @@ function openClaim(id) {
         ${cars.length ? `<div class="chips">${[...cars.map(c => [c.id, carLabel(c)]), ['__company', 'รถส่วนกลาง'], ['__other', 'คันอื่น / ระบุเอง']].map(([k, l]) => `<button type="button" class="chip" data-ccar="${esc(k)}" aria-pressed="${k === (C.carId || (C.vehicle === 'company' ? '__company' : '__other'))}">${esc(l)}</button>`).join('')}</div>` : ''}
         <div class="chips" ${C.carId || (cars.length && C.vehicle === 'company') ? 'hidden' : ''}>${Object.keys(VEHICLES).map(k => `<button type="button" class="chip" data-cveh="${k}" aria-pressed="${k === C.vehicle}">${vehLabel(k, s)}</button>`).join('')}</div>
         <label class="f">ทะเบียนรถ<input type="text" id="cmPlate" value="${esc(C.plate ?? (C.vehicle === 'company' ? '' : S.me.plate || ''))}"></label>
-        ${C.vehicle !== 'company' ? `<div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips"><button type="button" class="chip" data-cleg="office" aria-pressed="${C.legFrom !== 'prev'}">บริษัท</button>${prev ? `<button type="button" class="chip" data-cleg="prev" aria-pressed="${C.legFrom === 'prev'}">ต่อจาก ${esc(prev.customer)} (${tm(prev.createdAt)})</button>` : ''}</div>${legacy ? '<p class="sub">รายการนี้บันทึกก่อนระบบทริปต่อเนื่อง ระยะเดิมคิดไป-กลับจากบริษัท แก้ไขแยกขาได้</p>' : ''}</div>
+        ${C.vehicle !== 'company' ? `<div class="stack" style="gap:6px"><span style="font-size:14px;font-weight:500">ขานี้เริ่มจาก</span><div class="chips"><button type="button" class="chip" data-cleg="office" aria-pressed="${C.legFrom !== 'prev' && C.legFrom !== 'custom'}">${esc(s.officeName || 'บริษัท')}</button>${customAt ? `<button type="button" class="chip" data-cleg="custom" aria-pressed="${C.legFrom === 'custom'}">จาก${esc(customAt.name || 'จุดอื่น')}</button>` : ''}${prev ? `<button type="button" class="chip" data-cleg="prev" aria-pressed="${C.legFrom === 'prev'}">ต่อจาก ${esc(prev.customer)} (${tm(prev.createdAt)})</button>` : ''}</div>${legacy ? '<p class="sub">รายการนี้บันทึกก่อนระบบทริปต่อเนื่อง ระยะเดิมคิดไป-กลับจากบริษัท แก้ไขแยกขาได้</p>' : ''}</div>
           <div class="notice" id="cmEst">${!officeSet() ? 'ยังไม่ได้ปักพิกัดจุดเริ่มต้นในตั้งค่า ใส่ระยะจาก Google Maps เอง' : v.gps ? `${auto ? 'ระยะขานี้ตามเส้นทางถนน <b class="num">' + fmtKm(auto.km) + ' กม.</b>' : 'ระยะขานี้โดยประมาณ <b class="num">' + fmtKm(lineKm(o, dest)) + ' กม.</b>'}${autoBack ? ' · ขากลับ ' + fmtKm(autoBack.km) + ' กม.' : ''}<br><a href="${mapsDir(o.lat, o.lng, v.gps.lat, v.gps.lng)}" target="_blank" rel="noopener">ตรวจเส้นทางจาก ${esc(o.name)} ใน Google Maps</a>` : 'รายการนี้ไม่มีพิกัด ใส่ระยะจาก Google Maps เอง'}</div>
-          <label class="f">ระยะทางขานี้ (กม.)<span class="hint">จาก${C.legFrom === 'prev' ? 'ลูกค้ารายก่อน' : 'บริษัท'}ถึงลูกค้ารายนี้ ระบบเติมจากการคำนวณเส้นทางให้ แก้ไขได้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>
+          <label class="f">ระยะทางขานี้ (กม.)<span class="hint">จาก${C.legFrom === 'prev' ? 'ลูกค้ารายก่อน' : C.legFrom === 'custom' ? esc(customAt.name || 'จุดอื่น') : 'บริษัท'}ถึงลูกค้ารายนี้ ระบบเติมจากการคำนวณเส้นทางให้ แก้ไขได้</span><input type="number" id="cmKm" inputmode="decimal" min="0" step="0.1" value="${esc(C.km)}"></label>
           <label class="row" style="gap:8px;align-items:center;font-size:14px;font-weight:500"><input type="checkbox" id="cmBack" ${C.back ? 'checked' : ''} style="width:20px;height:20px;margin:0">กลับบริษัทจากที่นี่ (บวกระยะขากลับ)</label>
           <label class="f" id="cmBackWrap" ${C.back ? '' : 'hidden'}>ระยะทางขากลับบริษัท (กม.)<input type="number" id="cmKmBack" inputmode="decimal" min="0" step="0.1" value="${esc(C.kmBack)}"></label>`
         : `<label class="f">ค่าน้ำมันตามใบเสร็จ (บาท)<input type="number" id="cmFuel" inputmode="decimal" min="0" step="0.01" value="${esc(C.fuel)}"></label><label class="f">เลขที่ใบกำกับภาษี / ใบเสร็จ<input type="text" id="cmReceipt" value="${esc(C.receipt)}"></label>`}
@@ -1738,8 +1760,8 @@ function openClaim(id) {
       e.preventDefault(); const c = calc(); keep();
       if (C.vehicle !== 'company' && !c.kmOne) { toast('ใส่ระยะทางก่อน'); return; }
       if (c.odo.bad) { toast('เลขไมล์ปลายทางน้อยกว่าต้นทาง แก้ไขก่อน'); return; }
-      const legFrom = C.vehicle !== 'company' && C.legFrom === 'prev' && prev ? 'prev' : 'office', o = legOrigin(legFrom, prev);
-      const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. (' + (legFrom === 'prev' ? 'ต่อจาก ' + prev.customer : 'จากบริษัท') + (c.back ? ' + ขากลับ' : '') + ')'} · รวมเบิก ฿${fmtB(c.total)}`;
+      const legFrom = C.vehicle !== 'company' && C.legFrom === 'prev' && prev ? 'prev' : C.vehicle !== 'company' && C.legFrom === 'custom' && customAt ? 'custom' : 'office', o = legOrigin(legFrom, prev, customAt);
+      const sum = `${v.customer} · ${C.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(c.kmRT) + ' กม. (' + (legFrom === 'prev' ? 'ต่อจาก ' + prev.customer : legFrom === 'custom' ? 'จาก' + (customAt.name || 'จุดอื่น') : 'จากบริษัท') + (c.back ? ' + ขากลับ' : '') + ')'} · รวมเบิก ฿${fmtB(c.total)}`;
       if (!(await confirmBox(mode === 'adminEdit' ? { title: 'บันทึกการแก้ไขของผู้จัดการ?', body: sum, ok: 'บันทึก' } : mode === 'resubmit' ? { title: 'ส่งขอเบิกใหม่?', body: sum + ' จะกลับไปรอตรวจอีกครั้ง', ok: 'ส่งใหม่' } : { title: 'ส่งขอเบิกรายการนี้?', body: sum + ' เมื่ออนุมัติแล้วจะแก้ไขเองไม่ได้', ok: 'ส่งขอเบิก' }))) return;
       const est = C.vehicle === 'company' || !dest ? null : r1((auto ? auto.km : lineKm(o, dest)) + (c.back ? (autoBack ? autoBack.km : lineKm(dest, officePt())) : 0));
       const nv = { ...v, draftClaim: undefined, vehicle: C.vehicle, plate: (C.plate || '').trim(), carId: C.vehicle === 'company' ? null : C.carId || null, carName: C.vehicle !== 'company' && carById(C.carId) ? carById(C.carId).name : '', kmOneWay: c.kmOne, kmRoundTrip: c.kmRT, kmEstimate: est, kmSource: kmSrcOf(c.kmOne), kmAutoOneWay: auto ? auto.km : (dc && dc.kmAutoOneWay) || null, kmAutoReturn: autoBack ? autoBack.km : null, rate: c.rate, fuelAmount: c.fuel, receiptNo: (C.receipt || '').trim(), toll: c.toll, total: c.total, claimStatus: 'claimed', claimedAt: mode === 'adminEdit' ? (v.claimedAt || v.createdAt) : Date.now(), officeAt: officeSet() ? { lat: s.officeLat, lng: s.officeLng } : null,
@@ -1785,9 +1807,9 @@ function openCustomer(id) {
       ${c.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(c.dealValue)}</dd>` : ''}
       ${c.followUp ? `<dt>ทำต่อ</dt><dd>${esc(c.followUp)}${c.followDate ? ' ภายใน ' + esc(c.followDate) : ''}</dd>` : ''}
       ${c.note ? `<dt>บันทึก</dt><dd style="white-space:pre-wrap">${esc(c.note)}</dd>` : ''}</dl>
-    <div class="row">${can('checkin', 2) ? `<button class="btn primary grow" data-checkinat="${esc(c.id)}">เช็คอินที่ลูกค้านี้</button>` : ''}${can('customers', 2) ? `<button class="btn ghost" data-editcust="${esc(c.id)}">แก้ไข</button>` : ''}${can('customers', 3) && S.canWrite && !c.isExample ? `<button class="btn ghost danger" data-delcust="${esc(c.id)}" title="ลบลูกค้า">ลบ</button>` : ''}</div>
+    <div class="row">${can('checkin', 2) ? `<button class="btn primary grow" data-checkinat="${esc(c.id)}">เข้าพบหน้างาน (เช็คอิน) ที่ลูกค้านี้</button>` : ''}${can('customers', 2) ? `<button class="btn ghost" data-editcust="${esc(c.id)}">แก้ไข</button>` : ''}${can('customers', 3) && S.canWrite && !c.isExample ? `<button class="btn ghost danger" data-delcust="${esc(c.id)}" title="ลบลูกค้า">ลบ</button>` : ''}</div>
     ${can('customers', 3) ? '' : '<p class="sub">การลบลูกค้าทำได้เฉพาะผู้ที่ได้รับสิทธิ์ หากข้อมูลซ้ำหรือผิด แจ้งหัวหน้าให้ลบ</p>'}
-    ${can('checkin', 2) ? `<button class="btn soft block" data-newact="call" data-custid="${esc(c.id)}">บันทึกการติดต่อ (โทร / LINE / อีเมล)</button>` : ''}
+    ${can('checkin', 2) ? `<button class="btn soft block" data-newact="call" data-custid="${esc(c.id)}">บันทึกงาน: โทร / LINE / อีเมล / ประชุม</button>` : ''}
     ${as.length ? `<h2>ประวัติการติดต่อ</h2><div class="tl">${as.map(a => evItem(actEv(a), true)).join('')}</div>` : ''}
     <h2>ประวัติการเข้าพบ</h2><div class="list">${vs.length ? vs.map(v => visitItem(v, { staff: true })).join('') : '<div class="empty">ยังไม่เคยเข้าพบ</div>'}</div>`);
 }
@@ -1894,7 +1916,7 @@ document.addEventListener('click', e => {
   else if (d.act) openAct(d.act);
   else if (d.editact) openActForm({ act: S.acts.find(x => x.id === d.editact) });
   else if (d.delact) confirmBox({ title: 'ลบบันทึกนี้?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteActivity(S.acts.find(x => x.id === d.delact)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้ เฉพาะผู้ดูแลทีม')); });
-  else if (d.newact) openActForm({ type: d.newact, cust: d.custid ? S.customers.find(x => x.id === d.custid) : null });
+  else if (d.newact) openActForm({ type: d.newact, cust: d.custid ? S.customers.find(x => x.id === d.custid) : d.fromci && $('#ciCustomer').value.trim() ? (custByName($('#ciCustomer').value) || { name: $('#ciCustomer').value.trim(), contact: $('#ciContact').value.trim() }) : null });
   else if (d.fu) { const c = S.customers.find(x => x.id === d.fu); if (c && can('checkin', 2)) openActForm({ cust: c }); else if (c) openCustomer(c.id); }
   else if (d.user) openUser(d.user);
   else if (d.ureg) decideUser(d.ureg, t.dataset.to);
