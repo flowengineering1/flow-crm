@@ -42,6 +42,8 @@ section.view{padding-block:20px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:34px;line-height:1.14;letter-spacing:-.374px;margin:0;font-weight:600;text-wrap:balance}
 h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .sub{color:var(--muted);font-size:14px;line-height:1.43;margin:0}
+.greet.bday{background:#fff4e5;color:#7a3e00}
+@media (prefers-color-scheme: dark){.greet.bday{background:#3a2a12;color:#ffd9a8}}
 .greet{margin:6px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.45;animation:greetIn .35s ease-out}
 @keyframes greetIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .card{background:var(--surface);border-radius:var(--r);padding:16px}
@@ -362,6 +364,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     <h1 id="hello">สวัสดี</h1>
     <p class="sub" id="todayLine"></p>
     <p class="greet" id="greetLine" hidden></p>
+    <p class="greet bday" id="bdayLine" hidden></p>
   </div>
   <div class="tiles" id="homeTiles">
     <div class="tile" data-need="team"><small>รอตรวจทั้งทีม</small><b id="tPend">0</b></div>
@@ -584,6 +587,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <div class="stack" style="gap:4px"><h1>หลังบ้าน</h1><p class="sub">สำหรับเจ้าของ CEO และผู้จัดการ ดูภาพรวมการทำงาน อนุมัติ และจัดการผู้ใช้งาน</p></div>
   <div class="tiles" id="adTiles"></div>
   <div class="card stack" id="adDefaults"></div>
+  <div class="card stack" id="adBirthdays" hidden></div>
   <div class="card stack" id="adPositions"></div>
   <div class="stack" id="adPendingWrap" hidden><h2>คำขอลงทะเบียนใหม่ <span class="pill pending" id="adPendN">0</span></h2><div class="list" id="adPending"></div></div>
   <div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ผู้ใช้งาน</h2><button class="btn soft sm" id="btnInvite" data-need="admin:2">+ เพิ่มพนักงาน</button></div>
@@ -667,8 +671,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '3.2';
+const APP_VERSION = '4.0';
 const APP_VERSIONS = [
+  ['4.0', '28 ต.ค. 2569', ['หน้าแรกของทุกคนขึ้นคำอวยพรเมื่อเป็นวันเกิดของเพื่อนร่วมทีม (วันนี้/พรุ่งนี้)', 'หลังบ้าน: รายชื่อผู้ใช้แสดงวันเกิดและอีกกี่วันถึงวันเกิด พร้อมกล่อง "วันเกิดที่ใกล้ถึง"', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (เพิ่มฟังก์ชัน team_birthdays)']],
   ['3.2', '28 ต.ค. 2569', ['ช่องวันเกิดเปลี่ยนเป็นเลือก วัน / เดือน / ปี พ.ศ. จากรายการ (เลือกปีย้อนหลังได้เร็ว) และแสดงวันที่เป็น วัน/เดือน/ปี พ.ศ.']],
   ['3.1', '28 ต.ค. 2569', ['หน้าแรกมีข้อความทักทาย/ให้กำลังใจใต้ชื่อ เลือกตามสถานการณ์ของแต่ละคน: วันเกิด ปิดการขายได้ ถึงเป้าเข้าพบ ขยันออกตลาด ลูกค้าใหม่/ใบเสนอราคา และข้อความทั่วไปตามช่วงเวลา สลับข้อความทุกวัน']],
   ['3.0', '27 ต.ค. 2569', ['ข้อมูลพนักงานเพิ่มช่อง "วันเดือนปีเกิด" ระบบคำนวณอายุให้อัตโนมัติ (แสดงเป็นปีและเดือน) กรอกได้ตอนลงทะเบียน ในหน้าตั้งค่า และหลังบ้านแก้ให้ได้ในการ์ดผู้ใช้', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ birth_date ในตาราง profiles)']],
@@ -696,6 +701,10 @@ const ageText = iso => { const a = ageParts(iso); return a ? `${a.y} ปี${a.m
 const birthText = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${+m[3]}/${m[2]}/${+m[1] + 543}` : ''; };
 const TH_MON = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 // ช่องวันเกิด: เลือก วัน / เดือน / ปี พ.ศ. จากรายการ (เก็บค่าจริงเป็น YYYY-MM-DD ใน input ซ่อน id เดิม)
+// อีกกี่วันถึงวันเกิดครั้งถัดไป (0 = วันนี้) · 29 ก.พ. ปีไม่อธิกสุรทินนับเป็น 28 ก.พ.
+const daysToBirthday = (iso, from = new Date()) => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return null; const t0 = new Date(from.getFullYear(), from.getMonth(), from.getDate()); const next = y => { const d = new Date(y, +m[1] - 1, Math.min(+m[2], new Date(y, +m[1], 0).getDate())); return d; }; let d = next(t0.getFullYear()); if (d < t0) d = next(t0.getFullYear() + 1); return Math.round((d - t0) / 864e5); };
+const bdayCountText = n => n === 0 ? 'วันนี้ 🎂' : n === 1 ? 'พรุ่งนี้' : `อีก ${n} วัน`;
+const teamBirthdays = () => S.bdays && S.bdays.length ? S.bdays.filter(x => x.birth_date) : Object.entries(S.staff).filter(([id, p]) => id !== 'example' && (p.status || 'active') === 'active' && p.birthDate).map(([id, p]) => ({ id, name: p.name, nick: p.nick, birth_date: p.birthDate }));
 const birthRow = (id, val, hintId) => { const [y, m, d] = /^\d{4}-\d{2}-\d{2}$/.test(val || '') ? val.split('-').map(Number) : [0, 0, 0]; const yNow = new Date().getFullYear();
   const opt = (v, l, sel) => `<option value="${v}" ${sel ? 'selected' : ''}>${l}</option>`;
   return `<div class="stack" style="gap:6px" data-bdwrap="${id}"><span style="font-size:14px;font-weight:500">วันเดือนปีเกิด <span class="hint">วัน / เดือน / ปี พ.ศ.</span></span>
@@ -1092,6 +1101,9 @@ function greetingLine() {
 }
 function renderHome() {
   try { const g = greetingLine(); $('#greetLine').hidden = !g; $('#greetLine').textContent = g; } catch (e) { $('#greetLine').hidden = true; }
+  try { const others = teamBirthdays().filter(x => x.id !== S.myId); const nm = x => 'คุณ' + (x.nick || (x.name || '').split(/\s+/)[0]); const td = others.filter(x => daysToBirthday(x.birth_date) === 0).map(nm), tm = others.filter(x => daysToBirthday(x.birth_date) === 1).map(nm);
+    const parts = []; if (td.length) parts.push(`🎂 วันนี้วันเกิด${td.join(' และ ')} อวยพรกันหน่อยนะคะ`); if (tm.length) parts.push(`🎈 พรุ่งนี้วันเกิด${tm.join(' และ ')} เตรียมอวยพรไว้นะคะ`);
+    $('#bdayLine').hidden = !parts.length; $('#bdayLine').textContent = parts.join(' · '); } catch (e) { $('#bdayLine').hidden = true; }
   const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = can('team');
   const scope = mgr ? S.visits.filter(v => !v.isExample) : S.visits.filter(isMine);
   const month = scope.filter(v => ymOf(v.createdAt) === ym && statusOf(v) !== 'rejected');
@@ -2146,6 +2158,7 @@ async function sbLoadAll() {
       const m = {}; (aps.data || []).forEach(a => m[a.visit_id] = { status: a.status, note: a.note, by: a.by_id, byName: a.by_name, at: a.at }); S.approvals = m;
       (st.data || []).forEach(r => { if (r.key === 'settings') S.settings = { ...DEFAULT_SETTINGS, ...(r.value || {}) }; if (r.key === 'invites') S.invites = (r.value && r.value.codes) || {}; });
       const sm = {}; (pf.data || []).forEach(r => sm[r.id] = rowToProfile(r)); S.staff = sm;
+      S.sb.rpc('team_birthdays').then(({ data, error }) => { if (!error && Array.isArray(data)) { S.bdays = data; renderHome(); } }).catch(() => {});
     } catch (e) { console.error(e); if (!S.loadError) toast('โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ'); }
     finally { sbLoading = null; renderAll(); updateCalc(); renderGate(); }
   })();
@@ -2332,6 +2345,8 @@ function renderAdmin() {
     <div class="tiles"><div class="tile"><small>รถยนต์ส่วนตัว</small><b>${fmtB(st.rateCar)} <small>บ./กม.</small></b></div><div class="tile"><small>รถยนต์ไฟฟ้า EV</small><b>${fmtB(st.rateEv ?? 4)} <small>บ./กม.</small></b></div><div class="tile"><small>มอเตอร์ไซค์</small><b>${fmtB(st.rateMoto)} <small>บ./กม.</small></b></div>
     <div class="tile"><small>ทางด่วน/จอดรถ เริ่มต้น</small><b>${fmtB(st.defaultToll || 0)} <small>บาท</small></b></div><div class="tile"><small>รถเริ่มต้นสำหรับคนใหม่</small><b style="font-size:16px">${VEHICLES[st.defaultVehicle || 'car']}</b></div><div class="tile"><small>เติมระยะทางจากครั้งก่อน</small><b style="font-size:16px">${st.prefillKm === false ? 'ปิด' : 'เปิด'}</b></div></div>`;
   $('#adEditDefaults').addEventListener('click', openSettings);
+  const bdUsers = active.filter(u => u.birthDate).map(u => ({ u, d: daysToBirthday(u.birthDate) })).sort((a, b) => a.d - b.d).slice(0, 5), bdBox = $('#adBirthdays');
+  if (bdBox) { bdBox.hidden = !bdUsers.length; bdBox.innerHTML = `<h2 style="margin:0 0 6px">วันเกิดที่ใกล้ถึง</h2><div class="list">${bdUsers.map(({ u, d }) => `<button class="item" data-user="${esc(u.id)}" ${d === 0 ? 'style="background:#fff4e5"' : ''}><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}</div><div class="m">${birthText(u.birthDate)} · ${ageText(u.birthDate)}</div></div><b style="white-space:nowrap;color:${d <= 1 ? 'var(--warn)' : 'var(--ink)'}">${bdayCountText(d)}</b></button>`).join('')}</div>`; }
   const pcount = id => users.filter(u => posOf(u).id === id).length;
   $('#adPositions').innerHTML = `<div class="row" style="align-items:center"><h2 class="grow" style="margin:0">ตำแหน่ง</h2>${can('admin', 2) ? '<button class="btn soft sm" data-posedit="__new">+ เพิ่มตำแหน่ง</button>' : ''}</div>
     <div class="sub">กำหนดชื่อตำแหน่ง ระดับการเข้าใช้ และสิทธิ์ตั้งต้น แล้วเลือกให้ผู้ใช้แต่ละคนในหน้าผู้ใช้งาน</div>${S.posColMissing ? '<div class="notice"><b>ยังเก็บตำแหน่งของผู้ใช้ไม่ได้</b> รัน supabase/schema.sql ล่าสุดใน Supabase SQL Editor อีกครั้ง</div>' : ''}
@@ -2342,7 +2357,7 @@ function renderAdmin() {
   $('#adFilter').innerHTML = [['all', 'ทั้งหมด'], ['active', 'ใช้งานอยู่'], ['disabled', 'ระงับ'], ['manager', 'เข้าหลังบ้านได้']].map(([k, l]) => `<button class="chip" data-uf="${k}" aria-pressed="${f === k}">${l} ${counts[k]}</button>`).join('');
   const shown = users.filter(u => f === 'all' || (f === 'manager' ? u.role !== 'sales' : u.status === f)).sort((a, b) => (a.status === 'pending' ? -1 : 1) - (b.status === 'pending' ? -1 : 1) || (a.name || '').localeCompare(b.name || '', 'th'));
   $('#adUsers').innerHTML = shown.length ? shown.map(u => { const vs = S.visits.filter(v => v.createdBy === u.id), last = vs[0];
-    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${permIsCustom(u) ? ' <span class="pill ex" title="สิทธิ์กำหนดเอง">สิทธิ์เฉพาะ</span>' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, posName(u)].filter(Boolean).join(' · '))}</div><div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
+    return `<button class="item" data-user="${esc(u.id)}"><div class="main"><div class="t">${esc(u.name || 'ไม่ระบุชื่อ')}${u.nick ? ' (' + esc(u.nick) + ')' : ''}${permIsCustom(u) ? ' <span class="pill ex" title="สิทธิ์กำหนดเอง">สิทธิ์เฉพาะ</span>' : ''}${u.id === S.myId ? ' <span class="pill ex">คุณ</span>' : ''}</div><div class="m">${esc([u.nameEn, u.code, u.dept, posName(u)].filter(Boolean).join(' · '))}</div>${u.birthDate ? `<div class="m">🎂 ${birthText(u.birthDate)} · ${ageText(u.birthDate)} · ${bdayCountText(daysToBirthday(u.birthDate))}</div>` : ''}<div class="m">${esc([VEHICLES[u.vehicle || 'car'], u.plate].filter(Boolean).join(' '))}${S.backend === 'supabase' && u.email ? ' · ผู้ใช้ ' + esc(showUser(u.email)) : ''}</div>${u.role !== 'sales' ? '<div class="m" style="color:var(--brand)">เข้าหลังบ้านได้</div>' : ''}<div class="m">${last ? 'เช็คอินล่าสุด ' + dt(last.createdAt) + ' · รวม ' + vs.length + ' ครั้ง' : 'ยังไม่เคยเช็คอิน'}</div></div><span class="pill ${esc(u.status)}">${USTATUS[u.status] || u.status}</span></button>`; }).join('')
     : `<div class="empty">${S.mode === 'shared' ? 'ยังไม่มีผู้ใช้งานในกลุ่มนี้' : 'โหมดบันทึกในเครื่อง ไม่มีผู้ใช้งานอื่น เมื่อเปิดจากลิงก์ที่แชร์แล้วรายชื่อจะขึ้นที่นี่'}</div>`;
   const tr = S.trash || [];
   $('#adTrashWrap').hidden = !tr.length || !can('team', 2); $('#adTrashN').textContent = tr.length;
