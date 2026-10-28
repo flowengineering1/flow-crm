@@ -42,6 +42,8 @@ section.view{padding-block:20px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:34px;line-height:1.14;letter-spacing:-.374px;margin:0;font-weight:600;text-wrap:balance}
 h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .sub{color:var(--muted);font-size:14px;line-height:1.43;margin:0}
+.greet{margin:6px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.45;animation:greetIn .35s ease-out}
+@keyframes greetIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .card{background:var(--surface);border-radius:var(--r);padding:16px}
 .stack{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -359,6 +361,7 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
   <div class="stack" style="gap:4px">
     <h1 id="hello">สวัสดี</h1>
     <p class="sub" id="todayLine"></p>
+    <p class="greet" id="greetLine" hidden></p>
   </div>
   <div class="tiles" id="homeTiles">
     <div class="tile" data-need="team"><small>รอตรวจทั้งทีม</small><b id="tPend">0</b></div>
@@ -664,8 +667,10 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '3.0';
+const APP_VERSION = '3.2';
 const APP_VERSIONS = [
+  ['3.2', '28 ต.ค. 2569', ['ช่องวันเกิดเปลี่ยนเป็นเลือก วัน / เดือน / ปี พ.ศ. จากรายการ (เลือกปีย้อนหลังได้เร็ว) และแสดงวันที่เป็น วัน/เดือน/ปี พ.ศ.']],
+  ['3.1', '28 ต.ค. 2569', ['หน้าแรกมีข้อความทักทาย/ให้กำลังใจใต้ชื่อ เลือกตามสถานการณ์ของแต่ละคน: วันเกิด ปิดการขายได้ ถึงเป้าเข้าพบ ขยันออกตลาด ลูกค้าใหม่/ใบเสนอราคา และข้อความทั่วไปตามช่วงเวลา สลับข้อความทุกวัน']],
   ['3.0', '27 ต.ค. 2569', ['ข้อมูลพนักงานเพิ่มช่อง "วันเดือนปีเกิด" ระบบคำนวณอายุให้อัตโนมัติ (แสดงเป็นปีและเดือน) กรอกได้ตอนลงทะเบียน ในหน้าตั้งค่า และหลังบ้านแก้ให้ได้ในการ์ดผู้ใช้', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ birth_date ในตาราง profiles)']],
   ['2.3', '27 ต.ค. 2569', ['บันทึกการติดต่อ: ช่อง "สิ่งที่ต้องทำต่อ" มีรายการแนะนำจากที่เคยพิมพ์และตัวเลือกที่ตั้งไว้ แตะเลือกได้ พิมพ์แล้วระบบจำให้ และกด "แก้ไขรายการ" เพื่อแก้ชื่อหรือลบรายการแนะนำ', 'ผลการติดต่อมีไอคอนและสีตามความหมาย: ปิดการขายได้/สนใจ สีเขียว · ติดต่อไม่ได้ สีแดง · ยังไม่สนใจ สีส้ม · ให้ข้อมูล สีเทา', 'สถานะลูกค้า (ตัวกรองหน้าลูกค้า ป้ายสถานะ และชิปในฟอร์ม) ใส่สี: ปิดการขาย เขียว · ไม่ได้งาน แดง · ต่อรอง ส้ม · ติดต่อใหม่ เทา']],
   ['2.2', '27 ต.ค. 2569', ['ปุ่มท้ายฟอร์มเข้าพบหน้างานจัดใหม่: "บันทึกไว้ก่อน" สีน้ำเงินอยู่บนสุด "ส่งรายงานและขอเบิก" สีเขียว "ล้างฟอร์ม" สีแดง และทุกปุ่มมีกล่องยืนยันทุกครั้งก่อนทำงาน (ล้างฟอร์มถามแม้ยังไม่ได้กรอก)']],
@@ -688,9 +693,18 @@ const $ = s => document.querySelector(s);
 // วันเกิด (เก็บเป็น YYYY-MM-DD) → อายุ
 const ageParts = iso => { if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null; const b = new Date(iso + 'T00:00:00'), n = new Date(); if (isNaN(b) || b > n) return null; let y = n.getFullYear() - b.getFullYear(), m = n.getMonth() - b.getMonth(); if (n.getDate() < b.getDate()) m--; if (m < 0) { y--; m += 12; } return { y, m }; };
 const ageText = iso => { const a = ageParts(iso); return a ? `${a.y} ปี${a.m ? ` ${a.m} เดือน` : ''}` : ''; };
-const birthText = iso => { if (!iso) return ''; const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '' : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); };
-const birthRow = (id, val, hintId) => `<div class="row"><label class="f grow">วันเดือนปีเกิด<input type="date" id="${id}" value="${esc(val || '')}" max="${new Date().toISOString().slice(0, 10)}"></label><label class="f grow">อายุ (คำนวณให้)<b id="${hintId}" style="display:block;padding:10px 0;font-size:16px">${esc(ageText(val) || '-')}</b></label></div>`;
-const bindAge = (inputId, hintId) => { const i = $('#' + inputId), h = $('#' + hintId); if (i && h) i.addEventListener('input', () => { h.textContent = ageText(i.value) || '-'; }); };
+const birthText = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? `${+m[3]}/${m[2]}/${+m[1] + 543}` : ''; };
+const TH_MON = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+// ช่องวันเกิด: เลือก วัน / เดือน / ปี พ.ศ. จากรายการ (เก็บค่าจริงเป็น YYYY-MM-DD ใน input ซ่อน id เดิม)
+const birthRow = (id, val, hintId) => { const [y, m, d] = /^\d{4}-\d{2}-\d{2}$/.test(val || '') ? val.split('-').map(Number) : [0, 0, 0]; const yNow = new Date().getFullYear();
+  const opt = (v, l, sel) => `<option value="${v}" ${sel ? 'selected' : ''}>${l}</option>`;
+  return `<div class="stack" style="gap:6px" data-bdwrap="${id}"><span style="font-size:14px;font-weight:500">วันเดือนปีเกิด <span class="hint">วัน / เดือน / ปี พ.ศ.</span></span>
+    <div class="row" style="gap:6px"><select data-bd="d" aria-label="วัน" style="flex:0 0 76px">${opt('', 'วัน', !d)}${Array.from({ length: 31 }, (_, i) => opt(i + 1, i + 1, d === i + 1)).join('')}</select><select data-bd="m" aria-label="เดือน" class="grow">${opt('', 'เดือน', !m)}${TH_MON.map((n, i) => opt(i + 1, n, m === i + 1)).join('')}</select><select data-bd="y" aria-label="ปี พ.ศ." style="flex:0 0 96px">${opt('', 'ปี พ.ศ.', !y)}${Array.from({ length: 86 }, (_, i) => yNow - 15 - i).map(yy => opt(yy, yy + 543, y === yy)).join('')}</select></div>
+    <input type="hidden" id="${id}" value="${esc(val || '')}"><div class="row" style="justify-content:space-between"><span class="hint" data-bdtext="1">${val ? birthText(val) : ''}</span><span class="hint">อายุ <b id="${hintId}" style="font-size:15px;color:var(--ink)">${esc(ageText(val) || '-')}</b></span></div></div>`; };
+const bindAge = (inputId, hintId) => { const w = document.querySelector(`[data-bdwrap="${inputId}"]`), i = $('#' + inputId), h = $('#' + hintId); if (!w || !i || !h) return;
+  const sel = k => w.querySelector(`[data-bd="${k}"]`); const sync = () => { const d = +sel('d').value, m = +sel('m').value, y = +sel('y').value; let iso = '';
+    if (d && m && y) { const dim = new Date(y, m, 0).getDate(); if (d > dim) { sel('d').value = String(dim); return sync(); } iso = `${y}-${pad(m)}-${pad(d)}`; } i.value = iso; h.textContent = ageText(iso) || '-'; w.querySelector('[data-bdtext]').textContent = iso ? birthText(iso) : ''; };
+  w.querySelectorAll('select').forEach(x => x.addEventListener('change', sync)); };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n2 = v => (Math.round((+v || 0) * 100) / 100);
 const fmtB = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1031,7 +1045,53 @@ function visitItem(v, opts = {}) {
     <div class="m">${st === 'draft' ? 'ยังไม่ได้ขอเบิก' : v.vehicle === 'company' ? 'รถส่วนกลาง' : fmtKm(v.kmRoundTrip) + ' กม. × ' + v.rate} ${opts.flags && auditFlags(v).length ? '· <span style="color:var(--warn)">ต้องดู ' + auditFlags(v).length + ' จุด</span>' : ''}</div>
   </div><div class="stack" style="gap:6px;align-items:flex-end">${st === 'draft' ? '<span class="amt" style="color:var(--muted)">—</span>' : `<span class="amt">฿${fmtB(v.total)}</span>`}<span class="pill ${st}">${STATUS[st]}</span></div></button>`;
 }
+// ---------- ข้อความทักทาย/ให้กำลังใจหน้าแรก ----------
+const G_GENERIC = { morning: ['☕ อรุณสวัสดิ์ค่ะคุณ{n} วันนี้เริ่มจากลูกค้ารายไหนดีคะ', '🌅 เช้าวันใหม่ค่ะคุณ{n} ขอให้วันนี้เจอแต่ลูกค้าใจดีนะคะ'], noon: ['🌤️ ครึ่งวันผ่านไปแล้วค่ะคุณ{n} อีกนิดเดียว สู้ๆ นะคะ', '🍱 พักทานข้าวก่อนนะคะคุณ{n} บ่ายค่อยลุยต่อ'], evening: ['🌙 วันนี้เหนื่อยหน่อยนะคะคุณ{n} อย่าลืมบันทึกงานก่อนกลับบ้านค่ะ', '🏠 ใกล้หมดวันแล้วค่ะคุณ{n} ขับรถกลับบ้านปลอดภัยนะคะ'], mon: ['🗓️ สัปดาห์ใหม่ โอกาสใหม่ค่ะคุณ{n} เริ่มเลยนะคะ'], fri: ['🎉 ศุกร์แล้วค่ะคุณ{n} ปิดสัปดาห์ให้สวยนะคะ'] };
+function greetingLine() {
+  const gk = x => String(x || '').trim().toLowerCase();
+  const now = new Date(), ms = now.getTime(), n = S.me.nick || (S.me.name || '').split(/\s+/)[0] || 'คุณ';
+  if (!S.me.name) return '';
+  const T = (arr, vars = {}) => { const seed = +dayOf(ms).replace(/-/g, '') % 1000; const t = arr[seed % arr.length]; return t.replace(/\{(\w+)\}/g, (_, k) => k === 'n' ? n : (vars[k] ?? '')); };
+  const day = dayOf(ms), ym = ymOf(ms), dow = now.getDay(), hr = now.getHours();
+  const mine = S.visits.filter(v => isMine(v) && !v.isExample && statusOf(v) !== 'rejected'), acts = S.acts.filter(actMine);
+  const month = mine.filter(v => ymOf(v.createdAt) === ym), monthActs = acts.filter(a => ymOf(a.occurredAt) === ym);
+  // 1 วันเกิด
+  if (S.me.birthDate) { const [, bm, bd] = S.me.birthDate.split('-'); const tmr = new Date(ms + 864e5); const md = x => pad(x.getMonth() + 1) + '-' + pad(x.getDate());
+    if (md(now) === bm + '-' + bd) return T(['🎂 สุขสันต์วันเกิดค่ะคุณ{n} ขอให้ปีนี้ปิดงานรัวๆ สุขภาพแข็งแรงนะคะ', '🎉 วันเกิดคุณ{n}! ทีม FLOW ขอให้มีความสุขมากๆ วันนี้พักบ้างก็ได้นะคะ']);
+    if (md(tmr) === bm + '-' + bd) return T(['🎈 พรุ่งนี้วันเกิดคุณ{n} แล้วนะคะ วันนี้ตั้งใจทำงาน พรุ่งนี้ฉลองค่ะ']); }
+  // 2 ปิดการขายได้ใน 2 วัน
+  const closes = [...mine.filter(v => v.stage === 'ปิดการขาย').map(v => ({ at: v.createdAt, c: v.customer })), ...acts.filter(a => a.outcome === 'ปิดการขายได้').map(a => ({ at: a.occurredAt, c: a.customer }))].sort((a, b) => b.at - a.at);
+  const recent = closes.find(x => ms - x.at < 2 * 864e5), nClose = new Set(closes.filter(x => ymOf(x.at) === ym).map(x => gk(x.c))).size;
+  if (recent) return T(['🏆 ปิดดีลได้แล้วค่ะคุณ{n}! {c} เป็นของเรา เก่งมากค่ะ', '🔥 คุณ{n} ปิดการขายได้ {k} งานเดือนนี้แล้วค่ะ ฟอร์มกำลังมา', '👏 งาน {c} ที่เพิ่งปิดได้ คือผลจากการตามงานต่อเนื่องค่ะ ขอบคุณที่ไม่ยอมแพ้นะคะคุณ{n}'], { c: recent.c, k: nClose });
+  // 3 เป้าเข้าพบ
+  const tgt = +S.settings.visitTarget || 0, nv = month.length, dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), left = dim - now.getDate();
+  if (tgt && nv > tgt) return T(['🚀 คุณ{n} ทะลุเป้าเข้าพบไป {x} ครั้งแล้วค่ะ สุดยอดจริงๆ ที่เหลือเป็นโบนัสนะคะ'], { x: nv - tgt });
+  if (tgt && nv >= tgt) return T(['🎯 เข้าพบครบ {a}/{b} ครั้งแล้วค่ะคุณ{n} ถึงเป้าเดือนนี้เรียบร้อย เยี่ยมมากค่ะ'], { a: nv, b: tgt });
+  if (tgt && nv >= tgt * 0.8) return T(['💪 อีก {x} ครั้งก็ถึงเป้าแล้วค่ะคุณ{n} เดือนนี้ไหวแน่นอน'], { x: tgt - nv });
+  // 4 ขยันออกตลาด
+  const wkStart = new Date(now); wkStart.setHours(0, 0, 0, 0); wkStart.setDate(now.getDate() - ((dow + 6) % 7)); const week = mine.filter(v => v.createdAt >= wkStart.getTime());
+  const km = month.reduce((s, v) => s + (v.kmRoundTrip || 0), 0);
+  const days = new Set(mine.map(v => dayOf(v.createdAt))); let streak = 0; for (let i = 0; i < 30; i++) { const d = new Date(ms - i * 864e5); if (d.getDay() === 0 || d.getDay() === 6) continue; if (days.has(dayOf(d.getTime()))) streak++; else if (i > 0) break; }
+  const dueToday = [...acts, ...mine].filter(x => x.nextDate === day).length;
+  if (dueToday >= 1 && hr < 12) return T(['☀️ วันนี้มีนัดติดตาม {x} รายค่ะคุณ{n} ลุยเลยค่ะ'], { x: dueToday });
+  if (streak >= 3) return T(['🌟 คุณ{n} เข้าพบติดต่อกัน {x} วันทำการแล้วค่ะ ความสม่ำเสมอคือจุดแข็งของคุณนะคะ'], { x: streak });
+  if (week.length >= 5) return T(['⚡ สัปดาห์นี้คุณ{n} ออกพบลูกค้าแล้ว {x} รายค่ะ ขยันมากเลยค่ะ'], { x: week.length });
+  if (km >= 500) return T(['🛣️ เดือนนี้คุณ{n} วิ่งไป {x} กม. แล้วค่ะ ขับรถปลอดภัยนะคะ'], { x: fmtKm(km) });
+  // 5 ลูกค้าใหม่ / ใบเสนอราคา
+  const before = new Set(mine.filter(v => ymOf(v.createdAt) < ym).map(v => gk(v.customer))), newC = new Set(month.map(v => gk(v.customer)).filter(k => !before.has(k))).size, quotes = monthActs.filter(a => a.outcome === 'ขอใบเสนอราคา').length;
+  if (newC >= 3) return T(['🆕 เดือนนี้คุณ{n} เปิดลูกค้าใหม่ {x} รายแล้วค่ะ ฐานลูกค้าโตขึ้นเรื่อยๆ นะคะ'], { x: newC });
+  if (quotes >= 3) return T(['📄 ส่งใบเสนอราคาไปแล้ว {x} รายเดือนนี้ค่ะคุณ{n} ลองตามผลสัก 1 รายวันนี้ไหมคะ'], { x: quotes });
+  if (tgt && nv < tgt / 2 && left >= 7 && nv > 0) return T(['📅 เดือนนี้คุณ{n} เข้าพบแล้ว {a} ครั้ง เหลืออีก {d} วันค่ะ ค่อยๆ ไปทีละรายนะคะ'], { a: nv, d: left });
+  // 6 เงียบไปนาน (นุ่มๆ)
+  if (mine.length && dow >= 1 && dow <= 5) { let gap = 0; for (let i = 1; i <= 14; i++) { const d = new Date(ms - i * 864e5); if (d.getDay() === 0 || d.getDay() === 6) continue; if (days.has(dayOf(d.getTime()))) break; gap++; } if (gap >= 3 && !days.has(day)) return T(['🌱 ห่างลูกค้าไปหลายวันแล้วค่ะคุณ{n} ลองแวะทักรายเก่าสักราย เริ่มเล็กๆ ก็ได้นะคะ']); }
+  const overdue = [...acts, ...mine].filter(x => x.nextDate && x.nextDate < day && ms - new Date(x.nextDate + 'T00:00:00').getTime() <= 7 * 864e5).length;
+  if (overdue) return T(['⏰ มีลูกค้า {x} รายเลยนัดติดตามแล้วค่ะคุณ{n} ลองโทรหาสักสายนะคะ'], { x: overdue });
+  // 7 ทั่วไป
+  if (dow === 1 && hr < 12) return T(G_GENERIC.mon); if (dow === 5 && hr >= 12) return T(G_GENERIC.fri);
+  return T(hr < 11 ? G_GENERIC.morning : hr < 16 ? G_GENERIC.noon : G_GENERIC.evening);
+}
 function renderHome() {
+  try { const g = greetingLine(); $('#greetLine').hidden = !g; $('#greetLine').textContent = g; } catch (e) { $('#greetLine').hidden = true; }
   const now = Date.now(), ym = ymOf(now), dk = dayKey(now), mgr = can('team');
   const scope = mgr ? S.visits.filter(v => !v.isExample) : S.visits.filter(isMine);
   const month = scope.filter(v => ymOf(v.createdAt) === ym && statusOf(v) !== 'rejected');
