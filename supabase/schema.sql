@@ -47,6 +47,24 @@ create table if not exists public.visits (
 create index if not exists visits_created_by_idx on public.visits (created_by, created_at desc);
 create index if not exists visits_created_at_idx on public.visits (created_at desc);
 
+-- บันทึกงานขาย (โทร / LINE / อีเมล / ประชุม) ที่ไม่ใช่การเช็คอิน · การเข้าพบยังเก็บที่ visits และแสดงรวมในไทม์ไลน์
+create table if not exists public.activities (
+  id text primary key,
+  created_by uuid not null,
+  created_at bigint not null,
+  occurred_at bigint not null,
+  staff_name text,
+  type text not null default 'call' check (type in ('call','line','email','meeting','other')),
+  customer text,
+  customer_id text,
+  outcome text not null default '',
+  follow_up_at bigint,
+  data jsonb not null,
+  updated_at bigint
+);
+create index if not exists activities_by_idx on public.activities (created_by, occurred_at desc);
+create index if not exists activities_customer_idx on public.activities (customer_id, occurred_at desc);
+
 create table if not exists public.approvals (
   visit_id text primary key,
   status text not null check (status in ('pending','approved','rejected')),
@@ -63,15 +81,60 @@ create table if not exists public.settings (
 );
 insert into public.settings (key, value) values ('settings', '{}'::jsonb), ('invites', '{"codes":{}}'::jsonb)
   on conflict (key) do nothing;
+-- คอลัมน์ที่เพิ่มภายหลัง (รันซ้ำได้)
+alter table public.profiles add column if not exists nick text not null default '';
+alter table public.profiles add column if not exists name_en text not null default '';
+-- สิทธิ์รายส่วนต่อผู้ใช้ (กำหนดจากหลังบ้าน) เช่น {"checkin":2,"customers":1,"team":0,"reports":1,"approve":0,"admin":0}
+alter table public.profiles add column if not exists perms jsonb not null default '{}'::jsonb;
+-- ตำแหน่งที่หลังบ้านกำหนดเอง (id จาก settings.positions) · ระดับการเข้าใช้ยังมาจาก role
+alter table public.profiles add column if not exists position text not null default '';
+-- v2.0: รถของฉันหลายคันต่อคน [{id,name,type,plate}]
+alter table public.profiles add column if not exists cars jsonb not null default '[]'::jsonb;
+-- v3.0: วันเดือนปีเกิด (YYYY-MM-DD) ระบบคำนวณอายุในแอป
+alter table public.profiles add column if not exists birth_date text not null default '';
 
 -- ---------- ฟังก์ชันช่วยตรวจสิทธิ์ ----------
+-- ระดับสิทธิ์รายส่วนของผู้ใช้ที่ล็อกอินอยู่: 0 ไม่เห็น · 1 ดูอย่างเดียว · 2 ดูและแก้ไข · 3 ลบได้ (เฉพาะ customers)
+-- ส่วน: checkin, customers, team, reports, approve, admin · เจ้าของได้ทุกส่วนเสมอ · ค่าเริ่มต้นตามตำแหน่ง ทับด้วย profiles.perms
+create or replace function public.perm_level(p_feature text) returns int
+language sql stable security definer set search_path = public as $$
+  select coalesce((
+    select case
+      when p.status <> 'active' then 0
+      when p.role = 'owner' then 3
+      when jsonb_typeof(p.perms -> p_feature) = 'number' then greatest(0, least((p.perms ->> p_feature)::int, 3))
+      when p.role = 'manager' then case when p_feature = 'customers' then 3 else 2 end
+      else case p_feature when 'checkin' then 2 when 'customers' then 2 when 'reports' then 1 else 0 end
+    end
+    from public.profiles p where p.id = auth.uid()), 0);
+$$;
+create or replace function public.has_perm(p_feature text, p_level int) returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.perm_level(p_feature) >= p_level;
+$$;
+-- ตั้งค่าบริษัท "รายงานการขายเห็นด้วยกันหมด" → ผู้ที่ดูรายงานของตัวเองได้ เห็นของทุกคน
+create or replace function public.reports_shared() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.has_perm('reports', 2) or (public.has_perm('reports', 1) and coalesce((select value ->> 'reportScope' from public.settings where key = 'settings'), 'own') = 'all');
+$$;
+-- ผู้ที่เห็นงานของคนอื่นได้ (ทีมขาย / อนุมัติ / รายงานทั้งทีม)
+create or replace function public.sees_team() returns boolean
+language sql stable security definer set search_path = public as $$
+  select public.has_perm('team', 1) or public.has_perm('approve', 1) or public.reports_shared();
+$$;
+-- is_admin = มีสิทธิ์แก้ไขหลังบ้าน (จัดการผู้ใช้ สิทธิ์ ตั้งค่า)
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.profiles where id = auth.uid() and role in ('manager','owner') and status = 'active');
+  select public.has_perm('admin', 2);
 $$;
 create or replace function public.is_owner() returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.profiles where id = auth.uid() and role = 'owner' and status = 'active');
+$$;
+-- รายการที่อนุมัติแล้วถูกล็อก: ผู้ขอเบิกแก้ไข/ลบไฟล์แนบไม่ได้ (ผู้จัดการ/เจ้าของแก้ได้ หรือตีกลับให้ส่งใหม่)
+create or replace function public.visit_locked(p_visit text) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.approvals where visit_id = p_visit and status = 'approved');
 $$;
 create or replace function public.is_active() returns boolean
 language sql stable security definer set search_path = public as $$
@@ -115,12 +178,14 @@ begin
   end if;
   if tg_op = 'UPDATE' then
     if not public.is_admin() then
-      new.role := old.role; new.status := old.status; new.approved_at := old.approved_at;
+      new.role := old.role; new.status := old.status; new.approved_at := old.approved_at; new.perms := old.perms; new.position := old.position;
       new.approved_by := old.approved_by; new.approved_by_name := old.approved_by_name; new.note := old.note;
     end if;
     -- ตั้งใครเป็น "เจ้าของ / CEO" ได้เฉพาะเจ้าของด้วยกัน และห้ามลดสิทธิ์/ระงับตัวเอง
     if new.role = 'owner' and old.role <> 'owner' and not public.is_owner() then new.role := old.role; end if;
     if old.id = auth.uid() and (new.role <> old.role or new.status <> old.status) then new.role := old.role; new.status := old.status; end if;
+    -- เปลี่ยนสิทธิ์รายส่วนของตัวเองไม่ได้ (ยกเว้นเจ้าของ ซึ่งมีทุกสิทธิ์อยู่แล้ว)
+    if old.id = auth.uid() and new.perms <> old.perms and not public.is_owner() then new.perms := old.perms; end if;
     return new;
   end if;
   return new;
@@ -131,8 +196,11 @@ create trigger profiles_guard before insert or update on public.profiles
 
 -- ---------- จัดการบัญชีจากหน้าหลังบ้าน (ไม่ต้องเข้า Supabase) ----------
 -- ผู้จัดการ/เจ้าของที่ล็อกอินอยู่เรียกใช้จากแอป: สร้างบัญชีพร้อมรหัสผ่าน ตั้งรหัสผ่านใหม่ ลบบัญชี
+drop function if exists public.admin_create_user(text, text, text, text, text, text, text);
+drop function if exists public.admin_create_user(text, text, text, text, text, text, text, text, text);
 create or replace function public.admin_create_user(p_email text, p_password text, p_name text default '', p_code text default '',
-  p_dept text default '', p_phone text default '', p_role text default 'sales') returns uuid
+  p_dept text default '', p_phone text default '', p_role text default 'sales', p_nick text default '', p_name_en text default '',
+  p_vehicle text default 'car', p_plate text default '') returns uuid
 language plpgsql security definer set search_path = public, extensions, auth as $$
 declare uid uuid := gen_random_uuid(); em text := lower(trim(p_email)); now_ms bigint := (extract(epoch from now()) * 1000)::bigint;
 begin
@@ -148,9 +216,10 @@ begin
     '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('name', coalesce(p_name, '')), now(), now(), '', '', '', '');
   insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
   values (gen_random_uuid(), uid, uid::text, jsonb_build_object('sub', uid::text, 'email', em, 'email_verified', true, 'phone_verified', false), 'email', now(), now(), now());
-  insert into public.profiles (id, email, name, code, dept, phone, role, status, registered_at, approved_at, approved_by,
+  insert into public.profiles (id, email, name, nick, name_en, code, dept, phone, vehicle, plate, role, status, registered_at, approved_at, approved_by,
     approved_by_name, updated_at)
-  values (uid, em, coalesce(p_name, ''), coalesce(p_code, ''), coalesce(p_dept, ''), coalesce(p_phone, ''), p_role, 'active', now_ms, now_ms, auth.uid(),
+  values (uid, em, coalesce(p_name, ''), coalesce(p_nick, ''), coalesce(p_name_en, ''), coalesce(p_code, ''), coalesce(p_dept, ''), coalesce(p_phone, ''),
+    case when p_vehicle in ('car','ev','moto','company') then p_vehicle else 'car' end, coalesce(p_plate, ''), p_role, 'active', now_ms, now_ms, auth.uid(),
     coalesce((select name from public.profiles where id = auth.uid()), ''), now_ms);
   return uid;
 end $$;
@@ -177,10 +246,10 @@ begin
   delete from auth.users where id = p_user;
 end $$;
 
-revoke all on function public.admin_create_user(text, text, text, text, text, text, text) from public, anon;
+revoke all on function public.admin_create_user(text, text, text, text, text, text, text, text, text, text, text) from public, anon;
 revoke all on function public.admin_set_password(uuid, text) from public, anon;
 revoke all on function public.admin_delete_user(uuid) from public, anon;
-grant execute on function public.admin_create_user(text, text, text, text, text, text, text) to authenticated;
+grant execute on function public.admin_create_user(text, text, text, text, text, text, text, text, text, text, text) to authenticated;
 grant execute on function public.admin_set_password(uuid, text) to authenticated;
 grant execute on function public.admin_delete_user(uuid) to authenticated;
 
@@ -188,11 +257,12 @@ grant execute on function public.admin_delete_user(uuid) to authenticated;
 alter table public.profiles enable row level security;
 alter table public.customers enable row level security;
 alter table public.visits enable row level security;
+alter table public.activities enable row level security;
 alter table public.approvals enable row level security;
 alter table public.settings enable row level security;
 
 drop policy if exists profiles_select on public.profiles;
-create policy profiles_select on public.profiles for select to authenticated using (id = auth.uid() or public.is_admin());
+create policy profiles_select on public.profiles for select to authenticated using (id = auth.uid() or public.has_perm('admin', 1) or public.sees_team());
 drop policy if exists profiles_insert on public.profiles;
 create policy profiles_insert on public.profiles for insert to authenticated with check (id = auth.uid());
 drop policy if exists profiles_update on public.profiles;
@@ -201,27 +271,41 @@ drop policy if exists profiles_delete on public.profiles;
 create policy profiles_delete on public.profiles for delete to authenticated using (public.is_admin() and id <> auth.uid());
 
 drop policy if exists customers_select on public.customers;
-create policy customers_select on public.customers for select to authenticated using (public.is_active());
+create policy customers_select on public.customers for select to authenticated using (public.has_perm('customers', 1));
 drop policy if exists customers_write on public.customers;
-create policy customers_write on public.customers for insert to authenticated with check (public.is_active());
+create policy customers_write on public.customers for insert to authenticated with check (public.has_perm('customers', 2));
 drop policy if exists customers_update on public.customers;
-create policy customers_update on public.customers for update to authenticated using (public.is_active()) with check (public.is_active());
+create policy customers_update on public.customers for update to authenticated using (public.has_perm('customers', 2)) with check (public.has_perm('customers', 2));
 drop policy if exists customers_delete on public.customers;
-create policy customers_delete on public.customers for delete to authenticated using (public.is_admin());
+create policy customers_delete on public.customers for delete to authenticated using (public.has_perm('customers', 3));
 
 drop policy if exists visits_select on public.visits;
-create policy visits_select on public.visits for select to authenticated using (created_by = auth.uid() or public.is_admin());
+create policy visits_select on public.visits for select to authenticated using ((created_by = auth.uid() and public.has_perm('checkin', 1)) or public.sees_team());
 drop policy if exists visits_insert on public.visits;
-create policy visits_insert on public.visits for insert to authenticated with check (created_by = auth.uid() and public.is_active());
+create policy visits_insert on public.visits for insert to authenticated with check (created_by = auth.uid() and public.has_perm('checkin', 2));
 drop policy if exists visits_update on public.visits;
-create policy visits_update on public.visits for update to authenticated using ((created_by = auth.uid() and public.is_active()) or public.is_admin()) with check ((created_by = auth.uid() and public.is_active()) or public.is_admin());
+create policy visits_update on public.visits for update to authenticated
+  using ((created_by = auth.uid() and public.has_perm('checkin', 2) and not public.visit_locked(id)) or public.has_perm('team', 2))
+  with check ((created_by = auth.uid() and public.has_perm('checkin', 2) and not public.visit_locked(id)) or public.has_perm('team', 2));
 drop policy if exists visits_delete on public.visits;
-create policy visits_delete on public.visits for delete to authenticated using (public.is_admin());
+create policy visits_delete on public.visits for delete to authenticated using (public.has_perm('team', 2));
+
+-- บันทึกงานขาย: เห็นของตัวเอง (ผู้ดูทีมเห็นทั้งหมด) · แก้ของตัวเองได้ภายใน 7 วัน · ลบได้เฉพาะผู้ดูแลทีม
+drop policy if exists activities_select on public.activities;
+create policy activities_select on public.activities for select to authenticated using ((created_by = auth.uid() and public.has_perm('checkin', 1)) or public.sees_team());
+drop policy if exists activities_insert on public.activities;
+create policy activities_insert on public.activities for insert to authenticated with check (created_by = auth.uid() and public.has_perm('checkin', 2));
+drop policy if exists activities_update on public.activities;
+create policy activities_update on public.activities for update to authenticated
+  using ((created_by = auth.uid() and public.has_perm('checkin', 2) and created_at > (extract(epoch from now()) * 1000)::bigint - 7 * 86400000) or public.has_perm('team', 2))
+  with check ((created_by = auth.uid() and public.has_perm('checkin', 2)) or public.has_perm('team', 2));
+drop policy if exists activities_delete on public.activities;
+create policy activities_delete on public.activities for delete to authenticated using (public.has_perm('team', 2));
 
 drop policy if exists approvals_select on public.approvals;
 create policy approvals_select on public.approvals for select to authenticated using (public.is_active());
 drop policy if exists approvals_write on public.approvals;
-create policy approvals_write on public.approvals for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy approvals_write on public.approvals for all to authenticated using (public.has_perm('approve', 2)) with check (public.has_perm('approve', 2));
 
 drop policy if exists settings_select on public.settings;
 create policy settings_select on public.settings for select to authenticated using (true);
@@ -238,14 +322,15 @@ create policy attachments_insert on storage.objects for insert to authenticated
   with check (bucket_id = 'attachments' and (storage.foldername(name))[1] = auth.uid()::text and public.is_active());
 drop policy if exists attachments_select on storage.objects;
 create policy attachments_select on storage.objects for select to authenticated
-  using (bucket_id = 'attachments' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin()));
+  using (bucket_id = 'attachments' and ((storage.foldername(name))[1] = auth.uid()::text or public.sees_team()));
 drop policy if exists attachments_delete on storage.objects;
 create policy attachments_delete on storage.objects for delete to authenticated
-  using (bucket_id = 'attachments' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_admin()));
+  using (bucket_id = 'attachments' and (((storage.foldername(name))[1] = auth.uid()::text and not public.visit_locked((storage.foldername(name))[2])) or public.has_perm('team', 2)));
 
 -- ---------- Realtime (ให้หน้าจอทุกเครื่องอัปเดตเอง) ----------
 do $$ begin
   begin alter publication supabase_realtime add table public.visits; exception when duplicate_object then null; end;
+  begin alter publication supabase_realtime add table public.activities; exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table public.approvals; exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table public.profiles; exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table public.customers; exception when duplicate_object then null; end;

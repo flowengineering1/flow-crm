@@ -80,6 +80,10 @@ input:focus,textarea:focus,select:focus,button:focus-visible,a:focus-visible,.bt
 .pill.approved{background:var(--ok-soft);color:var(--ok)}
 .pill.rejected{background:var(--bad-soft);color:var(--bad)}
 .pill.stage{background:var(--accent-soft);color:var(--accent)}
+.pill.t-ok{background:var(--ok-soft);color:var(--ok)}.pill.t-bad{background:var(--bad-soft);color:var(--bad)}.pill.t-warn{background:var(--warn-soft);color:var(--warn)}.pill.t-neu{background:#EFEFF3;color:var(--muted)}
+.chip.t-ok{color:var(--ok);border-color:#9ED3A2}.chip.t-bad{color:var(--bad);border-color:#F3A9A9}.chip.t-warn{color:var(--warn);border-color:#F0C3A6}.chip.t-neu{color:var(--muted)}
+.chip.t-ok[aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}.chip.t-bad[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}.chip.t-warn[aria-pressed="true"]{background:var(--warn);border-color:var(--warn);color:#fff}.chip.t-neu[aria-pressed="true"]{background:var(--muted);border-color:var(--muted);color:#fff}
+.chip .ci{margin-right:5px}.sug{display:flex;flex-wrap:wrap;gap:6px}.sug .chip{font-size:13px;padding:6px 10px}.sug-row{display:flex;gap:6px;align-items:center}.sug-row input{flex:1;min-width:0}
 .pill.active{background:var(--ok-soft);color:var(--ok)}
 .pill.disabled{background:var(--bad-soft);color:var(--bad)}
 .gate{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;-webkit-overflow-scrolling:touch}
@@ -495,10 +499,11 @@ details summary{cursor:pointer;font-size:14px;color:var(--link);font-weight:500}
     </div>
 
     <ul class="flags" id="ciFlags"></ul>
-    <button type="submit" class="btn primary block lg" id="btnSubmit">ส่งรายงานและขอเบิก</button>
-    <button type="button" class="btn soft block" id="btnSave">บันทึกไว้ก่อน ยังไม่ขอเบิก</button>
+    <button type="button" class="btn primary block lg" id="btnSave">บันทึกไว้ก่อน ยังไม่ขอเบิก</button>
     <p class="sub" style="text-align:center;margin:0">บันทึกไว้ก่อนได้ถ้ายังไม่รู้ระยะทางหรือยังไม่มีใบเสร็จ แล้วกลับมากดขอเบิกย้อนหลังจากรายการนั้นภายหลัง</p>
-    <button type="button" class="btn ghost block" id="btnReset">ล้างฟอร์ม</button>
+    <button type="submit" class="btn ok block lg" id="btnSubmit">ส่งรายงานและขอเบิก</button>
+    <button type="button" class="btn block" id="btnReset" style="background:var(--bad);color:#fff">ล้างฟอร์ม</button>
+    <p class="sub" style="text-align:center;margin:0">ทุกปุ่มจะมีกล่องยืนยันก่อนทำงาน ป้องกันการกดผิด</p>
   </form>
 </section>
 
@@ -659,8 +664,11 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '2.1';
+const APP_VERSION = '3.0';
 const APP_VERSIONS = [
+  ['3.0', '27 ต.ค. 2569', ['ข้อมูลพนักงานเพิ่มช่อง "วันเดือนปีเกิด" ระบบคำนวณอายุให้อัตโนมัติ (แสดงเป็นปีและเดือน) กรอกได้ตอนลงทะเบียน ในหน้าตั้งค่า และหลังบ้านแก้ให้ได้ในการ์ดผู้ใช้', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ birth_date ในตาราง profiles)']],
+  ['2.3', '27 ต.ค. 2569', ['บันทึกการติดต่อ: ช่อง "สิ่งที่ต้องทำต่อ" มีรายการแนะนำจากที่เคยพิมพ์และตัวเลือกที่ตั้งไว้ แตะเลือกได้ พิมพ์แล้วระบบจำให้ และกด "แก้ไขรายการ" เพื่อแก้ชื่อหรือลบรายการแนะนำ', 'ผลการติดต่อมีไอคอนและสีตามความหมาย: ปิดการขายได้/สนใจ สีเขียว · ติดต่อไม่ได้ สีแดง · ยังไม่สนใจ สีส้ม · ให้ข้อมูล สีเทา', 'สถานะลูกค้า (ตัวกรองหน้าลูกค้า ป้ายสถานะ และชิปในฟอร์ม) ใส่สี: ปิดการขาย เขียว · ไม่ได้งาน แดง · ต่อรอง ส้ม · ติดต่อใหม่ เทา']],
+  ['2.2', '27 ต.ค. 2569', ['ปุ่มท้ายฟอร์มเข้าพบหน้างานจัดใหม่: "บันทึกไว้ก่อน" สีน้ำเงินอยู่บนสุด "ส่งรายงานและขอเบิก" สีเขียว "ล้างฟอร์ม" สีแดง และทุกปุ่มมีกล่องยืนยันทุกครั้งก่อนทำงาน (ล้างฟอร์มถามแม้ยังไม่ได้กรอก)']],
   ['2.1', '27 ต.ค. 2569', ['รวมเมนู "เช็คอิน" กับ "บันทึกงาน" เป็นเมนูเดียวชื่อ "บันทึกงาน" (ปุ่มกลาง) เลือกประเภทก่อน: โทร / LINE / อีเมล / ประชุม / เข้าพบหน้างาน', 'ประเภท "เข้าพบหน้างาน" คือฟอร์มเช็คอินเดิม (พิกัด รูป ค่าเดินทาง) ประเภทอื่นเป็นฟอร์มสั้น สลับประเภทระหว่างกรอกได้โดยชื่อลูกค้าติดไปด้วย', 'หน้าแรก: ปุ่มใหญ่เข้าพบหน้างาน (เช็คอิน) และปุ่มลัดทุกประเภทอยู่ครบ ข้อมูลและสิทธิ์เดิมไม่เปลี่ยน', 'ข้อ 4 ค่าเดินทาง: รายการแรกของวันเริ่มจากบริษัทเป็นค่าเริ่มต้น และมีเมนูซ่อน "เริ่มจากจุดอื่น" (เช่น ออกจากบ้าน) ใส่พิกัด/ลิงก์ หรือใช้ตำแหน่งปัจจุบัน จำจุดไว้ในเครื่องสำหรับครั้งต่อไปได้ ระยะคิดจากจุดนั้นถึงลูกค้า ขากลับยังคิดถึงบริษัท']],
   ['2.0', '27 ต.ค. 2569', ['ต้องรัน supabase/schema.sql อีกครั้ง (เพิ่มคอลัมน์ cars ในตาราง profiles ปลอดภัยกับข้อมูลเดิม)', '"รถของฉัน": พนักงานบันทึกรถได้หลายคัน (ชื่อเรียก ประเภท ทะเบียน) ในตั้งค่า ตอนเช็คอินและขอเบิกย้อนหลังแตะเลือกคันเดียวจบ ประเภทรถ/อัตราและทะเบียนตามคันที่เลือก ระบบจำคันล่าสุดที่ใช้', 'เลขไมล์เริ่มต้นเติมต่อจากรายการล่าสุดของ "คันนั้น" (ข้ามวันได้) ถ้าเช็คอินต่อเนื่องในวันเดียวกันยังเติมจากรายการก่อนหน้าเหมือนเดิม', 'รายงานการเดินทางสรุปจำนวนครั้ง กม. และยอดเบิกแยกรายคัน (ประเภท · ชื่อรถ ทะเบียน) และ CSV เพิ่มคอลัมน์ชื่อรถ', 'รถประจำ/ทะเบียนเดิมของทุกคนถูกย้ายเป็นรถคันแรกใน "รถของฉัน" อัตโนมัติ']],
   ['1.4', '27 ต.ค. 2569', ['เช็คอินต่อเนื่องหลายลูกค้าในวันเดียว: เลือก "ขานี้เริ่มจาก" บริษัท หรือต่อจากลูกค้ารายก่อนหน้า (ระบบเลือกให้เมื่อมีเช็คอินในวันเดียวกัน) ระยะทางคิดจากจุดก่อนหน้าถึงลูกค้ารายนี้ ไม่วนกลับบริษัททุกรายการ', 'ช่อง "กลับบริษัทจากที่นี่" บวกระยะขากลับ และเมื่อเช็คอินรายถัดไปแบบต่อจาก ระบบย้ายขากลับไปไว้ที่รายการล่าสุดของวันให้เอง ขากลับจึงไม่ซ้ำ (รายการที่อนุมัติแล้วไม่ถูกแก้ และระบบเตือนผู้ตรวจแทน)', 'เลขไมล์: ช่องเลขไมล์ออกจากจุดเริ่ม ถึงลูกค้า และถึงบริษัท ระบบคำนวณกม.ตามเลขไมล์ เติมเลขไมล์เริ่มจากรายการก่อนหน้าให้ และเตือนผู้ตรวจเมื่อต่างจากแผนที่เกินเกณฑ์', 'หลังบ้านตั้งค่า "ระยะทางที่ใช้คิดเงิน" ตามแผนที่ (ค่าเริ่มต้น) หรือตามเลขไมล์เมื่อกรอกครบ', 'ขอเบิกย้อนหลัง/แก้ไขค่าเดินทาง ใบสรุปขอเบิก รายละเอียดรายการ และ CSV แสดงจุดเริ่มขา ขากลับ และเลขไมล์ · รายการเก่ายังแสดงแบบไป-กลับเหมือนเดิม']],
@@ -677,6 +685,12 @@ const LS_KEY = 'flowcrm.local.v1', LS_ME = 'flowcrm.me.v1', MAX_STAFF_SUBS = 50;
 
 // ---------- helpers ----------
 const $ = s => document.querySelector(s);
+// วันเกิด (เก็บเป็น YYYY-MM-DD) → อายุ
+const ageParts = iso => { if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null; const b = new Date(iso + 'T00:00:00'), n = new Date(); if (isNaN(b) || b > n) return null; let y = n.getFullYear() - b.getFullYear(), m = n.getMonth() - b.getMonth(); if (n.getDate() < b.getDate()) m--; if (m < 0) { y--; m += 12; } return { y, m }; };
+const ageText = iso => { const a = ageParts(iso); return a ? `${a.y} ปี${a.m ? ` ${a.m} เดือน` : ''}` : ''; };
+const birthText = iso => { if (!iso) return ''; const d = new Date(iso + 'T00:00:00'); return isNaN(d) ? '' : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); };
+const birthRow = (id, val, hintId) => `<div class="row"><label class="f grow">วันเดือนปีเกิด<input type="date" id="${id}" value="${esc(val || '')}" max="${new Date().toISOString().slice(0, 10)}"></label><label class="f grow">อายุ (คำนวณให้)<b id="${hintId}" style="display:block;padding:10px 0;font-size:16px">${esc(ageText(val) || '-')}</b></label></div>`;
+const bindAge = (inputId, hintId) => { const i = $('#' + inputId), h = $('#' + hintId); if (i && h) i.addEventListener('input', () => { h.textContent = ageText(i.value) || '-'; }); };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n2 = v => (Math.round((+v || 0) * 100) / 100);
 const fmtB = v => (+v || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -854,7 +868,7 @@ async function connect() {
   db.doc('config/settings').onSnapshot(sn => { S.settings = { ...DEFAULT_SETTINGS, ...(sn.exists ? sn.data() : {}) }; renderAll(); updateCalc(); }, err);
   renderAll();
 }
-function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', cars: myCars(), customActions: S.me.customActions || [], updatedAt: Date.now() }; }
+function staffDoc() { return { name: S.me.name || '', nick: S.me.nick || '', nameEn: S.me.nameEn || '', code: S.me.code || '', dept: S.me.dept || '', phone: S.me.phone || '', birthDate: S.me.birthDate || '', plate: S.me.plate || '', vehicle: S.me.vehicle || 'car', cars: myCars(), customActions: S.me.customActions || [], updatedAt: Date.now() }; }
 // ---- my vehicles: several cars per person, odometer chained per car ----
 function myCars() { let c = Array.isArray(S.me.cars) ? S.me.cars.filter(x => x && (x.plate || x.name)).map(x => ({ id: x.id || uid('car'), name: String(x.name || '').trim(), type: VEHICLES[x.type] && x.type !== 'company' ? x.type : 'car', plate: String(x.plate || '').trim() })) : []; if (!c.length && S.me.plate && S.me.vehicle !== 'company') c = [{ id: 'car_default', name: '', type: VEHICLES[S.me.vehicle] ? S.me.vehicle : 'car', plate: String(S.me.plate).trim() }]; return c; }
 const carLabel = c => c ? ((c.name ? c.name + ' · ' : '') + (c.plate || VEHICLES[c.type])) : '';
@@ -1074,7 +1088,13 @@ function openStaff(id) {
 const ACT_ICON = { call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>', line: '<path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-.8 0-1.6-.1-2.3-.2L5 20l1-3.6C4.2 15.1 3 13.2 3 11c0-3.9 4-7 9-7z"/>', email: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', meeting: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 8h5M18.5 5.5v5"/>', other: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>', visit: '<path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>' };
 const actIc = t => `<span class="ic ${t}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ACT_ICON[t] || ACT_ICON.other}</svg></span>`;
 const OUT_CLS = { 'ปิดการขายได้': 'won', 'ปิดการขาย': 'won', 'ยังไม่สนใจ': 'lost', 'ไม่ได้งาน': 'lost', 'ติดต่อไม่ได้': 'lost', 'ให้ข้อมูล': 'neu' };
-const outPill = o => o ? `<span class="pill ${OUT_CLS[o] || 'out'}">${esc(o)}</span>` : '';
+const OUT_META = { 'สนใจ': ['👍', 't-ok'], 'ขอใบเสนอราคา': ['📄', ''], 'ปิดการขายได้': ['✅', 't-ok'], 'ยังไม่สนใจ': ['⏸', 't-warn'], 'ติดต่อไม่ได้': ['📵', 't-bad'], 'ให้ข้อมูล': ['ℹ️', 't-neu'] };
+const outIcon = o => OUT_META[o] ? `<span class="ci" aria-hidden="true">${OUT_META[o][0]}</span>` : '';
+const outTone = o => OUT_META[o] ? OUT_META[o][1] : '';
+const outPill = o => o ? `<span class="pill ${outTone(o) || OUT_CLS[o] || 'out'}">${outIcon(o)}${esc(o)}</span>` : '';
+const STAGE_TONE = { 'ติดต่อใหม่': 't-neu', 'สำรวจ / นำเสนอ': '', 'เสนอราคา': '', 'ต่อรอง': 't-warn', 'ปิดการขาย': 't-ok', 'ไม่ได้งาน': 't-bad' };
+const stageTone = st => STAGE_TONE[st] || '';
+const stagePill = st => st ? `<span class="pill stage ${stageTone(st)}">${esc(st)}</span>` : '';
 const typeLabel = t => t === 'visit' ? 'เข้าพบ' : ACT_TYPES[t] || 'อื่นๆ';
 const hm = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const thDate = s => { const [y, m, d] = String(s || '').split('-'); return y && m && d ? `${+d}/${m}/${String(+y + 543).slice(-2)}` : String(s || ''); };
@@ -1197,17 +1217,26 @@ function openActForm(o = {}) {
       <label class="f">ลูกค้า<input type="text" id="acCust" list="dlCustomers" autocomplete="off" value="${esc(a ? a.customer : c0 ? c0.name : '')}" placeholder="พิมพ์ชื่อหรือเลือกจากรายชื่อลูกค้า" required></label>
       <label class="f">ผู้ติดต่อ<input type="text" id="acContact" value="${esc(a ? a.contact || '' : c0 ? c0.contact || '' : '')}" placeholder="เช่น คุณวิชัย ฝ่ายซ่อมบำรุง"></label>
       <label class="f">วันและเวลาที่ติดต่อ<input type="datetime-local" id="acAt" value="${lt(a ? a.occurredAt : Date.now())}"></label>
-      <div class="stack" style="gap:6px"><span class="lbl">ผลการติดต่อ</span><div class="chips">${ACT_OUTCOMES.map(x => `<button type="button" class="chip" data-ao="${esc(x)}" aria-pressed="${x === out}">${esc(x)}</button>`).join('')}</div></div>
+      <div class="stack" style="gap:6px"><span class="lbl">ผลการติดต่อ</span><div class="chips">${ACT_OUTCOMES.map(x => `<button type="button" class="chip ${outTone(x)}" data-ao="${esc(x)}" aria-pressed="${x === out}">${outIcon(x)}${esc(x)}</button>`).join('')}</div></div>
       <label class="f">รายละเอียด<textarea id="acNote" placeholder="คุยเรื่องอะไร ลูกค้าต้องการอะไร">${esc(a ? a.note || '' : '')}</textarea></label>
       <label class="f">มูลค่าโอกาสขาย (บาท)<span class="hint">ไม่บังคับ</span><input type="number" id="acValue" min="0" step="1" inputmode="numeric" value="${a && a.dealValue ? a.dealValue : ''}"></label>
-      <div class="card stack"><label class="f">สิ่งที่ต้องทำต่อ<span class="hint">จะขึ้นในหัวข้อ "ต้องติดตาม" ที่หน้าแรก</span><input type="text" id="acNext" value="${esc(a ? a.nextStep || '' : '')}" placeholder="เช่น ส่งใบเสนอราคา"></label>
+      <div class="card stack"><label class="f">สิ่งที่ต้องทำต่อ<span class="hint">จะขึ้นในหัวข้อ "ต้องติดตาม" ที่หน้าแรก</span><input type="text" id="acNext" list="dlNext" autocomplete="off" value="${esc(a ? a.nextStep || '' : '')}" placeholder="เช่น ส่งใบเสนอราคา"></label><datalist id="dlNext"></datalist>
+        <div class="row" style="align-items:center;gap:8px"><span class="hint grow">รายการที่เคยใช้ แตะเพื่อเลือก</span><button type="button" class="btn ghost sm" id="acSugEdit">แก้ไขรายการ</button></div><div class="sug" id="acSug"></div>
         <label class="f">ภายในวันที่<input type="date" id="acNextDate" value="${esc(a ? a.nextDate || '' : '')}"></label>
         <div class="chips">${[[1, 'พรุ่งนี้'], [3, 'อีก 3 วัน'], [7, 'อีก 1 สัปดาห์']].map(([n, l]) => `<button type="button" class="chip" data-and="${dayKey(Date.now() + n * 864e5)}">${l}</button>`).join('')}</div>
         <label class="row" id="acCloseWrap" style="gap:8px;align-items:center;font-size:14px" hidden><input type="checkbox" id="acClose" style="width:20px;height:20px;flex:none"><span id="acCloseT"></span></label>
       </div>
       <button class="btn primary block lg" type="submit" id="acGo">${a ? 'บันทึกการแก้ไข' : 'บันทึก'}</button>
     </form>`);
-  const f = $('#fAct');
+  const f = $('#fAct'); let sugEdit = false, sugAll = false;
+  const renderSug = () => { const list = nextSuggestions(); $('#dlNext').innerHTML = list.map(x => `<option value="${esc(x)}">`).join('');
+    if (!list.length) { sugEdit = false; $('#acSug').innerHTML = '<span class="hint">ยังไม่มีรายการ พิมพ์ครั้งแรกแล้วระบบจะจำไว้ให้</span>'; $('#acSugEdit').hidden = true; return; } $('#acSugEdit').hidden = false; $('#acSugEdit').textContent = sugEdit ? 'เสร็จ' : 'แก้ไขรายการ';
+    if (sugEdit) { $('#acSug').innerHTML = `<div class="stack" style="width:100%;gap:6px">${list.map((x, i) => `<div class="sug-row"><input type="text" value="${esc(x)}" data-sugi="${i}"><button type="button" class="btn ghost sm" data-sugdel="${esc(x)}" aria-label="ลบ" style="color:var(--bad)">✕</button></div>`).join('')}<p class="hint">แก้ข้อความแล้วกด "เสร็จ" เพื่อบันทึก · ✕ ลบออกจากรายการแนะนำ (บันทึกเดิมไม่เปลี่ยน)</p></div>`; return; }
+    const shown = sugAll ? list : list.slice(0, 8), cur = $('#acNext').value.trim();
+    $('#acSug').innerHTML = shown.map(x => `<button type="button" class="chip" data-sug="${esc(x)}" aria-pressed="${x === cur}">${esc(x)}</button>`).join('') + (list.length > 8 && !sugAll ? `<button type="button" class="chip" data-sugmore="1">+${list.length - 8} รายการ</button>` : ''); };
+  renderSug();
+  $('#acSugEdit').addEventListener('click', async () => { if (sugEdit) { const rows = [...f.querySelectorAll('[data-sugi]')], list = nextSuggestions(); for (const r of rows) { const o = list[+r.dataset.sugi], n = r.value.trim(); if (n && n !== o) await renameSuggestion(o, n); } } sugEdit = !sugEdit; renderSug(); });
+  $('#acNext').addEventListener('input', () => { if (!sugEdit) renderSug(); });
   const syncClose = () => { const c = custByName($('#acCust').value), show = !!(c && c.followUp && !a); $('#acCloseWrap').hidden = !show; if (show) { $('#acCloseT').textContent = `งานติดตามเดิม "${c.followUp}" เสร็จแล้ว`; $('#acClose').checked = true; } };
   syncClose();
   $('#acCust').addEventListener('change', () => { const c = custByName($('#acCust').value); if (c && !$('#acContact').value) $('#acContact').value = c.contact || ''; syncClose(); });
@@ -1217,6 +1246,9 @@ function openActForm(o = {}) {
     else if (d.tovisit) { const name = $('#acCust').value.trim(), contact = $('#acContact').value.trim(); closeSheet(); resetForm(); if (name) { $('#ciCustomer').value = name; $('#ciCustomer').dispatchEvent(new Event('change')); if (contact && !$('#ciContact').value) $('#ciContact').value = contact; } go('checkin'); }
     else if (d.ao) { out = out === d.ao ? '' : d.ao; f.querySelectorAll('[data-ao]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ao === out)); }
     else if (d.and) $('#acNextDate').value = d.and;
+    else if (d.sug) { $('#acNext').value = $('#acNext').value.trim() === d.sug ? '' : d.sug; renderSug(); }
+    else if (d.sugmore) { sugAll = true; renderSug(); }
+    else if (d.sugdel) { hideSuggestion(d.sugdel); renderSug(); toast(`ลบ "${d.sugdel}" ออกจากรายการแนะนำแล้ว`); }
   });
   f.addEventListener('submit', async e => {
     e.preventDefault();
@@ -1234,7 +1266,7 @@ function openActForm(o = {}) {
       if (!cu && can('customers', 2)) cu = { id: uid('c'), name, contact: $('#acContact').value.trim(), phone: '', address: '', lat: null, lng: null, stage: 'ติดต่อใหม่', dealValue: 0, followUp: '', followDate: '', note: '', createdBy: S.myId, updatedAt: Date.now(), isNew: true };
       const rec = { ...(a || {}), id: a ? a.id : uid('a'), createdBy: a ? a.createdBy : S.myId, staffName: a ? a.staffName : S.me.name, staffCode: a ? a.staffCode || '' : S.me.code || '', createdAt: a ? a.createdAt : Date.now(), occurredAt: at, type, customer: cu ? cu.name : name, customerId: cu ? cu.id : '', contact: $('#acContact').value.trim(), outcome: out, note, dealValue: value, nextStep, nextDate, updatedAt: Date.now() };
       if (a && a.createdBy !== S.myId) { rec.editedBy = S.myId; rec.editedByName = S.me.name; }
-      await store.saveActivity(rec);
+      await store.saveActivity(rec); if (nextStep) await rememberCustomAction(nextStep);
       if (cu && can('customers', 2) && !cu.isExample) {
         const stage = out === 'ปิดการขายได้' ? 'ปิดการขาย' : out === 'ขอใบเสนอราคา' ? 'เสนอราคา' : '';
         const nextStage = stage && (stage === 'ปิดการขาย' || STAGES.indexOf(stage) > STAGES.indexOf(cu.stage || STAGES[0])) ? stage : cu.stage || 'ติดต่อใหม่';
@@ -1342,7 +1374,7 @@ $('#btnRepCopy').addEventListener('click', () => { const t = S.repText || ''; tr
 
 let stageSel = 'ทั้งหมด';
 function renderCustomers() {
-  $('#stageFilter').innerHTML = ['ทั้งหมด', ...STAGES].map(s => `<button class="chip" data-stage="${esc(s)}" aria-pressed="${s === stageSel}">${esc(s)}</button>`).join('');
+  $('#stageFilter').innerHTML = ['ทั้งหมด', ...STAGES].map(s => `<button class="chip ${stageTone(s)}" data-stage="${esc(s)}" aria-pressed="${s === stageSel}">${esc(s)}</button>`).join('');
   const q = $('#custSearch').value.trim().toLowerCase();
   const lastVisit = {}; S.visits.forEach(v => { const k = v.customer.trim().toLowerCase(); if (!lastVisit[k] || lastVisit[k].createdAt < v.createdAt) lastVisit[k] = v; });
   const rows = S.customers.filter(c => (stageSel === 'ทั้งหมด' || c.stage === stageSel) && (!q || [c.name, c.contact, c.phone].join(' ').toLowerCase().includes(q)))
@@ -1351,7 +1383,7 @@ function renderCustomers() {
       <div class="t">${esc(c.name)} ${c.isExample ? '<span class="pill ex">ตัวอย่าง</span>' : ''}</div>
       <div class="m">${esc(c.contact || 'ยังไม่มีผู้ติดต่อ')}${c.phone ? ' · ' + esc(c.phone) : ''}</div>
       <div class="m">${lv ? 'เข้าพบล่าสุด ' + dt(lv.createdAt) : 'ยังไม่เคยเข้าพบ'}${c.followUp ? ' · ต้องทำต่อ: ' + esc(c.followUp) : ''}</div>
-    </div>${c.stage ? `<span class="pill stage">${esc(c.stage)}</span>` : ''}</button>`; }).join('')
+    </div>${stagePill(c.stage)}</button>`; }).join('')
     : `<div class="empty">${S.customers.length ? 'ไม่พบลูกค้าที่ตรงกับคำค้น' : 'ยังไม่มีลูกค้า<br>ลูกค้าจะถูกเพิ่มให้อัตโนมัติเมื่อเช็คอินครั้งแรก หรือกดเพิ่มลูกค้าด้านบน'}</div>`;
 }
 function renderDatalist() { $('#dlCustomers').innerHTML = S.customers.map(c => `<option value="${esc(c.name)}">`).join(''); }
@@ -1393,7 +1425,7 @@ function applyCar(id) { const c = carById(id); F.carId = c ? c.id : null; if (c)
 function syncOdoStart() { const el = $('#ciOdoStart'); if (el.value && el.value !== String(F.odoAuto)) return; const car = carById(F.carId); const want = F.legFrom === 'prev' && F.prev && F.prev.odoEnd > 0 && (!car || sameCar(F.prev, car) || !F.prev.carId) ? F.prev.odoEnd : lastOdoFor(car); el.value = want != null ? want : ''; F.odoAuto = want; }
 function applyExpenseDefaults() { if (!$('#ciToll').value && +S.settings.defaultToll > 0) $('#ciToll').value = S.settings.defaultToll; }
 function prefillKmFor(name) { if (S.settings.prefillKm === false || F.vehicle === 'company' || F.legFrom === 'prev') return; const k = String(name || '').trim().toLowerCase(); if (!k) return; const last = S.visits.find(v => !v.isExample && v.customer.trim().toLowerCase() === k && v.vehicle !== 'company' && (v.kmOneWay > 0 || (v.draftClaim && v.draftClaim.kmOneWay > 0))); if (!last) return; const km = last.kmOneWay > 0 ? last.kmOneWay : last.draftClaim.kmOneWay; if (!$('#ciKm').value) { $('#ciKm').value = km; F.kmAuto = km; F.kmSrc = 'prev'; toast(`เติมระยะทาง ${fmtKm(km)} กม. จากครั้งก่อน แก้ได้ถ้าต่างจากจริง`); } }
-function chipGroup(el, items, cur, key) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
+function chipGroup(el, items, cur, key, tone) { el.innerHTML = items.map(([v, l]) => `<button type="button" class="chip ${tone ? tone(v) : ''}" data-${key}="${esc(v)}" aria-pressed="${v === cur}">${esc(l)}</button>`).join(''); }
 function clearLegKm() { $('#ciKm').value = ''; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; if (F.odoAuto != null && $('#ciOdoStart').value === String(F.odoAuto)) $('#ciOdoStart').value = ''; F.odoAuto = null; }
 function syncLeg() {
   const p = prevLegVisit(Date.now()), pid = p && p.id, cid = F.prev && F.prev.id;
@@ -1407,7 +1439,7 @@ function renderFormChips() {
   const sv = $('#ciFromSaved'); if (sv) { sv.hidden = !(S.me.home && S.me.home.lat != null); if (!sv.hidden) sv.textContent = `ใช้ "${S.me.home.name || 'จุดที่บันทึกไว้'}" ที่จำไว้`; }
   $('#ciLegNote').textContent = F.legFrom === 'custom' && F.origin ? `คิดระยะจาก ${F.origin.name || 'จุดที่ตั้งไว้'} (${(+F.origin.lat).toFixed(4)}, ${(+F.origin.lng).toFixed(4)}) ถึงลูกค้ารายนี้` : F.prev ? (F.legFrom === 'prev' ? 'คิดระยะจากตำแหน่งเช็คอินของรายการก่อนหน้ามาถึงที่นี่ ขากลับของรายการก่อนหน้าจะย้ายมาไว้ที่รายการนี้' : 'วันนี้มีเช็คอินไปแล้ว ถ้าขับต่อจากลูกค้ารายก่อนโดยไม่กลับบริษัท ให้เลือก "ต่อจาก"') : `รายการแรกของวันเริ่มจาก ${S.settings.officeName || 'บริษัท'} (ชื่อจุดเริ่มต้นตามตั้งค่า) รายการถัดไปในวันเดียวกันจะเลือก "ต่อจาก" ให้อัตโนมัติ`;
   chipGroup($('#ciPurpose'), PURPOSES.map(p => [p, p]), F.purpose, 'purpose');
-  chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage');
+  chipGroup($('#ciStage'), STAGES.map(p => [p, p]), F.stage, 'cstage', stageTone);
   const cars = myCars(); $('#carsWrap').hidden = !cars.length;
   if (cars.length) { if (F.carId && !carById(F.carId)) F.carId = null; if (!F.carId && !F.carTouched && F.vehicle !== 'company') { const d0 = defaultCar(); if (d0) applyCar(d0.id); } chipGroup($('#ciCars'), [...cars.map(c => [c.id, carLabel(c)]), ['__company', 'รถส่วนกลาง'], ['__other', 'คันอื่น / ระบุเอง']], F.carId || (F.vehicle === 'company' ? '__company' : '__other'), 'car'); }
   $('#ciVehicle').hidden = !!F.carId || (cars.length && F.vehicle === 'company');
@@ -1500,6 +1532,17 @@ async function rememberCustomAction(name) {
   if (can('admin', 2)) { const st = { ...S.settings, customActions: [...(S.settings.customActions || []), name] }; S.settings = st; try { await store.saveSettings(st); } catch {} }
   else { S.me.customActions = [...(S.me.customActions || []), name]; lsSet(LS_ME, S.me); }
 }
+// ---- next-step suggestions for the contact log: custom actions + what this person typed before, minus hidden ones ----
+function nextSuggestions() {
+  const hidden = new Set(S.me.nextHidden || []), seen = new Set(), out = [];
+  const add = x => { x = String(x || '').trim(); if (!x || hidden.has(x) || seen.has(x)) return; seen.add(x); out.push(x); };
+  customActions().slice().reverse().forEach(add);
+  [...S.acts.filter(a => actMine(a)), ...S.visits.filter(v => isMine(v))].sort((a, b) => (b.occurredAt || b.createdAt) - (a.occurredAt || a.createdAt)).forEach(x => add(x.nextStep));
+  return out;
+}
+function hideSuggestion(x) { S.me.nextHidden = [...new Set([...(S.me.nextHidden || []), x])]; if ((S.me.customActions || []).includes(x)) S.me.customActions = S.me.customActions.filter(y => y !== x); lsSet(LS_ME, S.me); store.saveStaff(staffDoc()).catch(() => {});
+  if (can('admin', 2) && (S.settings.customActions || []).includes(x)) { const st = { ...S.settings, customActions: S.settings.customActions.filter(y => y !== x) }; S.settings = st; store.saveSettings(st).catch(() => {}); } }
+async function renameSuggestion(o, n) { hideSuggestion(o); S.me.nextHidden = (S.me.nextHidden || []).filter(y => y !== n); await rememberCustomAction(n); lsSet(LS_ME, S.me); }
 function resetForm() {
   $('#fCheckin').reset(); F.gps = null; F.photos = []; F.files = []; F.stage = ''; F.dateTouched = false; F.kmAuto = null; F.kmSrc = null; F.kmReq = null; F.backAuto = null; F.backSrc = null; F.backReq = null; F.odoAuto = null; F.legTouched = false; F.carTouched = false; F.prev = null; F.legFrom = 'office'; F.origin = S.me.home && S.me.home.lat != null ? { ...S.me.home } : null; $('#ciBack').checked = true; $('#legCustom').open = false; if (F.origin) { $('#ciFromName').value = F.origin.name || ''; $('#ciFromGeo').value = F.origin.lat + ', ' + F.origin.lng; } renderNextOptions(''); $('#ciNextNewRow').hidden = true; F.purpose = PURPOSES[0]; F.vehicle = S.me.vehicle || S.settings.defaultVehicle || 'car'; applyExpenseDefaults();
   $('#ciPlate').value = F.vehicle === 'company' ? '' : (S.me.plate || ''); const dc0 = F.vehicle === 'company' ? null : defaultCar(); F.carId = null; if (dc0) applyCar(dc0.id); renderPhotos(); updateCalc();
@@ -1574,7 +1617,7 @@ $('#ciFromUse').addEventListener('click', async () => { const raw = $('#ciFromGe
 $('#ciFromHere').addEventListener('click', () => { if (!navigator.geolocation) { toast('เครื่องนี้จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; } const b = $('#ciFromHere'); b.disabled = true; navigator.geolocation.getCurrentPosition(p => { b.disabled = false; $('#ciFromGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); useOrigin({ lat: p.coords.latitude, lng: p.coords.longitude, name: $('#ciFromName').value }, $('#ciFromSave').checked); }, () => { b.disabled = false; toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); }, { enableHighAccuracy: true, timeout: 15000 }); });
 $('#ciFromSaved').addEventListener('click', () => { if (S.me.home) useOrigin(S.me.home, false); });
 $('#ciCustomer').addEventListener('change', () => { const c = custByName($('#ciCustomer').value); if (c) { if (!$('#ciContact').value) $('#ciContact').value = c.contact || ''; if (!F.stage && c.stage) F.stage = c.stage; if (!$('#ciValue').value && c.dealValue) $('#ciValue').value = c.dealValue; } prefillKmFor($('#ciCustomer').value); applyExpenseDefaults(); updateCalc(); });
-$('#btnReset').addEventListener('click', async () => { const dirty = $('#ciCustomer').value || $('#ciReport').value || F.gps || F.files.length; if (dirty && !(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
+$('#btnReset').addEventListener('click', async () => { if (!(await confirmBox({ title: 'ล้างข้อมูลในฟอร์ม?', body: 'ข้อมูลที่กรอกไว้จะหายทั้งหมด และเริ่มกรอกใหม่', ok: 'ล้างฟอร์ม', danger: true }))) return; resetForm(); });
 async function saveCheckin(claim) {
   if (!S.me.name) { openSettings(); toast('ตั้งชื่อพนักงานก่อนส่งรายงาน'); return; }
   if (!$('#ciCustomer').value.trim()) { $('#ciCustomer').focus(); toast('ใส่ชื่อบริษัทลูกค้า'); return; }
@@ -1801,7 +1844,7 @@ function openCustomer(id) {
   const vs = S.visits.filter(v => v.customerId === c.id || v.customer.trim().toLowerCase() === c.name.trim().toLowerCase());
   const as = S.acts.filter(a => a.customerId === c.id || String(a.customer || '').trim().toLowerCase() === c.name.trim().toLowerCase());
   openSheet(`${bar(esc(c.name))}
-    <div class="row">${c.stage ? `<span class="pill stage">${esc(c.stage)}</span>` : ''}<span class="sub">เข้าพบ ${vs.length} ครั้ง</span></div>
+    <div class="row">${stagePill(c.stage)}<span class="sub">เข้าพบ ${vs.length} ครั้ง</span></div>
     <dl class="kv card"><dt>ผู้ติดต่อ</dt><dd>${esc(c.contact || '-')}</dd><dt>โทร</dt><dd class="num">${esc(c.phone || '-')}</dd><dt>ที่อยู่</dt><dd>${esc(c.address || '-')}</dd>
       <dt>ที่ตั้ง</dt><dd>${c.lat != null ? `<a href="${mapsPin(c.lat, c.lng)}" target="_blank" rel="noopener" class="num">${c.lat}, ${c.lng}</a>` : 'ยังไม่มี จะบันทึกจากการเช็คอินครั้งแรก'}</dd>
       ${c.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(c.dealValue)}</dd>` : ''}
@@ -1845,6 +1888,7 @@ function openSettings() {
         <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="seNick" value="${esc(m.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="seNameEn" value="${esc(m.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
         <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="seCode" value="${esc(m.code)}"></label><label class="f grow">แผนก<input type="text" id="seDept" value="${esc(m.dept)}"></label></div>
         <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="sePhone" value="${esc(m.phone || '')}"></label></div>
+        ${birthRow('seBirth', m.birthDate, 'seAge')}
         <div class="stack" style="gap:8px"><span style="font-size:14px;font-weight:500">รถของฉัน <span class="hint">เพิ่มได้หลายคัน ตอนเช็คอินแตะเลือกคันที่ใช้ เลขไมล์จะต่อจากรายการล่าสุดของคันนั้น</span></span>
           <div class="stack" id="seCars" style="gap:8px"></div>
           <button type="button" class="btn ghost sm" id="seAddCar" style="align-self:flex-start">+ เพิ่มรถ</button></div>
@@ -1886,9 +1930,10 @@ function openSettings() {
     if (!navigator.geolocation) { toast('จับตำแหน่งไม่ได้ วางพิกัดแทน'); return; }
     navigator.geolocation.getCurrentPosition(p => { $('#seGeo').value = p.coords.latitude.toFixed(6) + ', ' + p.coords.longitude.toFixed(6); }, () => toast('จับตำแหน่งไม่ได้ วางพิกัดจาก Google Maps แทน'), { enableHighAccuracy: true, timeout: 15000 });
   });
+  bindAge('seBirth', 'seAge');
   $('#fSet').addEventListener('submit', async e => {
     e.preventDefault();
-    S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim() }; const cars0 = readCars(); S.me.cars = cars0; const first = cars0.find(c => c.id === S.me.lastCarId) || cars0[0]; if (first) { S.me.vehicle = first.type; S.me.plate = first.plate; } else { S.me.plate = ''; } if (!cars0.find(c => c.id === S.me.lastCarId)) S.me.lastCarId = first ? first.id : null; lsSet(LS_ME, S.me);
+    S.me = { ...S.me, name: $('#seName').value.trim(), nick: $('#seNick').value.trim(), nameEn: $('#seNameEn').value.trim(), code: $('#seCode').value.trim(), dept: $('#seDept').value.trim(), phone: $('#sePhone').value.trim(), birthDate: $('#seBirth').value || '' }; const cars0 = readCars(); S.me.cars = cars0; const first = cars0.find(c => c.id === S.me.lastCarId) || cars0[0]; if (first) { S.me.vehicle = first.type; S.me.plate = first.plate; } else { S.me.plate = ''; } if (!cars0.find(c => c.id === S.me.lastCarId)) S.me.lastCarId = first ? first.id : null; lsSet(LS_ME, S.me);
     try { await store.saveStaff(staffDoc()); } catch { toast('บันทึกโปรไฟล์ขึ้นส่วนกลางไม่ได้'); }
     if (can('admin', 2)) {
       const geoRaw = $('#seGeo').value.trim(), g = geoRaw ? await resolveCoords(geoRaw) : null;
@@ -1972,7 +2017,7 @@ $('#ciPlate').value = S.me.plate || '';
 applyRole(); renderPhotos(); renderAll(); updateCalc();
 // ---------- Supabase backend (ใช้เมื่อเปิดจาก GitHub Pages / โดเมนบริษัท และตั้งค่า config.js แล้ว) ----------
 const SB = (window.FLOW_SUPABASE && window.FLOW_SUPABASE.url && window.FLOW_SUPABASE.anonKey && window.supabase && window.supabase.createClient) ? window.FLOW_SUPABASE : null;
-const PROFILE_COLS = { perms: 'perms', position: 'position', cars: 'cars', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
+const PROFILE_COLS = { birthDate: 'birth_date', perms: 'perms', position: 'position', cars: 'cars', name: 'name', nick: 'nick', nameEn: 'name_en', code: 'code', dept: 'dept', phone: 'phone', plate: 'plate', vehicle: 'vehicle', role: 'role', status: 'status', customActions: 'custom_actions', inviteCode: 'invite_code', note: 'note', registeredAt: 'registered_at', approvedAt: 'approved_at', approvedBy: 'approved_by', approvedByName: 'approved_by_name', updatedAt: 'updated_at' };
 const rowToProfile = r => { const p = { email: r.email }; Object.entries(PROFILE_COLS).forEach(([k, c]) => { p[k] = r[c] ?? (k === 'customActions' || k === 'cars' ? [] : k === 'perms' ? {} : k.endsWith('At') || k === 'approvedBy' ? null : ''); }); return p; };
 const profileToRow = p => { const r = {}; Object.entries(p).forEach(([k, v]) => { if (PROFILE_COLS[k] && v !== undefined) r[PROFILE_COLS[k]] = v; }); return r; };
 function sbNoFn(e) { return /could not find the function|does not exist|PGRST202/i.test((e && (e.message + ' ' + e.code)) || ''); }
@@ -2183,18 +2228,20 @@ function renderGate() {
         <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="rgName" value="${esc(S.me.name || (inv ? inv.name : ''))}" required></label>
         <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="rgNick" value="${esc(S.me.nick || '')}"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="rgNameEn" value="${esc(S.me.nameEn || '')}"></label></div>
         <div class="row"><label class="f grow">แผนก / ทีม<input type="text" id="rgDept" value="${esc(S.me.dept || (inv ? inv.dept : ''))}" placeholder="เช่น Sales ภาคกลาง"></label><label class="f grow">เบอร์โทร<input type="tel" id="rgPhone" value="${esc(S.me.phone || '')}"></label></div>
+        ${birthRow('rgBirth', S.me.birthDate, 'rgAge')}
         <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="rgVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === (S.me.vehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="rgPlate" value="${esc(S.me.plate || '')}"></label></div>
         <button class="btn primary block lg" type="submit">ส่งลงทะเบียน</button>
         <p class="sub" style="text-align:center">ถ้าไม่มีรหัสเชิญ คำขอจะไปรอให้ผู้จัดการอนุมัติก่อนเริ่มใช้งาน</p>
       </form>${S.backend === 'supabase' ? `<p class="sub" style="text-align:center">เข้าสู่ระบบเป็น <b>${esc(showUser(S.email || ''))}</b> ซึ่งยังไม่มีข้อมูลพนักงานในระบบ · <a href="#" id="rgOut">ออกจากระบบ / เข้าด้วยบัญชีอื่น</a></p>` : ''}</div>`;
     const rgOut = $('#rgOut'); if (rgOut) rgOut.addEventListener('click', e => { e.preventDefault(); S.sb.auth.signOut(); });
+    bindAge('rgBirth', 'rgAge');
     $('#rgCode').addEventListener('input', () => { const i = S.invites[$('#rgCode').value.trim()]; $('#rgInv').hidden = !i; if (i) { $('#rgInv').innerHTML = `พบรหัสเชิญของ <b>${esc(i.name)}</b> ${i.dept ? '· ' + esc(i.dept) : ''} ลงทะเบียนแล้วใช้งานได้ทันที`; if (!$('#rgName').value) $('#rgName').value = i.name || ''; if (!$('#rgDept').value) $('#rgDept').value = i.dept || ''; } });
     $('#fReg').addEventListener('submit', async e => {
       e.preventDefault();
       const name = $('#rgName').value.trim(), code = $('#rgCode').value.trim(); if (!name) { $('#rgName').focus(); toast('ใส่ชื่อ-นามสกุล'); return; }
       const i = S.invites[code];
       if (!(await confirmBox({ title: 'ส่งลงทะเบียน?', body: `${name}${code ? ' · รหัส ' + code : ''} · ${i ? 'มีรหัสเชิญ ใช้งานได้ทันที' : 'รอผู้จัดการอนุมัติ'}`, ok: 'ลงทะเบียน' }))) return;
-      const doc = { name, nick: $('#rgNick').value.trim(), nameEn: $('#rgNameEn').value.trim(), code, dept: $('#rgDept').value.trim(), phone: $('#rgPhone').value.trim(), vehicle: $('#rgVeh').value, plate: $('#rgPlate').value.trim(), role: i ? (i.role || 'sales') : 'sales', status: i ? 'active' : 'pending', inviteCode: i ? code : '', registeredAt: Date.now(), updatedAt: Date.now(), customActions: [] };
+      const doc = { name, nick: $('#rgNick').value.trim(), nameEn: $('#rgNameEn').value.trim(), code, dept: $('#rgDept').value.trim(), phone: $('#rgPhone').value.trim(), birthDate: $('#rgBirth').value || '', vehicle: $('#rgVeh').value, plate: $('#rgPlate').value.trim(), role: i ? (i.role || 'sales') : 'sales', status: i ? 'active' : 'pending', inviteCode: i ? code : '', registeredAt: Date.now(), updatedAt: Date.now(), customActions: [] };
       S.me = { ...S.me, ...doc }; lsSet(LS_ME, S.me);
       try { await store.registerStaff(doc); toast(i ? 'ลงทะเบียนสำเร็จ เริ่มใช้งานได้เลย' : 'ส่งคำขอแล้ว รอผู้จัดการอนุมัติ'); }
       catch { toast('ส่งไม่สำเร็จ ลองอีกครั้ง'); }
@@ -2203,7 +2250,7 @@ function renderGate() {
   }
   const d = S.meDoc;
   g.innerHTML = `<div class="wrap">${head}<h1>${st === 'disabled' ? 'บัญชีถูกระงับการใช้งาน' : st === 'rejected' ? 'คำขอไม่ได้รับอนุมัติ' : 'รอผู้จัดการอนุมัติ'}</h1>
-    <div class="card stack"><dl class="kv"><dt>ชื่อ</dt><dd>${esc(d.name)}</dd><dt>รหัส</dt><dd>${esc(d.code || '-')}</dd><dt>แผนก</dt><dd>${esc(d.dept || '-')}</dd><dt>ส่งเมื่อ</dt><dd>${d.registeredAt ? dt(d.registeredAt) : '-'}</dd>${d.note ? `<dt>หมายเหตุ</dt><dd>${esc(d.note)}</dd>` : ''}</dl>
+    <div class="card stack"><dl class="kv"><dt>ชื่อ</dt><dd>${esc(d.name)}</dd><dt>รหัส</dt><dd>${esc(d.code || '-')}</dd><dt>แผนก</dt><dd>${esc(d.dept || '-')}</dd>${d.birthDate ? `<dt>วันเกิด</dt><dd>${birthText(d.birthDate)} (${ageText(d.birthDate)})</dd>` : ''}<dt>ส่งเมื่อ</dt><dd>${d.registeredAt ? dt(d.registeredAt) : '-'}</dd>${d.note ? `<dt>หมายเหตุ</dt><dd>${esc(d.note)}</dd>` : ''}</dl>
     <p class="sub">${st === 'pending' ? 'ผู้จัดการจะเห็นคำขอนี้ในหน้าหลังบ้าน เมื่ออนุมัติแล้วหน้านี้จะเปิดให้ใช้งานเอง' : st === 'disabled' ? 'ติดต่อผู้จัดการฝ่ายขายเพื่อขอเปิดใช้งานอีกครั้ง' : 'ติดต่อผู้จัดการฝ่ายขายหากคิดว่าเป็นความผิดพลาด'}</p>
     ${st === 'pending' ? '<button class="btn ghost block" id="rgEdit">แก้ไขข้อมูลที่ส่ง</button>' : ''}</div></div>`;
   const ed = $('#rgEdit'); if (ed) ed.addEventListener('click', () => { S.meDoc = null; renderGate(); });
@@ -2316,6 +2363,7 @@ function openUser(uid) {
       <label class="f">ชื่อ-นามสกุล (ไทย)<input type="text" id="usName" value="${esc(u.name || '')}" required></label>
         <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="usNick" value="${esc(u.nick || '')}" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="usNameEn" value="${esc(u.nameEn || '')}" placeholder="เช่น Somchai Jaidee"></label></div>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="usCode" value="${esc(u.code || '')}"></label><label class="f grow">แผนก<input type="text" id="usDept" value="${esc(u.dept || '')}"></label></div>
+      ${birthRow('usBirth', u.birthDate, 'usAge')}
       <div class="row"><label class="f grow">เบอร์โทร<input type="tel" id="usPhone" value="${esc(u.phone || '')}"></label><label class="f grow">ตำแหน่ง<select id="usRole" ${uid === S.myId ? 'disabled' : ''}>${positions().filter(x => x.role !== 'owner' || S.me.role === 'owner' || u.role === 'owner').map(x => `<option value="${esc(x.id)}" ${x.id === posOf(u).id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label></div>
       <div class="f"><span>สิทธิ์การเข้าใช้</span><div id="usAccess" class="sub" style="margin:4px 0 0">${esc(ACCESS[u.role])}</div></div>
       <div class="stack" id="permBox" style="gap:6px;border-top:1px solid var(--line);padding-top:8px"><div class="row" style="align-items:center"><b class="grow">สิทธิ์รายส่วน${permIsCustom(u) ? ' <span class="pill ex">กำหนดเอง</span>' : ''}</b>${uid !== S.myId && u.role !== 'owner' && can('admin', 2) ? '<button type="button" class="btn ghost sm" id="usPermReset">ใช้ค่าเริ่มต้นของตำแหน่ง</button>' : ''}</div>
@@ -2341,9 +2389,10 @@ function openUser(uid) {
   if (!can('admin', 2)) { document.querySelectorAll('#fUser input, #fUser select').forEach(el => el.disabled = true); const sb = document.querySelector('#fUser button[type=submit]'); if (sb) sb.hidden = true; document.querySelectorAll('[data-ureg], #usPw, #usDelete').forEach(el => { if (el.id !== 'usPwMe') el.hidden = true; }); }
   const pwBtn = $('#usPw'); if (pwBtn) pwBtn.addEventListener('click', () => openSetPassword(u));
   const pwMe = $('#usPwMe'); if (pwMe) pwMe.addEventListener('click', () => openChangePassword());
+  bindAge('usBirth', 'usAge');
   $('#fUser').addEventListener('submit', async e => {
     e.preventDefault();
-    const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: curPos().role, position: curPos().id, note: $('#usNote').value.trim(), updatedAt: Date.now() };
+    const patch = { name: $('#usName').value.trim(), nick: $('#usNick').value.trim(), nameEn: $('#usNameEn').value.trim(), code: $('#usCode').value.trim(), dept: $('#usDept').value.trim(), phone: $('#usPhone').value.trim(), birthDate: $('#usBirth').value || '', vehicle: $('#usVeh').value, plate: $('#usPlate').value.trim(), role: curPos().role, position: curPos().id, note: $('#usNote').value.trim(), updatedAt: Date.now() };
     if (!patch.name) { toast('ใส่ชื่อ'); return; }
     if (patch.role !== 'owner' && uid !== S.myId && can('admin', 2)) { const pm = {}; document.querySelectorAll('#permBox select[data-perm]').forEach(sel => pm[sel.dataset.perm] = +sel.value); patch.perms = pm; }
     const accChanged = patch.role !== u.role || patch.position !== posOf(u).id || (patch.perms && JSON.stringify(permsOf({ role: patch.role, perms: patch.perms })) !== JSON.stringify(permsOf(u)));
@@ -2389,6 +2438,7 @@ function openAddUser() {
       <div class="row"><label class="f grow">ชื่อเล่น<input type="text" id="auNick" placeholder="เช่น ออม"></label><label class="f grow">ชื่อ-นามสกุล (อังกฤษ)<input type="text" id="auNameEn" placeholder="เช่น Somchai Jaidee"></label></div>
       <div class="row"><label class="f grow">รหัสพนักงาน<input type="text" id="auCode" placeholder="เช่น S012"></label><label class="f grow">แผนก / ทีม<input type="text" id="auDept"></label></div>
       <label class="f">เบอร์โทร<input type="tel" id="auPhone"></label>
+      ${birthRow('auBirth', '', 'auAge')}
       <div class="row"><label class="f grow">รถที่ใช้ประจำ<select id="auVeh">${Object.entries(VEHICLES).map(([k, l]) => `<option value="${k}" ${k === ({}.vehicle || S.settings.defaultVehicle || 'car') ? 'selected' : ''}>${l}</option>`).join('')}</select></label><label class="f grow">ทะเบียนรถ<input type="text" id="auPlate" value="${esc({}.plate || '')}" placeholder="เช่น 1กข 1234"></label></div>
       <label class="f">ชื่อผู้ใช้สำหรับเข้าสู่ระบบ<span class="hint">ภาษาอังกฤษ/ตัวเลข ไม่มีช่องว่าง เช่น somchai</span><input type="text" id="auUser" required autocomplete="off" autocapitalize="off" spellcheck="false"></label>
       <label class="f">รหัสผ่านตั้งต้น<span class="hint">อย่างน้อย 6 ตัว พนักงานเปลี่ยนเองได้ภายหลัง</span><div class="row"><input type="text" id="auPw" class="grow" autocomplete="off" autocapitalize="off" spellcheck="false" value="${genPassword()}"><button class="btn soft sm" type="button" id="auGen">สุ่มใหม่</button></div></label>
@@ -2397,6 +2447,7 @@ function openAddUser() {
     </form>`);
   $('#auRole').value = 'sales';
   $('#auGen').addEventListener('click', () => { $('#auPw').value = genPassword(); });
+  bindAge('auBirth', 'auAge');
   $('#fAdd').addEventListener('submit', async e => {
     e.preventDefault();
     const name = $('#auName').value.trim(), user = $('#auUser').value.trim().toLowerCase(), pw = $('#auPw').value, code = $('#auCode').value.trim(), pos = positions().find(x => x.id === $('#auRole').value) || posOf({ role: 'sales' }), role = pos.role;
@@ -2405,7 +2456,7 @@ function openAddUser() {
     if (pw.length < 6) { toast('รหัสผ่านต้องยาวอย่างน้อย 6 ตัว'); return; }
     if (code && userRows().some(u => (u.code || '').trim() === code)) { toast('รหัสพนักงานนี้มีอยู่แล้ว'); return; }
     if (!(await confirmBox({ title: 'สร้างบัญชี?', body: `${name} · ผู้ใช้ ${user} · ${pos.name}`, ok: 'สร้าง' }))) return;
-    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, nick: $('#auNick').value.trim(), nameEn: $('#auNameEn').value.trim(), vehicle: $('#auVeh').value, plate: $('#auPlate').value.trim(), code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }).then(async nid => { if (nid && typeof nid === 'string' && (pos.id !== role || JSON.stringify(pos.perms) !== JSON.stringify(ROLE_PERMS[role]))) await store.setStaff(nid, { position: pos.id, perms: pos.perms, updatedAt: Date.now() }).catch(() => toast('สร้างบัญชีแล้ว แต่ตั้งตำแหน่งไม่สำเร็จ แก้ได้ในหน้าผู้ใช้งาน')); }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
+    try { await store.adminCreateUser({ email: toLoginEmail(user), password: pw, name, nick: $('#auNick').value.trim(), nameEn: $('#auNameEn').value.trim(), vehicle: $('#auVeh').value, plate: $('#auPlate').value.trim(), code, dept: $('#auDept').value.trim(), phone: $('#auPhone').value.trim(), role }).then(async nid => { const bd = $('#auBirth').value || ''; if (nid && typeof nid === 'string' && (bd || pos.id !== role || JSON.stringify(pos.perms) !== JSON.stringify(ROLE_PERMS[role]))) await store.setStaff(nid, { position: pos.id, perms: pos.perms, birthDate: bd, updatedAt: Date.now() }).catch(() => toast('สร้างบัญชีแล้ว แต่ตั้งตำแหน่ง/วันเกิดไม่สำเร็จ แก้ได้ในหน้าผู้ใช้งาน')); }); showCredentials({ title: 'สร้างบัญชีแล้ว', user, pw, name }); }
     catch (err) { toast(sbNoFn(err) ? 'ต้องรันไฟล์ schema.sql เวอร์ชันล่าสุดใน Supabase ก่อน' : (err.message && /[ก-๙]/.test(err.message) ? err.message : 'สร้างบัญชีไม่ได้')); }
   });
 }
