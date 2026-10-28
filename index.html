@@ -42,6 +42,7 @@ section.view{padding-block:20px;display:flex;flex-direction:column;gap:16px}
 h1{font-size:34px;line-height:1.14;letter-spacing:-.374px;margin:0;font-weight:600;text-wrap:balance}
 h2{font-size:13px;margin:0;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .sub{color:var(--muted);font-size:14px;line-height:1.43;margin:0}
+.greet .fortune{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
 .greet.bday{background:#fff4e5;color:#7a3e00}
 @media (prefers-color-scheme: dark){.greet.bday{background:#3a2a12;color:#ffd9a8}}
 .greet{margin:6px 0 0;padding:10px 12px;border-radius:12px;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.45;animation:greetIn .35s ease-out}
@@ -671,8 +672,9 @@ const ACCESS = { sales: 'ระบบปกติเท่านั้น (เ�
 const USTATUS = { active: 'ใช้งานอยู่', pending: 'รอตรวจสอบ', disabled: 'ระงับการใช้งาน', rejected: 'ไม่อนุมัติ' };
 const STATUS = { pending:'รอตรวจ', approved:'อนุมัติแล้ว', rejected:'ตีกลับ', draft:'ยังไม่เบิก' };
 // เวอร์ชันแอป: แก้ทุกครั้งที่อัปเดต (major.minor) แล้วเพิ่มรายการด้านบนสุด · ทุกคนเห็นเลขเวอร์ชัน ส่วนรายละเอียดดูได้ในหลังบ้านเท่านั้น
-const APP_VERSION = '4.0';
+const APP_VERSION = '5.0';
 const APP_VERSIONS = [
+  ['5.0', '29 ต.ค. 2569', ['คำทักทายหน้าแรกสุ่มไม่ซ้ำกันตลอดปี (มากกว่า 2,800 แบบต่อคน) และต่างกันแต่ละคน พร้อม "ดวงดีประจำวัน" ตามราศีจากวันเกิด สีมงคล และเลขนำโชค ทักแต่เรื่องดีๆ', 'บันทึกการติดต่อ: เจ้าของบันทึกลบของตัวเองได้ภายใน 7 วัน (ผู้ดูแลทีมลบได้ทุกรายการ) ต้องยืนยันก่อนลบทุกครั้ง', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (สิทธิ์ลบบันทึกการติดต่อ)']],
   ['4.0', '28 ต.ค. 2569', ['หน้าแรกของทุกคนขึ้นคำอวยพรเมื่อเป็นวันเกิดของเพื่อนร่วมทีม (วันนี้/พรุ่งนี้)', 'หลังบ้าน: รายชื่อผู้ใช้แสดงวันเกิดและอีกกี่วันถึงวันเกิด พร้อมกล่อง "วันเกิดที่ใกล้ถึง"', 'ต้องรันไฟล์ supabase/schema.sql อีกครั้ง (เพิ่มฟังก์ชัน team_birthdays)']],
   ['3.2', '28 ต.ค. 2569', ['ช่องวันเกิดเปลี่ยนเป็นเลือก วัน / เดือน / ปี พ.ศ. จากรายการ (เลือกปีย้อนหลังได้เร็ว) และแสดงวันที่เป็น วัน/เดือน/ปี พ.ศ.']],
   ['3.1', '28 ต.ค. 2569', ['หน้าแรกมีข้อความทักทาย/ให้กำลังใจใต้ชื่อ เลือกตามสถานการณ์ของแต่ละคน: วันเกิด ปิดการขายได้ ถึงเป้าเข้าพบ ขยันออกตลาด ลูกค้าใหม่/ใบเสนอราคา และข้อความทั่วไปตามช่วงเวลา สลับข้อความทุกวัน']],
@@ -1055,12 +1057,22 @@ function visitItem(v, opts = {}) {
   </div><div class="stack" style="gap:6px;align-items:flex-end">${st === 'draft' ? '<span class="amt" style="color:var(--muted)">—</span>' : `<span class="amt">฿${fmtB(v.total)}</span>`}<span class="pill ${st}">${STATUS[st]}</span></div></button>`;
 }
 // ---------- ข้อความทักทาย/ให้กำลังใจหน้าแรก ----------
-const G_GENERIC = { morning: ['☕ อรุณสวัสดิ์ค่ะคุณ{n} วันนี้เริ่มจากลูกค้ารายไหนดีคะ', '🌅 เช้าวันใหม่ค่ะคุณ{n} ขอให้วันนี้เจอแต่ลูกค้าใจดีนะคะ'], noon: ['🌤️ ครึ่งวันผ่านไปแล้วค่ะคุณ{n} อีกนิดเดียว สู้ๆ นะคะ', '🍱 พักทานข้าวก่อนนะคะคุณ{n} บ่ายค่อยลุยต่อ'], evening: ['🌙 วันนี้เหนื่อยหน่อยนะคะคุณ{n} อย่าลืมบันทึกงานก่อนกลับบ้านค่ะ', '🏠 ใกล้หมดวันแล้วค่ะคุณ{n} ขับรถกลับบ้านปลอดภัยนะคะ'], mon: ['🗓️ สัปดาห์ใหม่ โอกาสใหม่ค่ะคุณ{n} เริ่มเลยนะคะ'], fri: ['🎉 ศุกร์แล้วค่ะคุณ{n} ปิดสัปดาห์ให้สวยนะคะ'] };
+// ---------- ดวงดีประจำวัน (เฉพาะเรื่องดีๆ) ----------
+// ชื่อราศีที่ 'ก่อน' วันเปลี่ยนราศีของเดือนนั้น เช่น เดือน 1 เปลี่ยนวันที่ 20 จากมังกรเป็นกุมภ์
+const ZODIAC = [['มังกร', 1, 20], ['กุมภ์', 2, 19], ['มีน', 3, 21], ['เมษ', 4, 20], ['พฤษภ', 5, 21], ['เมถุน', 6, 21], ['กรกฎ', 7, 23], ['สิงห์', 8, 23], ['กันย์', 9, 23], ['ตุลย์', 10, 23], ['พิจิก', 11, 22], ['ธนู', 12, 22]];
+const zodiacOf = iso => { const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(iso || ''); if (!m) return ''; const mo = +m[1], d = +m[2]; const i = ZODIAC.findIndex(z => z[1] === mo); return d >= ZODIAC[i][2] ? ZODIAC[(i + 1) % 12][0] : ZODIAC[i][0]; };
+const FORTUNE = ['ดวงการเงินเด่น มีโอกาสได้ข่าวดีเรื่องยอดขาย', 'เสน่ห์แรง คุยกับลูกค้ารายไหนก็เข้าตา', 'มีผู้ใหญ่คอยสนับสนุน งานที่ค้างไว้จะคืบหน้า', 'โชคดีเรื่องการเดินทาง ไปถึงที่หมายราบรื่น', 'สิ่งที่ตั้งใจทำไว้จะเห็นผลเร็วกว่าที่คิด', 'ได้เจอคนที่ช่วยเปิดโอกาสใหม่ๆ ให้', 'การเจรจาต่อรองเป็นใจ พูดอะไรก็ฟังขึ้น', 'เรื่องที่เคยกังวลจะคลี่คลายในทางที่ดี', 'ดวงมีโชคเล็กๆ จากความขยันของตัวเอง', 'ลูกค้าเก่าจะนึกถึงและติดต่อกลับมา', 'พลังงานดีทั้งวัน ทำอะไรก็ลื่นไหล', 'ความอดทนที่สะสมไว้กำลังจะออกดอกออกผล', 'ดวงสมหวัง สิ่งที่รอคอยมีคำตอบดีๆ', 'ได้รับคำชมจากคนรอบข้างในเรื่องงาน', 'ความสัมพันธ์กับทีมราบรื่น ช่วยเหลือกันดี', 'โอกาสทางธุรกิจแวะมาเคาะประตู อย่าลืมเปิดรับ', 'วันนี้เหมาะกับการปิดงานที่ค้างคาให้จบ', 'มีคนคอยเอ็นดู ขอความช่วยเหลือเรื่องใดก็ได้รับ', 'ดวงเงินไหลเข้า โบนัสเล็กๆ อาจมาแบบไม่คาดคิด', 'ใจเย็นๆ แล้วทุกอย่างจะเข้าทางเอง', 'การนำเสนอวันนี้โดดเด่น ลูกค้าจำได้แม่น', 'ดวงดาวหนุนเรื่องความคิดสร้างสรรค์ ไอเดียดีๆ จะผุดขึ้น', 'เดินทางไปไหนมีแต่คนต้อนรับ', 'ปัญหาเล็กๆ จะมีคนช่วยคลี่คลายให้โดยไม่ต้องขอ'];
+const LUCKY_COLOR = ['ฟ้า', 'เขียว', 'ชมพู', 'เหลือง', 'ส้ม', 'ม่วง', 'ขาว', 'ครีม', 'แดง', 'น้ำเงิน', 'ทอง', 'เทาอ่อน'];
+const hashStr = str => { let h = 2166136261; for (const c of String(str)) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
+// ดัชนีประจำวันของแต่ละคน: เดินด้วยก้าวที่เป็นจำนวนเฉพาะ จึงไม่ซ้ำกันนาน 2,880 วัน และคนละลำดับกัน
+const dailyIndex = () => { const N = FORTUNE.length * LUCKY_COLOR.length * 10, day = Math.floor(Date.now() / 864e5), seed = hashStr((S.myId || '') + '|' + (S.me.name || '')); return (seed + day * 7919) % N; };
+const fortuneLine = () => { const idx = dailyIndex(), F = FORTUNE.length, C = LUCKY_COLOR.length; const f = FORTUNE[idx % F], c = LUCKY_COLOR[Math.floor(idx / F) % C], n = Math.floor(idx / (F * C)) % 10, z = zodiacOf(S.me.birthDate); return `🔮 ดวงดี${z ? 'ราศี' + z : 'วันนี้'}: ${f} · สีมงคล${c} · เลขนำโชค ${n}`; };
+const G_GENERIC = { morning: ['☕ อรุณสวัสดิ์ค่ะคุณ{n} วันนี้เริ่มจากลูกค้ารายไหนดีคะ', '🌅 เช้าวันใหม่ค่ะคุณ{n} ขอให้วันนี้เจอแต่ลูกค้าใจดีนะคะ', '🌞 สวัสดีตอนเช้าค่ะคุณ{n} ยิ้มรับวันใหม่แล้วออกไปลุยกันค่ะ', '🚗 เช้านี้ขับรถดีๆ นะคะคุณ{n} ถึงลูกค้าปลอดภัยคือกำไรแรกของวัน', '📞 เริ่มวันด้วยโทรหาลูกค้าสักสายไหมคะคุณ{n} เสียงสดใสตอนเช้าได้ใจเสมอค่ะ'], noon: ['🌤️ ครึ่งวันผ่านไปแล้วค่ะคุณ{n} อีกนิดเดียว สู้ๆ นะคะ', '🍱 พักทานข้าวก่อนนะคะคุณ{n} บ่ายค่อยลุยต่อ', '💧 ดื่มน้ำเยอะๆ นะคะคุณ{n} อากาศร้อน ดูแลตัวเองด้วยค่ะ', '📝 ช่วงบ่ายเหมาะกับการบันทึกงานที่ทำเช้านี้ค่ะคุณ{n} จะได้ไม่ลืมรายละเอียด'], evening: ['🌙 วันนี้เหนื่อยหน่อยนะคะคุณ{n} อย่าลืมบันทึกงานก่อนกลับบ้านค่ะ', '🏠 ใกล้หมดวันแล้วค่ะคุณ{n} ขับรถกลับบ้านปลอดภัยนะคะ', '🌇 เย็นนี้พักผ่อนให้เต็มที่นะคะคุณ{n} พรุ่งนี้ค่อยลุยใหม่', '⭐ วันนี้ทำดีที่สุดแล้วค่ะคุณ{n} ขอบคุณที่ตั้งใจนะคะ'], mon: ['🗓️ สัปดาห์ใหม่ โอกาสใหม่ค่ะคุณ{n} เริ่มเลยนะคะ'], fri: ['🎉 ศุกร์แล้วค่ะคุณ{n} ปิดสัปดาห์ให้สวยนะคะ'] };
 function greetingLine() {
   const gk = x => String(x || '').trim().toLowerCase();
   const now = new Date(), ms = now.getTime(), n = S.me.nick || (S.me.name || '').split(/\s+/)[0] || 'คุณ';
   if (!S.me.name) return '';
-  const T = (arr, vars = {}) => { const seed = +dayOf(ms).replace(/-/g, '') % 1000; const t = arr[seed % arr.length]; return t.replace(/\{(\w+)\}/g, (_, k) => k === 'n' ? n : (vars[k] ?? '')); };
+  const T = (arr, vars = {}) => { const t = arr[dailyIndex() % arr.length]; return t.replace(/\{(\w+)\}/g, (_, k) => k === 'n' ? n : (vars[k] ?? '')); };
   const day = dayOf(ms), ym = ymOf(ms), dow = now.getDay(), hr = now.getHours();
   const mine = S.visits.filter(v => isMine(v) && !v.isExample && statusOf(v) !== 'rejected'), acts = S.acts.filter(actMine);
   const month = mine.filter(v => ymOf(v.createdAt) === ym), monthActs = acts.filter(a => ymOf(a.occurredAt) === ym);
@@ -1100,7 +1112,7 @@ function greetingLine() {
   return T(hr < 11 ? G_GENERIC.morning : hr < 16 ? G_GENERIC.noon : G_GENERIC.evening);
 }
 function renderHome() {
-  try { const g = greetingLine(); $('#greetLine').hidden = !g; $('#greetLine').textContent = g; } catch (e) { $('#greetLine').hidden = true; }
+  try { const g = greetingLine(); $('#greetLine').hidden = !g; $('#greetLine').innerHTML = g ? `${esc(g)}<span class="fortune">${esc(fortuneLine())}</span>` : ''; } catch (e) { $('#greetLine').hidden = true; }
   try { const others = teamBirthdays().filter(x => x.id !== S.myId); const nm = x => 'คุณ' + (x.nick || (x.name || '').split(/\s+/)[0]); const td = others.filter(x => daysToBirthday(x.birth_date) === 0).map(nm), tm = others.filter(x => daysToBirthday(x.birth_date) === 1).map(nm);
     const parts = []; if (td.length) parts.push(`🎂 วันนี้วันเกิด${td.join(' และ ')} อวยพรกันหน่อยนะคะ`); if (tm.length) parts.push(`🎈 พรุ่งนี้วันเกิด${tm.join(' และ ')} เตรียมอวยพรไว้นะคะ`);
     $('#bdayLine').hidden = !parts.length; $('#bdayLine').textContent = parts.join(' · '); } catch (e) { $('#bdayLine').hidden = true; }
@@ -1272,7 +1284,7 @@ function openAct(id) {
   openSheet(`${bar(esc(typeLabel(a.type)) + ' · ' + esc(a.customer))}
     <div class="row" style="align-items:center">${outPill(a.outcome)}<span class="sub">${dt(a.occurredAt)} · ${esc(a.staffName || '')}</span></div>
     <dl class="kv card"><dt>ช่องทาง</dt><dd>${esc(typeLabel(a.type))}</dd><dt>ผู้ติดต่อ</dt><dd>${esc(a.contact || '-')}</dd>${a.note ? `<dt>รายละเอียด</dt><dd style="white-space:pre-wrap">${esc(a.note)}</dd>` : ''}${a.dealValue ? `<dt>มูลค่า</dt><dd class="num">฿${fmtB(a.dealValue)}</dd>` : ''}${a.nextStep ? `<dt>ทำต่อ</dt><dd>${esc(a.nextStep)}${a.nextDate ? ' ภายใน ' + esc(thDate(a.nextDate)) : ''}</dd>` : ''}<dt>บันทึกเมื่อ</dt><dd>${dt(a.createdAt)}${a.editedByName ? ' · แก้ไขโดย ' + esc(a.editedByName) : ''}</dd></dl>
-    <div class="row">${c && can('customers') ? `<button class="btn soft grow" data-cust="${esc(c.id)}">ดูข้อมูลลูกค้า</button>` : ''}${actEditable(a) ? `<button class="btn ghost" data-editact="${esc(a.id)}">แก้ไข</button>` : ''}${can('team', 2) && S.canWrite ? `<button class="btn ghost danger" data-delact="${esc(a.id)}">ลบ</button>` : ''}</div>
+    <div class="row">${c && can('customers') ? `<button class="btn soft grow" data-cust="${esc(c.id)}">ดูข้อมูลลูกค้า</button>` : ''}${actEditable(a) ? `<button class="btn ghost" data-editact="${esc(a.id)}">แก้ไข</button>` : ''}${actEditable(a) ? `<button class="btn ghost danger" data-delact="${esc(a.id)}">ลบ</button>` : ''}</div>
     ${actMine(a) && !actEditable(a) ? '<p class="sub">บันทึกเกิน 7 วันแล้ว แก้ไขเองไม่ได้ แจ้งหัวหน้าหากต้องแก้</p>' : ''}`);
 }
 function openActForm(o = {}) {
@@ -2032,7 +2044,7 @@ document.addEventListener('click', e => {
   if (d.posedit) openPosition(d.posedit);
   else if (d.act) openAct(d.act);
   else if (d.editact) openActForm({ act: S.acts.find(x => x.id === d.editact) });
-  else if (d.delact) confirmBox({ title: 'ลบบันทึกนี้?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true }).then(ok => { if (ok) store.deleteActivity(S.acts.find(x => x.id === d.delact)).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้ เฉพาะผู้ดูแลทีม')); });
+  else if (d.delact) { const a0 = S.acts.find(x => x.id === d.delact); confirmBox({ title: 'ลบบันทึกการติดต่อนี้?', body: `${a0 ? a0.customer + ' · ' + dt(a0.occurredAt) + ' · ' : ''}ลบแล้วกู้คืนไม่ได้`, ok: 'ลบ', danger: true }).then(ok => { if (ok && a0) store.deleteActivity(a0).then(() => { toast('ลบแล้ว'); closeSheet(); }, () => toast('ลบไม่ได้ (เกิน 7 วัน หรือไม่มีสิทธิ์)')); }); }
   else if (d.newact) openActForm({ type: d.newact, cust: d.custid ? S.customers.find(x => x.id === d.custid) : d.fromci && $('#ciCustomer').value.trim() ? (custByName($('#ciCustomer').value) || { name: $('#ciCustomer').value.trim(), contact: $('#ciContact').value.trim() }) : null });
   else if (d.fu) { const c = S.customers.find(x => x.id === d.fu); if (c && can('checkin', 2)) openActForm({ cust: c }); else if (c) openCustomer(c.id); }
   else if (d.user) openUser(d.user);
